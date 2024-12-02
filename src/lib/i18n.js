@@ -941,6 +941,7 @@ function getNumberFormatOptions(translateFn, userStore) {
         decimalSeparator: getCurrentDecimalSeparator(translateFn, userStore.currentUserDecimalSeparator),
         digitGroupingSymbol: getCurrentDigitGroupingSymbol(translateFn, userStore.currentUserDigitGroupingSymbol),
         digitGrouping: getCurrentDigitGroupingType(translateFn, userStore.currentUserDigitGrouping),
+        trimTailZero: true,
     };
 }
 
