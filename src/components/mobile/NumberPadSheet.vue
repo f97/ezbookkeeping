@@ -43,8 +43,8 @@
                 <f7-button class="numpad-button numpad-button-function no-right-border" @click="setSymbol('+')">
                     <span class="numpad-button-text numpad-button-text-normal">&plus;</span>
                 </f7-button>
-                <f7-button class="numpad-button numpad-button-num" @click="inputDecimalSeparator()">
-                    <span class="numpad-button-text numpad-button-text-normal">{{ decimalSeparator }}</span>
+                <f7-button class="numpad-button numpad-button-num" @click="inputNum('000')" @taphold="inputDecimalSeparator()">
+                    <span class="numpad-button-text numpad-button-text-normal">000</span>
                 </f7-button>
                 <f7-button class="numpad-button numpad-button-num" @click="inputNum(0)" @taphold="inputNum('000')">
                     <span class="numpad-button-text numpad-button-text-normal">0</span>
