@@ -1,4 +1,5 @@
-import moment from './datetime.js';
+import moment from 'moment-timezone';
+
 import { defaultLanguage, allLanguages } from '@/locales/index.js';
 import numeralConstants from '@/consts/numeral.js';
 import datetimeConstants from '@/consts/datetime.js';

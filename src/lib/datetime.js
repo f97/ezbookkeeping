@@ -1,13 +1,4 @@
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc.js'
-import timezone from 'dayjs/plugin/timezone.js'
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
-export default dayjs;
-
-const moment = dayjs
+import moment from 'moment';
 
 import dateTimeConstants from '@/consts/datetime.js';
 import { isObject, isString, isNumber } from './common.js';
