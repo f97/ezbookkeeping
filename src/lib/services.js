@@ -1,5 +1,4 @@
-import Axios from 'axios';
-import { setupCache } from 'axios-cache-interceptor';
+import axios from 'axios';
 
 import apiConstants from '@/consts/api.js';
 import userState from './userstate.js';
@@ -18,9 +17,6 @@ import { generateRandomUUID } from './misc.js';
 
 let needBlockRequest = false;
 let blockedRequests = [];
-
-const instance = Axios.create();
-const axios = setupCache(instance);
 
 axios.defaults.baseURL = apiConstants.baseApiUrlPath;
 axios.defaults.timeout = apiConstants.defaultTimeout;
