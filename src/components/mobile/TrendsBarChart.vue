@@ -246,10 +246,10 @@ export default {
             }
 
             for (let i = 0; i < finalDataItems.length; i++) {
-                if (maxTotalAmount > 0) {
+                if (maxTotalAmount > 0 && finalDataItems[i].totalAmount > 0) {
                     finalDataItems[i].percent = 100.0 * finalDataItems[i].totalAmount / maxTotalAmount;
                 } else {
-                    finalDataItems[i].percent = 100.0;
+                    finalDataItems[i].percent = 0.0;
                 }
             }
 
@@ -261,6 +261,28 @@ export default {
     },
     methods: {
         clickItem: function (item) {
+            let itemId = '';
+
+            for (let i = 0; i < this.items.length; i++) {
+                const item = this.items[i];
+
+                if (!this.hiddenField || item[this.hiddenField]) {
+                    continue;
+                }
+
+                const id = (this.idField && item[this.idField]) ? item[this.idField] : this.getItemName(item[this.nameField]);
+
+                if (this.unselectedLegends[id]) {
+                    continue;
+                }
+
+                if (itemId.length) {
+                    itemId += ',';
+                }
+
+                itemId += id;
+            }
+
             const dateRange = item.dateRange;
             let minUnixTime = dateRange.minUnixTime;
             let maxUnixTime = dateRange.maxUnixTime;
@@ -284,6 +306,7 @@ export default {
             const dateRangeType = getDateTypeByDateRange(minUnixTime, maxUnixTime, this.userStore.currentUserFirstDayOfWeek, datetimeConstants.allDateRangeScenes.Normal);
 
             this.$emit('click', {
+                itemId: itemId,
                 dateRange: {
                     minTime: minUnixTime,
                     maxTime: maxUnixTime,
