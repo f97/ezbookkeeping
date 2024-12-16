@@ -220,20 +220,20 @@ export default {
 
             this.currentValue = newValue;
         },
-        pasteFromClipboard() {
+        async pasteFromClipboard() {
             try {
-                const clipboardText = await navigator.clipboard.readText(); // Đọc nội dung từ clipboard
-                // Loại bỏ tất cả ký tự không phải số hoặc dấu chấm (.)
+                const clipboardText = await navigator.clipboard.readText(); // Read content from clipboard
+                // Remove all characters except digits and dots (.)
                 const sanitizedText = clipboardText.replace(/[^0-9.]/g, '');
-                const num = parseFloat(sanitizedText); // Chuyển chuỗi đã xử lý thành số thực
+                const num = parseFloat(sanitizedText); // Convert the sanitized string to a floating-point number
         
                 if (!isNaN(num)) {
-                    this.inputNum(num); // Gọi hàm inputNum với giá trị số đã xử lý
+                    this.inputNum(num); // Call inputNum with the processed number
                 } else {
-                    this.$toast('Clipboard không chứa giá trị số hợp lệ!');
+                    this.$toast('Clipboard does not contain a valid numeric value!');
                 }
             } catch (err) {
-                this.$toast('Không thể đọc clipboard!');
+                this.$toast('Unable to read from the clipboard!');
             }
         },
         inputDoubleNum(num) {
