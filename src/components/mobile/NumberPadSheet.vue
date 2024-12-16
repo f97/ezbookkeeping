@@ -234,7 +234,7 @@ export default {
                     }
                 })
                 .catch((err) => {
-                    this.$toast(`Unable to read from the clipboard: ${err.message}`);
+                    this.$toast(err.message);
                 });
         },
         inputDoubleNum(num) {
