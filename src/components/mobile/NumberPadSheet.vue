@@ -16,8 +16,8 @@
                 <f7-button class="numpad-button numpad-button-num" @click="inputNum(9)">
                     <span class="numpad-button-text numpad-button-text-normal">9</span>
                 </f7-button>
-                <f7-button class="numpad-button numpad-button-function no-right-border" @click="setSymbol('×')">
-                    <span class="numpad-button-text numpad-button-text-normal">&times;</span>
+                <f7-button class="numpad-button numpad-button-function no-right-border" @click="pasteFromClipboard()" @taphold="setSymbol('×')">
+                    <span class="numpad-button-text numpad-button-text-normal">&#x29C9;</span>
                 </f7-button>
                 <f7-button class="numpad-button numpad-button-num" @click="inputNum(4)">
                     <span class="numpad-button-text numpad-button-text-normal">4</span>
@@ -219,6 +219,22 @@ export default {
             }
 
             this.currentValue = newValue;
+        },
+        pasteFromClipboard() {
+            try {
+                const clipboardText = await navigator.clipboard.readText(); // Đọc nội dung từ clipboard
+                // Loại bỏ tất cả ký tự không phải số hoặc dấu chấm (.)
+                const sanitizedText = clipboardText.replace(/[^0-9.]/g, '');
+                const num = parseFloat(sanitizedText); // Chuyển chuỗi đã xử lý thành số thực
+        
+                if (!isNaN(num)) {
+                    this.inputNum(num); // Gọi hàm inputNum với giá trị số đã xử lý
+                } else {
+                    this.$toast('Clipboard không chứa giá trị số hợp lệ!');
+                }
+            } catch (err) {
+                this.$toast('Không thể đọc clipboard!');
+            }
         },
         inputDoubleNum(num) {
             this.inputNum(num);
