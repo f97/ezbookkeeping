@@ -221,20 +221,21 @@ export default {
             this.currentValue = newValue;
         },
         pasteFromClipboard() {
-            try {
-                const clipboardText = navigator.clipboard.readText(); // Read content from clipboard
-                // Remove all characters except digits and dots (.)
-                const sanitizedText = clipboardText.replace(/[^0-9.]/g, '');
-                const num = parseFloat(sanitizedText); // Convert the sanitized string to a floating-point number
+            navigator.clipboard.readText()
+                .then((clipboardText) => {
+                    // Remove all characters except digits and dots (.)
+                    const sanitizedText = clipboardText.replace(/[^0-9.]/g, '');
+                    const num = parseFloat(sanitizedText); // Convert the sanitized string to a floating-point number
         
-                if (!isNaN(num)) {
-                    this.inputNum(num); // Call inputNum with the processed number
-                } else {
-                    this.$toast('Clipboard does not contain a valid numeric value!');
-                }
-            } catch (err) {
-                this.$toast('Unable to read from the clipboard!');
-            }
+                    if (!isNaN(num)) {
+                        this.inputNum(num); // Call inputNum with the processed number
+                    } else {
+                        this.$toast('Clipboard does not contain a valid numeric value!');
+                    }
+                })
+                .catch((err) => {
+                    this.$toast(`Unable to read from the clipboard: ${err.message}`);
+                });
         },
         inputDoubleNum(num) {
             this.inputNum(num);
