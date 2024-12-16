@@ -220,9 +220,9 @@ export default {
 
             this.currentValue = newValue;
         },
-        async pasteFromClipboard() {
+        pasteFromClipboard() {
             try {
-                const clipboardText = await navigator.clipboard.readText(); // Read content from clipboard
+                const clipboardText = navigator.clipboard.readText(); // Read content from clipboard
                 // Remove all characters except digits and dots (.)
                 const sanitizedText = clipboardText.replace(/[^0-9.]/g, '');
                 const num = parseFloat(sanitizedText); // Convert the sanitized string to a floating-point number
