@@ -1,4 +1,7 @@
-import moment from 'moment-timezone';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import updateLocale from 'dayjs/plugin/updateLocale'
 
 import { defaultLanguage, allLanguages } from '@/locales/index.js';
 import numeralConstants from '@/consts/numeral.js';
@@ -62,6 +65,10 @@ import {
 
 import logger from './logger.js';
 import services from './services.js';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(updateLocale)
 
 function getLanguageDisplayName(translateFn, languageName) {
     return translateFn(`language.${languageName}`);
@@ -515,6 +522,8 @@ function getDateTimeFormats(translateFn, allFormatMap, allFormatArray, localeFor
 function getDateTimeFormat(translateFn, allFormatMap, allFormatArray, localeFormatPathPrefix, localeDefaultFormatTypeName, systemDefaultFormatType, formatTypeValue) {
     const type = getDateTimeFormatType(allFormatMap, allFormatArray,
         localeDefaultFormatTypeName, systemDefaultFormatType, formatTypeValue);
+    console.log("🚀", `${localeFormatPathPrefix}.${type.key}`)
+
     return translateFn(`${localeFormatPathPrefix}.${type.key}`);
 }
 
@@ -1604,7 +1613,7 @@ function setLanguage(i18nGlobal, locale, force) {
     logger.info(`Apply current language to ${locale}`);
 
     i18nGlobal.locale = locale;
-    moment.updateLocale(locale, {
+    dayjs.updateLocale(locale, {
         months : getAllLongMonthNames(i18nGlobal.t),
         monthsShort : getAllShortMonthNames(i18nGlobal.t),
         weekdays : getAllLongWeekdayNames(i18nGlobal.t),
@@ -1638,9 +1647,9 @@ function setLanguage(i18nGlobal, locale, force) {
 
 function setTimeZone(timezone) {
     if (timezone) {
-        moment.tz.setDefault(timezone);
+        dayjs.tz.setDefault(timezone);
     } else {
-        moment.tz.setDefault();
+        dayjs.tz.setDefault();
     }
 }
 
@@ -1658,7 +1667,7 @@ function initLocale(i18nGlobal, lastUserLanguage, timezone) {
         logger.info(`Current timezone is ${timezone}`);
         setTimeZone(timezone);
     } else {
-        logger.info(`No timezone is set, use browser default ${getTimezoneOffset()} (maybe ${moment.tz.guess(true)})`);
+        logger.info(`No timezone is set, use browser default ${getTimezoneOffset()} (maybe ${dayjs.tz.guess(true)})`);
     }
 
     return localeDefaultSettings;

@@ -279,10 +279,6 @@ const allAvailableTimezones = [
         timezoneName: 'Asia/Jerusalem'
     },
     {
-        displayName: 'Juba',
-        timezoneName: 'Asia/Juba'
-    },
-    {
         displayName: 'Kaliningrad',
         timezoneName: 'Europe/Kaliningrad'
     },

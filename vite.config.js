@@ -155,8 +155,8 @@ export default defineConfig(async () => {
                     manualChunks: function (id) {
                         if (/[\\/]node_modules[\\/]leaflet[\\/]/i.test(id)) {
                             return 'leaflet';
-                        } else if (/[\\/]node_modules[\\/](moment|moment-timezone)[\\/]/i.test(id)) {
-                            return 'moment';
+                        } else if (/[\\/]node_modules[\\/](dayjs)[\\/]/i.test(id)) {
+                            return 'dayjs';
                         } else if (/[\\/]node_modules[\\/](dom7|framework7.*|skeleton-elements|swiper)[\\/]/i.test(id)) {
                             return 'vendor-mobile';
                         } else if (/[\\/]node_modules[\\/](vuetify|vue-router|vue3-perfect-scrollbar|perfect-scrollbar|vuedraggable|sortablejs|@mdi.*)[\\/]/i.test(id)) {
