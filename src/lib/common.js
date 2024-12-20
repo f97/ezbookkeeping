@@ -155,12 +155,18 @@ export function getObjectOwnFieldCount(object) {
 }
 
 export function replaceAll(value, originalValue, targetValue) {
-    return value.replaceAll(new RegExp(originalValue, 'g'), targetValue);
+    // Escape special characters in originalValue to safely use it in a regex pattern.
+    // This ensures that characters like . (dot), * (asterisk), +, ?, etc. are treated literally,
+    // rather than as special regex symbols.
+    const escapedOriginalValue = originalValue.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, '\\$&');
+    
+    return value.replaceAll(new RegExp(escapedOriginalValue, 'g'), targetValue);
 }
 
 export function removeAll(value, originalValue) {
     return replaceAll(value, originalValue, '');
 }
+
 
 export function limitText(value, maxLength) {
     let length = 0;
