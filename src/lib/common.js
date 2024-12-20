@@ -158,7 +158,7 @@ export function replaceAll(value, originalValue, targetValue) {
     // Escape special characters in originalValue to safely use it in a regex pattern.
     // This ensures that characters like . (dot), * (asterisk), +, ?, etc. are treated literally,
     // rather than as special regex symbols.
-    const escapedOriginalValue = originalValue.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, '\\$&');
+    const escapedOriginalValue = originalValue.replace(/([.*+?^=!:${}()|\-/\\])/g, '\\$1');
     
     return value.replaceAll(new RegExp(escapedOriginalValue, 'g'), targetValue);
 }
