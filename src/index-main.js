@@ -1,7 +1,6 @@
 import uaParser from 'ua-parser-js';
 
 function isMobileDevice() {
-    return true:
     if (!navigator.userAgent) {
         return false;
     }
