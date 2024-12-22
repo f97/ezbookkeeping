@@ -116,7 +116,12 @@ func startWebServer(c *core.CliContext) error {
 	router.StaticFile("favicon.png", filepath.Join(config.StaticRootPath, "favicon.png"))
 	router.StaticFile("touchicon.png", filepath.Join(config.StaticRootPath, "touchicon.png"))
 	router.StaticFile("manifest.json", filepath.Join(config.StaticRootPath, "manifest.json"))
+	router.StaticFile("sw.js", filepath.Join(config.StaticRootPath, "sw.js"))
 	router.GET("/server_settings.js", bindCachedJs(api.ServerSettings.ServerSettingsJavascriptHandler, serverSettingsCacheStore))
+
+	for i := 0; i < len(workboxFileNames); i++ {
+		router.StaticFile("/"+workboxFileNames[i], filepath.Join(config.StaticRootPath, workboxFileNames[i]))
+	}
 
 	router.StaticFile("/mobile", filepath.Join(config.StaticRootPath, "mobile.html"))
 	router.Static("/mobile/js", filepath.Join(config.StaticRootPath, "js"))
