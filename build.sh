@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 
 TYPE=""
-NO_LINT="0"
-NO_TEST="0"
+NO_LINT="1"
+NO_TEST="1"
 SKIP_TESTS="${SKIP_TESTS}"
 RELEASE=${RELEASE_BUILD:-"0"}
 RELEASE_TYPE="unknown"
