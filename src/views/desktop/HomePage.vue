@@ -196,7 +196,8 @@ import { useUserStore } from '@/stores/user.js';
 import { useAccountsStore } from '@/stores/account.js';
 import { useOverviewStore } from '@/stores/overview.js';
 
-import datetimeConstants from '@/consts/datetime.js';
+import { DateRange } from '@/core/datetime.ts';
+import { ThemeType } from '@/core/theme.ts';
 import {
     formatUnixTime,
     getUnixTimeBeforeUnixTime,
@@ -245,7 +246,7 @@ export default {
     computed: {
         ...mapStores(useSettingsStore, useUserStore, useAccountsStore, useOverviewStore),
         isDarkMode() {
-            return this.globalTheme.global.name.value === 'dark';
+            return this.globalTheme.global.name.value === ThemeType.Dark;
         },
         showAmountInHomePage: {
             get: function() {
@@ -259,7 +260,7 @@ export default {
             return this.userStore.currentUserDefaultCurrency;
         },
         allDateRanges() {
-            return datetimeConstants.allDateRanges;
+            return DateRange.all();
         },
         allAccounts() {
             return this.accountsStore.allAccounts;
@@ -388,7 +389,7 @@ export default {
             const maxTime = getUnixTimeBeforeUnixTime(getUnixTimeAfterUnixTime(minTime, 1, 'months'), 1, 'seconds');
             const type = e.transactionType;
 
-            this.$router.push(`/transaction/list?type=${type}&dateType=${datetimeConstants.allDateRanges.Custom.type}&maxTime=${maxTime}&minTime=${minTime}`);
+            this.$router.push(`/transaction/list?type=${type}&dateType=${DateRange.Custom.type}&maxTime=${maxTime}&minTime=${minTime}`);
         },
         getDisplayCurrency(value, currencyCode) {
             return this.$locale.formatAmountWithCurrency(this.settingsStore, this.userStore, value, currencyCode);

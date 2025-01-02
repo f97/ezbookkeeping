@@ -59,8 +59,9 @@ import { useTheme } from 'vuetify';
 import { mapStores } from 'pinia';
 import { useUserStore } from '@/stores/user.js';
 
-import datetimeConstants from '@/consts/datetime.js';
-import { arrangeArrayWithNewStartIndex } from '@/lib/common.js';
+import { DateRange } from '@/core/datetime.ts';
+import { ThemeType } from '@/core/theme.ts';
+import { arrangeArrayWithNewStartIndex } from '@/lib/common.ts';
 import {
     getCurrentUnixTime,
     getCurrentYear,
@@ -122,7 +123,7 @@ export default {
             }
         },
         isDarkMode() {
-            return this.globalTheme.global.name.value === 'dark';
+            return this.globalTheme.global.name.value === ThemeType.Dark;
         },
         firstDayOfWeek() {
             return this.userStore.currentUserFirstDayOfWeek;
@@ -148,12 +149,12 @@ export default {
             const presetRanges = [];
 
             [
-                datetimeConstants.allDateRanges.Today,
-                datetimeConstants.allDateRanges.LastSevenDays,
-                datetimeConstants.allDateRanges.LastThirtyDays,
-                datetimeConstants.allDateRanges.ThisWeek,
-                datetimeConstants.allDateRanges.ThisMonth,
-                datetimeConstants.allDateRanges.ThisYear
+                DateRange.Today,
+                DateRange.LastSevenDays,
+                DateRange.LastThirtyDays,
+                DateRange.ThisWeek,
+                DateRange.ThisMonth,
+                DateRange.ThisYear
             ].forEach(dateRangeType => {
                 const dateRange = getDateRangeByDateType(dateRangeType.type, this.firstDayOfWeek);
 

@@ -413,12 +413,12 @@
 
                                                         <v-divider v-if="query.tagIds && query.tagIds !== 'none'" />
 
-                                                        <template :key="filterType.type"
-                                                                  v-for="filterType in allTransactionTagFilterTypes"
-                                                                  v-if="query.tagIds && query.tagIds !== 'none'">
+                                                        <template v-if="query.tagIds && query.tagIds !== 'none'">
                                                             <v-list-item class="text-sm" density="compact"
+                                                                         :key="filterType.type"
                                                                          :value="filterType.type"
-                                                                         :append-icon="(query.tagFilterType === filterType.type ? icons.check : null)">
+                                                                         :append-icon="(query.tagFilterType === filterType.type ? icons.check : null)"
+                                                                         v-for="filterType in allTransactionTagFilterTypes">
                                                                 <v-list-item-title class="cursor-pointer"
                                                                                    @click="changeTagFilterType(filterType.type)">
                                                                     <div class="d-flex align-center">
@@ -595,12 +595,12 @@ import { useTransactionTagsStore } from '@/stores/transactionTag.js';
 import { useTransactionsStore } from '@/stores/transaction.js';
 import { useTransactionTemplatesStore } from '@/stores/transactionTemplate.js';
 
+import { DateRangeScene, DateRange } from '@/core/datetime.ts';
+import { AccountType } from '@/core/account.ts';
+import { TransactionType, TransactionTagFilterType } from '@/core/transaction.ts';
+import { TemplateType }  from '@/core/template.ts';
 import numeralConstants from '@/consts/numeral.js';
-import datetimeConstants from '@/consts/datetime.js';
-import accountConstants from '@/consts/account.js';
-import transactionConstants from '@/consts/transaction.js';
-import templateConstants from '@/consts/template.js';
-import { isString, isNumber, getNameByKeyValue } from '@/lib/common.js';
+import { isString, isNumber, getNameByKeyValue } from '@/lib/common.ts';
 import logger from '@/lib/logger.js';
 import {
     getCurrentUnixTime,
@@ -629,8 +629,8 @@ import {
 } from '@/lib/category.js';
 import { getUnifiedSelectedAccountsCurrencyOrDefaultCurrency } from '@/lib/account.js';
 import { getTransactionDisplayAmount } from '@/lib/transaction.js';
-import { isDataImportingEnabled } from '@/lib/server_settings.js';
-import { scrollToSelectedItem } from '@/lib/ui.desktop.js';
+import { isDataImportingEnabled } from '@/lib/server_settings.ts';
+import { scrollToSelectedItem } from '@/lib/ui/desktop.js';
 
 import {
     mdiMagnify,
@@ -729,7 +729,7 @@ export default {
             if (this.query.accountIds && this.queryAllFilterAccountIdsCount === 1) {
                 const account = this.allAccounts[this.query.accountIds];
 
-                if (account && account.type === accountConstants.allAccountTypes.MultiSubAccounts) {
+                if (account && account.type === AccountType.MultiSubAccounts.type) {
                     return false;
                 }
             }
@@ -746,10 +746,10 @@ export default {
             return this.userStore.currentUserFirstDayOfWeek;
         },
         allDateRangesArray() {
-            return this.$locale.getAllDateRanges(datetimeConstants.allDateRangeScenes.Normal, true, !!this.accountsStore.getAccountStatementDate(this.query.accountIds));
+            return this.$locale.getAllDateRanges(DateRangeScene.Normal, true, !!this.accountsStore.getAccountStatementDate(this.query.accountIds));
         },
         allDateRanges() {
-            return datetimeConstants.allDateRanges;
+            return DateRange.all();
         },
         recentDateRangeType: {
             get: function () {
@@ -980,16 +980,16 @@ export default {
             return numeralConstants.allAmountFilterTypeArray;
         },
         allTransactionTypes() {
-            return transactionConstants.allTransactionTypes;
+            return TransactionType;
         },
         allTransactionTagFilterTypes() {
             const allTagFilterTypes = this.$locale.getAllTransactionTagFilterTypes();
             const allTagFilterTypesWithIcon = [];
             const tagFilterIconMap = {
-                [transactionConstants.allTransactionTagFilterTypes.HasAny.type]: this.icons.withAnyTags,
-                [transactionConstants.allTransactionTagFilterTypes.HasAll.type]: this.icons.withAllTags,
-                [transactionConstants.allTransactionTagFilterTypes.NotHasAny.type]: this.icons.withoutAnyTags,
-                [transactionConstants.allTransactionTagFilterTypes.NotHasAll.type]: this.icons.withoutAllTags
+                [TransactionTagFilterType.HasAny.type]: this.icons.withAnyTags,
+                [TransactionTagFilterType.HasAll.type]: this.icons.withAllTags,
+                [TransactionTagFilterType.NotHasAny.type]: this.icons.withoutAnyTags,
+                [TransactionTagFilterType.NotHasAll.type]: this.icons.withoutAllTags
             };
 
             for (let i = 0; i < allTagFilterTypes.length; i++) {
@@ -1055,7 +1055,7 @@ export default {
         },
         allTransactionTemplates() {
             const allVisibleTemplates = this.transactionTemplatesStore.allVisibleTemplates;
-            return allVisibleTemplates[templateConstants.allTemplateTypes.Normal] || [];
+            return allVisibleTemplates[TemplateType.Normal.type] || [];
         },
         recentMonthDateRanges() {
             return this.$locale.getAllRecentMonthDateRanges(this.userStore, true, true);
@@ -1118,7 +1118,7 @@ export default {
             let dateRange = getDateRangeByDateType(query.dateType ? parseInt(query.dateType) : undefined, this.firstDayOfWeek);
 
             if (!dateRange &&
-                (datetimeConstants.allBillingCycleDateRangesMap[query.dateType] || query.dateType === datetimeConstants.allDateRanges.Custom.type.toString()) &&
+                (DateRange.isBillingCycle(query.dateType) || query.dateType === DateRange.Custom.type.toString()) &&
                 parseInt(query.maxTime) > 0 && parseInt(query.minTime) > 0) {
                 dateRange = {
                     dateType: parseInt(query.dateType),
@@ -1147,7 +1147,7 @@ export default {
             this.reload(false);
 
             this.transactionTemplatesStore.loadAllTemplates({
-                templateType: templateConstants.allTemplateTypes.Normal,
+                templateType: TemplateType.Normal.type,
                 force: false
             });
         },
@@ -1208,18 +1208,18 @@ export default {
             });
         },
         shiftDateRange(startTime, endTime, scale) {
-            if (this.recentDateRangeType === datetimeConstants.allDateRanges.All.type) {
+            if (this.recentDateRangeType === DateRange.All.type) {
                 return;
             }
 
             let newDateRange = null;
 
-            if (datetimeConstants.allBillingCycleDateRangesMap[this.query.dateType] || this.query.dateType === this.allDateRanges.Custom.type) {
-                newDateRange = getShiftedDateRangeAndDateTypeForBillingCycle(startTime, endTime, scale, this.firstDayOfWeek, datetimeConstants.allDateRangeScenes.Normal, this.accountsStore.getAccountStatementDate(this.query.accountIds));
+            if (DateRange.isBillingCycle(this.query.dateType) || this.query.dateType === this.allDateRanges.Custom.type) {
+                newDateRange = getShiftedDateRangeAndDateTypeForBillingCycle(startTime, endTime, scale, this.firstDayOfWeek, DateRangeScene.Normal, this.accountsStore.getAccountStatementDate(this.query.accountIds));
             }
 
             if (!newDateRange) {
-                newDateRange = getShiftedDateRangeAndDateType(startTime, endTime, scale, this.firstDayOfWeek, datetimeConstants.allDateRangeScenes.Normal);
+                newDateRange = getShiftedDateRangeAndDateType(startTime, endTime, scale, this.firstDayOfWeek, DateRangeScene.Normal);
             }
 
             const changed = this.transactionsStore.updateTransactionListFilter({
@@ -1237,14 +1237,14 @@ export default {
         },
         changeDateFilter(dateRange) {
             if (isNumber(dateRange)) {
-                if (datetimeConstants.allBillingCycleDateRangesMap[dateRange]) {
+                if (DateRange.isBillingCycle(dateRange)) {
                     dateRange = getDateRangeByBillingCycleDateType(dateRange, this.firstDayOfWeek, this.accountsStore.getAccountStatementDate(this.query.accountIds));
                 } else {
                     dateRange = getDateRangeByDateType(dateRange, this.firstDayOfWeek);
                 }
             }
 
-            if (dateRange.dateType === datetimeConstants.allDateRanges.Custom.type &&
+            if (dateRange.dateType === DateRange.Custom.type &&
                 !dateRange.minTime && !dateRange.maxTime) { // Custom
                 if (!this.query.minTime || !this.query.maxTime) {
                     this.customMaxDatetime = getActualUnixTimeForStore(getCurrentUnixTime(), this.currentTimezoneOffsetMinutes, getBrowserTimezoneOffsetMinutes());
@@ -1280,10 +1280,10 @@ export default {
                 return;
             }
 
-            let dateType = getDateTypeByBillingCycleDateRange(minTime, maxTime, this.firstDayOfWeek, datetimeConstants.allDateRangeScenes.Normal, this.accountsStore.getAccountStatementDate(this.query.accountIds));
+            let dateType = getDateTypeByBillingCycleDateRange(minTime, maxTime, this.firstDayOfWeek, DateRangeScene.Normal, this.accountsStore.getAccountStatementDate(this.query.accountIds));
 
             if (!dateType) {
-                dateType = getDateTypeByDateRange(minTime, maxTime, this.firstDayOfWeek, datetimeConstants.allDateRangeScenes.Normal);
+                dateType = getDateTypeByDateRange(minTime, maxTime, this.firstDayOfWeek, DateRangeScene.Normal);
             }
 
             if (this.query.dateType === dateType && this.query.maxTime === maxTime && this.query.minTime === minTime) {
@@ -1312,7 +1312,7 @@ export default {
             if (type && this.query.categoryIds) {
                 newCategoryFilter = '';
 
-                for (let categoryId in this.queryAllFilterCategoryIds) {
+                for (const categoryId in this.queryAllFilterCategoryIds) {
                     if (!Object.prototype.hasOwnProperty.call(this.queryAllFilterCategoryIds, categoryId)) {
                         continue;
                     }

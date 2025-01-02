@@ -331,9 +331,9 @@ import { useAccountsStore } from '@/stores/account.js';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.js';
 import { useStatisticsStore } from '@/stores/statistics.js';
 
-import datetimeConstants from '@/consts/datetime.js';
+import { DateRangeScene, DateRange } from '@/core/datetime.ts';
 import statisticsConstants from '@/consts/statistics.js';
-import { getNameByKeyValue, limitText } from '@/lib/common.js';
+import { getNameByKeyValue, limitText } from '@/lib/common.ts';
 import { formatPercent } from '@/lib/numeral.js';
 import {
     getYearAndMonthFromUnixTime,
@@ -344,7 +344,7 @@ import {
     getDateRangeByDateType
 } from '@/lib/datetime.js';
 import { isChartDataTypeAvailableForAnalysisType } from '@/lib/statistics.js';
-import { scrollToSelectedItem } from '@/lib/ui.mobile.js';
+import { scrollToSelectedItem } from '@/lib/ui/mobile.js';
 
 export default {
     props: [
@@ -458,13 +458,13 @@ export default {
             return this.$locale.getAllStatisticsDateAggregationTypes();
         },
         allDateRanges() {
-            return datetimeConstants.allDateRanges;
+            return DateRange.all();
         },
         allDateRangesArray() {
             if (this.analysisType === statisticsConstants.allAnalysisTypes.CategoricalAnalysis) {
-                return this.$locale.getAllDateRanges(datetimeConstants.allDateRangeScenes.Normal, true);
+                return this.$locale.getAllDateRanges(DateRangeScene.Normal, true);
             } else if (this.analysisType === statisticsConstants.allAnalysisTypes.TrendAnalysis) {
-                return this.$locale.getAllDateRanges(datetimeConstants.allDateRangeScenes.TrendAnalysis, true);
+                return this.$locale.getAllDateRanges(DateRangeScene.TrendAnalysis, true);
             } else {
                 return [];
             }
@@ -711,7 +711,7 @@ export default {
             let changed = false;
 
             if (this.analysisType === statisticsConstants.allAnalysisTypes.CategoricalAnalysis) {
-                const chartDateType = getDateTypeByDateRange(startTime, endTime, this.firstDayOfWeek, datetimeConstants.allDateRangeScenes.Normal);
+                const chartDateType = getDateTypeByDateRange(startTime, endTime, this.firstDayOfWeek, DateRangeScene.Normal);
 
                 changed = this.statisticsStore.updateTransactionStatisticsFilter({
                     categoricalChartDateType: chartDateType,
@@ -721,7 +721,7 @@ export default {
 
                 this.showCustomDateRangeSheet = false;
             } else if (this.analysisType === statisticsConstants.allAnalysisTypes.TrendAnalysis) {
-                const chartDateType = getDateTypeByDateRange(getYearMonthFirstUnixTime(startTime), getYearMonthLastUnixTime(endTime), this.firstDayOfWeek, datetimeConstants.allDateRangeScenes.TrendAnalysis);
+                const chartDateType = getDateTypeByDateRange(getYearMonthFirstUnixTime(startTime), getYearMonthLastUnixTime(endTime), this.firstDayOfWeek, DateRangeScene.TrendAnalysis);
 
                 this.statisticsStore.updateTransactionStatisticsFilter({
                     trendChartDateType: chartDateType,
@@ -766,7 +766,7 @@ export default {
             let changed = false;
 
             if (this.analysisType === statisticsConstants.allAnalysisTypes.CategoricalAnalysis) {
-                const newDateRange = getShiftedDateRangeAndDateType(query.categoricalChartStartTime, query.categoricalChartEndTime, scale, this.firstDayOfWeek, datetimeConstants.allDateRangeScenes.Normal);
+                const newDateRange = getShiftedDateRangeAndDateType(query.categoricalChartStartTime, query.categoricalChartEndTime, scale, this.firstDayOfWeek, DateRangeScene.Normal);
 
                 changed = this.statisticsStore.updateTransactionStatisticsFilter({
                     categoricalChartDateType: newDateRange.dateType,
@@ -774,7 +774,7 @@ export default {
                     categoricalChartEndTime: newDateRange.maxTime
                 });
             } else if (this.analysisType === statisticsConstants.allAnalysisTypes.TrendAnalysis) {
-                const newDateRange = getShiftedDateRangeAndDateType(getYearMonthFirstUnixTime(query.trendChartStartYearMonth), getYearMonthLastUnixTime(query.trendChartEndYearMonth), scale, this.firstDayOfWeek, datetimeConstants.allDateRangeScenes.TrendAnalysis);
+                const newDateRange = getShiftedDateRangeAndDateType(getYearMonthFirstUnixTime(query.trendChartStartYearMonth), getYearMonthLastUnixTime(query.trendChartEndYearMonth), scale, this.firstDayOfWeek, DateRangeScene.TrendAnalysis);
 
                 changed = this.statisticsStore.updateTransactionStatisticsFilter({
                     trendChartDateType: newDateRange.dateType,

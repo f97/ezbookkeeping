@@ -323,14 +323,15 @@ import { useAccountsStore } from '@/stores/account.js';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.js';
 import { useStatisticsStore } from '@/stores/statistics.js';
 
-import datetimeConstants from '@/consts/datetime.js';
+import { DateRangeScene, DateRange } from '@/core/datetime.ts';
+import { ThemeType } from '@/core/theme.ts';
 import statisticsConstants from '@/consts/statistics.js';
 import {
     isDefined,
     limitText,
     getNameByKeyValue,
     arrayItemToObjectField
-} from '@/lib/common.js'
+} from '@/lib/common.ts'
 import { formatPercent } from '@/lib/numeral.js';
 import {
     getYearAndMonthFromUnixTime,
@@ -414,7 +415,7 @@ export default {
     computed: {
         ...mapStores(useSettingsStore, useUserStore, useAccountsStore, useTransactionCategoriesStore, useStatisticsStore),
         isDarkMode() {
-            return this.globalTheme.global.name.value === 'dark';
+            return this.globalTheme.global.name.value === ThemeType.Dark;
         },
         defaultCurrency() {
             return this.userStore.currentUserDefaultCurrency;
@@ -524,13 +525,13 @@ export default {
             return this.$locale.getAllStatisticsDateAggregationTypes();
         },
         allDateRanges() {
-            return datetimeConstants.allDateRanges;
+            return DateRange.all();
         },
         allDateRangesArray() {
             if (this.queryAnalysisType === statisticsConstants.allAnalysisTypes.CategoricalAnalysis) {
-                return this.$locale.getAllDateRanges(datetimeConstants.allDateRangeScenes.Normal, true);
+                return this.$locale.getAllDateRanges(DateRangeScene.Normal, true);
             } else if (this.queryAnalysisType === statisticsConstants.allAnalysisTypes.TrendAnalysis) {
-                return this.$locale.getAllDateRanges(datetimeConstants.allDateRangeScenes.TrendAnalysis, true);
+                return this.$locale.getAllDateRanges(DateRangeScene.TrendAnalysis, true);
             } else {
                 return [];
             }
@@ -669,7 +670,7 @@ export default {
 
                 if (filter.categoricalChartDateType !== self.query.categoricalChartDateType) {
                     needReload = true;
-                } else if (filter.categoricalChartDateType === datetimeConstants.allDateRanges.Custom.type) {
+                } else if (filter.categoricalChartDateType === DateRange.Custom.type) {
                     if (filter.categoricalChartStartTime !== self.query.categoricalChartStartTime
                         || filter.categoricalChartEndTime !== self.query.categoricalChartEndTime) {
                         needReload = true;
@@ -688,7 +689,7 @@ export default {
 
                 if (filter.trendChartDateType !== self.query.trendChartDateType) {
                     needReload = true;
-                } else if (filter.trendChartDateType === datetimeConstants.allDateRanges.Custom.type) {
+                } else if (filter.trendChartDateType === DateRange.Custom.type) {
                     if (filter.trendChartStartYearMonth !== self.query.trendChartStartYearMonth
                         || filter.trendChartEndYearMonth !== self.query.trendChartEndYearMonth) {
                         needReload = true;
@@ -912,7 +913,7 @@ export default {
             let changed = false;
 
             if (this.queryAnalysisType === statisticsConstants.allAnalysisTypes.CategoricalAnalysis) {
-                const chartDateType = getDateTypeByDateRange(startTime, endTime, this.firstDayOfWeek, datetimeConstants.allDateRangeScenes.Normal);
+                const chartDateType = getDateTypeByDateRange(startTime, endTime, this.firstDayOfWeek, DateRangeScene.Normal);
 
                 changed = this.statisticsStore.updateTransactionStatisticsFilter({
                     categoricalChartDateType: chartDateType,
@@ -922,7 +923,7 @@ export default {
 
                 this.showCustomDateRangeDialog = false;
             } else if (this.queryAnalysisType === statisticsConstants.allAnalysisTypes.TrendAnalysis) {
-                const chartDateType = getDateTypeByDateRange(getYearMonthFirstUnixTime(startTime), getYearMonthLastUnixTime(endTime), this.firstDayOfWeek, datetimeConstants.allDateRangeScenes.TrendAnalysis);
+                const chartDateType = getDateTypeByDateRange(getYearMonthFirstUnixTime(startTime), getYearMonthLastUnixTime(endTime), this.firstDayOfWeek, DateRangeScene.TrendAnalysis);
 
                 changed = this.statisticsStore.updateTransactionStatisticsFilter({
                     trendChartDateType: chartDateType,
@@ -969,7 +970,7 @@ export default {
             let changed = false;
 
             if (this.queryAnalysisType === statisticsConstants.allAnalysisTypes.CategoricalAnalysis) {
-                const newDateRange = getShiftedDateRangeAndDateType(this.query.categoricalChartStartTime, this.query.categoricalChartEndTime, scale, this.firstDayOfWeek, datetimeConstants.allDateRangeScenes.Normal);
+                const newDateRange = getShiftedDateRangeAndDateType(this.query.categoricalChartStartTime, this.query.categoricalChartEndTime, scale, this.firstDayOfWeek, DateRangeScene.Normal);
 
                 changed = this.statisticsStore.updateTransactionStatisticsFilter({
                     categoricalChartDateType: newDateRange.dateType,
@@ -977,7 +978,7 @@ export default {
                     categoricalChartEndTime: newDateRange.maxTime
                 });
             } else if (this.queryAnalysisType === statisticsConstants.allAnalysisTypes.TrendAnalysis) {
-                const newDateRange = getShiftedDateRangeAndDateType(getYearMonthFirstUnixTime(this.query.trendChartStartYearMonth), getYearMonthLastUnixTime(this.query.trendChartEndYearMonth), scale, this.firstDayOfWeek, datetimeConstants.allDateRangeScenes.TrendAnalysis);
+                const newDateRange = getShiftedDateRangeAndDateType(getYearMonthFirstUnixTime(this.query.trendChartStartYearMonth), getYearMonthLastUnixTime(this.query.trendChartEndYearMonth), scale, this.firstDayOfWeek, DateRangeScene.TrendAnalysis);
 
                 changed = this.statisticsStore.updateTransactionStatisticsFilter({
                     trendChartDateType: newDateRange.dateType,

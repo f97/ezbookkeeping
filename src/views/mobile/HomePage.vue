@@ -207,8 +207,8 @@ import { useUserStore } from '@/stores/user.js';
 import { useTransactionTemplatesStore } from '@/stores/transactionTemplate.js';
 import { useOverviewStore } from '@/stores/overview.js';
 
-import datetimeConstants from '@/consts/datetime.js';
-import templateConstants from '@/consts/template.js';
+import { DateRange } from '@/core/datetime.ts';
+import { TemplateType } from '@/core/template.ts';
 import { formatUnixTime } from '@/lib/datetime.js';
 
 export default {
@@ -236,10 +236,10 @@ export default {
         },
         allTransactionTemplates() {
             const allTemplates = this.transactionTemplatesStore.allVisibleTemplates;
-            return allTemplates[templateConstants.allTemplateTypes.Normal] || [];
+            return allTemplates[TemplateType.Normal.type] || [];
         },
         allDateRanges() {
-            return datetimeConstants.allDateRanges;
+            return DateRange.all();
         },
         displayDateRange() {
             const self = this;
@@ -285,7 +285,7 @@ export default {
             });
 
             self.transactionTemplatesStore.loadAllTemplates({
-                templateType: templateConstants.allTemplateTypes.Normal,
+                templateType: TemplateType.Normal.type,
                 force: false
             });
         }

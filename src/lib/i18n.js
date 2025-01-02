@@ -1,28 +1,32 @@
 import moment from 'moment-timezone';
 
-import { defaultLanguage, allLanguages } from '@/locales/index.js';
+import { defaultLanguage, allLanguages } from '@/locales/index.ts';
+
+import { Month, WeekDay, MeridiemIndicator, LongDateFormat, ShortDateFormat, LongTimeFormat, ShortTimeFormat, DateRangeScene, DateRange, LANGUAGE_DEFAULT_DATE_TIME_FORMAT_VALUE } from '@/core/datetime.ts';
+import { TimezoneTypeForStatistics } from '@/core/timezone.ts';
+import { CurrencyDisplayType, CurrencySortingType } from '@/core/currency.ts';
+import { PresetAmountColor } from '@/core/color.ts';
+import { AccountType, AccountCategory } from '@/core/account.ts';
+import { CategoryType } from '@/core/category.ts';
+import { TransactionEditScopeType, TransactionTagFilterType } from '@/core/transaction.ts';
+import { ScheduledTemplateFrequencyType } from '@/core/template.ts';
+
 import numeralConstants from '@/consts/numeral.js';
-import datetimeConstants from '@/consts/datetime.js';
-import timezoneConstants from '@/consts/timezone.js';
-import currencyConstants from '@/consts/currency.js';
-import colorConstants from '@/consts/color.js';
-import accountConstants from '@/consts/account.js';
-import fileConstants from '@/consts/file.js';
-import categoryConstants from '@/consts/category.js';
-import transactionConstants from '@/consts/transaction.js';
-import templateConstants from '@/consts/template.js';
+import { UTC_TIMEZONE, ALL_TIMEZONES } from '@/consts/timezone.ts';
+import { ALL_CURRENCIES } from '@/consts/currency.ts';
+import { SUPPORTED_IMPORT_FILE_TYPES } from '@/consts/file.ts';
+import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES, DEFAULT_TRANSFER_CATEGORIES } from '@/consts/category.ts';
 import statisticsConstants from '@/consts/statistics.js';
-import apiConstants from '@/consts/api.js';
+import { KnownErrorCode, SPECIFIED_API_NOT_FOUND_ERRORS, PARAMETERIZED_ERRORS } from '@/consts/api.ts';
 
 import {
     isDefined,
     isString,
     isNumber,
     isBoolean,
-    getNameByKeyValue,
     copyObjectTo,
     copyArrayTo
-} from './common.js';
+} from './common.ts';
 
 import {
     isPM,
@@ -53,7 +57,7 @@ import {
     getCurrencyFraction,
     appendCurrencySymbol,
     getAmountPrependAndAppendCurrencySymbol
-} from './currency.js';
+} from './currency.ts';
 
 import {
     getCategorizedAccountsMap,
@@ -201,6 +205,21 @@ function getCurrentLanguageDisplayName(i18nGlobal) {
     return currentLanguageInfo.displayName;
 }
 
+function getLocalizedDisplayNameAndType(typeAndNames, translateFn) {
+    const ret = [];
+
+    for (let i = 0; i < typeAndNames.length; i++) {
+        const nameAndType = typeAndNames[i];
+
+        ret.push({
+            type: nameAndType.type,
+            displayName: translateFn(nameAndType.name)
+        });
+    }
+
+    return ret;
+}
+
 function getDefaultCurrency(translateFn) {
     return translateFn('default.currency');
 }
@@ -214,7 +233,7 @@ function getCurrencyName(currencyCode, translateFn) {
 }
 
 function getCurrencyUnitName(currencyCode, isPlural, translateFn) {
-    const currencyInfo = currencyConstants.all[currencyCode];
+    const currencyInfo = ALL_CURRENCIES[currencyCode];
 
     if (currencyInfo && currencyInfo.unit) {
         if (isPlural) {
@@ -227,90 +246,102 @@ function getCurrencyUnitName(currencyCode, isPlural, translateFn) {
     return '';
 }
 
-function getAllMeridiemIndicatorNames(translateFn) {
-    const allMeridiemIndicatorNames = [];
+function getAllMeridiemIndicators(translateFn) {
+    const allMeridiemIndicators = MeridiemIndicator.values();
+    const meridiemIndicatorNames = [];
+    const localizedMeridiemIndicatorNames = [];
 
-    for (let i = 0; i < datetimeConstants.allMeridiemIndicatorsArray.length; i++) {
-        const indicatorName = datetimeConstants.allMeridiemIndicatorsArray[i];
-        allMeridiemIndicatorNames.push(translateFn(`datetime.${indicatorName}.content`));
+    for (let i = 0; i < allMeridiemIndicators.length; i++) {
+        const indicator = allMeridiemIndicators[i];
+
+        meridiemIndicatorNames.push(indicator.name);
+        localizedMeridiemIndicatorNames.push(translateFn(`datetime.${indicator.name}.content`));
     }
 
-    return allMeridiemIndicatorNames;
+    return {
+        values: meridiemIndicatorNames,
+        displayValues: localizedMeridiemIndicatorNames
+    };
 }
 
 function getAllLongMonthNames(translateFn) {
-    const allMonthNames = [];
+    const ret = [];
+    const allMonths = Month.values();
 
-    for (let i = 0; i < datetimeConstants.allMonthsArray.length; i++) {
-        const monthName = datetimeConstants.allMonthsArray[i];
-        allMonthNames.push(translateFn(`datetime.${monthName}.long`));
+    for (let i = 0; i < allMonths.length; i++) {
+        const month = allMonths[i];
+        ret.push(translateFn(`datetime.${month.name}.long`));
     }
 
-    return allMonthNames;
+    return ret;
 }
 
 function getAllShortMonthNames(translateFn) {
-    const allMonthNames = [];
+    const ret = [];
+    const allMonths = Month.values();
 
-    for (let i = 0; i < datetimeConstants.allMonthsArray.length; i++) {
-        const monthName = datetimeConstants.allMonthsArray[i];
-        allMonthNames.push(translateFn(`datetime.${monthName}.short`));
+    for (let i = 0; i < allMonths.length; i++) {
+        const month = allMonths[i];
+        ret.push(translateFn(`datetime.${month.name}.short`));
     }
 
-    return allMonthNames;
+    return ret;
 }
 
 function getAllLongWeekdayNames(translateFn) {
-    const allWeekNames = [];
+    const ret = [];
+    const allWeekDays = WeekDay.values();
 
-    for (let i = 0; i < datetimeConstants.allWeekDaysArray.length; i++) {
-        const weekDay = datetimeConstants.allWeekDaysArray[i];
-        allWeekNames.push(translateFn(`datetime.${weekDay.name}.long`));
+    for (let i = 0; i < allWeekDays.length; i++) {
+        const weekDay = allWeekDays[i];
+        ret.push(translateFn(`datetime.${weekDay.name}.long`));
     }
 
-    return allWeekNames;
+    return ret;
 }
 
 function getAllShortWeekdayNames(translateFn) {
-    const allWeekNames = [];
+    const ret = [];
+    const allWeekDays = WeekDay.values();
 
-    for (let i = 0; i < datetimeConstants.allWeekDaysArray.length; i++) {
-        const weekDay = datetimeConstants.allWeekDaysArray[i];
-        allWeekNames.push(translateFn(`datetime.${weekDay.name}.short`));
+    for (let i = 0; i < allWeekDays.length; i++) {
+        const weekDay = allWeekDays[i];
+        ret.push(translateFn(`datetime.${weekDay.name}.short`));
     }
 
-    return allWeekNames;
+    return ret;
 }
 
 function getAllMinWeekdayNames(translateFn) {
-    const allWeekNames = [];
+    const ret = [];
+    const allWeekDays = WeekDay.values();
 
-    for (let i = 0; i < datetimeConstants.allWeekDaysArray.length; i++) {
-        const weekDay = datetimeConstants.allWeekDaysArray[i];
-        allWeekNames.push(translateFn(`datetime.${weekDay.name}.min`));
+    for (let i = 0; i < allWeekDays.length; i++) {
+        const weekDay = allWeekDays[i];
+        ret.push(translateFn(`datetime.${weekDay.name}.min`));
     }
 
-    return allWeekNames;
+    return ret;
 }
 
 function getAllLongDateFormats(translateFn) {
     const defaultLongDateFormatTypeName = translateFn('default.longDateFormat');
-    return getDateTimeFormats(translateFn, datetimeConstants.allLongDateFormat, datetimeConstants.allLongDateFormatArray, 'format.longDate', defaultLongDateFormatTypeName, datetimeConstants.defaultLongDateFormat);
+    return getDateTimeFormats(translateFn, LongDateFormat.all(), LongDateFormat.values(), 'format.longDate', defaultLongDateFormatTypeName, LongDateFormat.Default);
 }
 
 function getAllShortDateFormats(translateFn) {
     const defaultShortDateFormatTypeName = translateFn('default.shortDateFormat');
-    return getDateTimeFormats(translateFn, datetimeConstants.allShortDateFormat, datetimeConstants.allShortDateFormatArray, 'format.shortDate', defaultShortDateFormatTypeName, datetimeConstants.defaultShortDateFormat);
+    return getDateTimeFormats(translateFn, ShortDateFormat.all(), ShortDateFormat.values(), 'format.shortDate', defaultShortDateFormatTypeName, ShortDateFormat.Default);
 }
 
 function getAllLongTimeFormats(translateFn) {
     const defaultLongTimeFormatTypeName = translateFn('default.longTimeFormat');
-    return getDateTimeFormats(translateFn, datetimeConstants.allLongTimeFormat, datetimeConstants.allLongTimeFormatArray, 'format.longTime', defaultLongTimeFormatTypeName, datetimeConstants.defaultLongTimeFormat);
+    return getDateTimeFormats(translateFn, LongTimeFormat.values(), LongTimeFormat.values(), 'format.longTime', defaultLongTimeFormatTypeName, LongTimeFormat.Default);
 }
 
 function getAllShortTimeFormats(translateFn) {
     const defaultShortTimeFormatTypeName = translateFn('default.shortTimeFormat');
-    return getDateTimeFormats(translateFn, datetimeConstants.allShortTimeFormat, datetimeConstants.allShortTimeFormatArray, 'format.shortTime', defaultShortTimeFormatTypeName, datetimeConstants.defaultShortTimeFormat);
+    return getDateTimeFormats(translateFn, ShortTimeFormat.values(), ShortTimeFormat.values(), 'format.shortTime', defaultShortTimeFormatTypeName, ShortTimeFormat.Default);
 }
 
 function getMonthShortName(monthName, translateFn) {
@@ -360,96 +391,89 @@ function getMultiMonthdayShortNames(monthDays, translateFn) {
 
 function getMultiWeekdayLongNames(weekdayTypes, firstDayOfWeek, translateFn) {
     const weekdayTypesMap = {};
-    const finalWeekdayTypes = [];
 
     if (!isNumber(firstDayOfWeek)) {
-        firstDayOfWeek = datetimeConstants.allWeekDays.Sunday.type;
+        firstDayOfWeek = WeekDay.DefaultFirstDay.type;
     }
 
     for (let i = 0; i < weekdayTypes.length; i++) {
         weekdayTypesMap[weekdayTypes[i]] = true;
     }
 
-    for (let i = firstDayOfWeek; i < datetimeConstants.allWeekDaysArray.length; i++) {
-        const weekDay = datetimeConstants.allWeekDaysArray[i];
+    const allWeekDays = getAllWeekDays(firstDayOfWeek, translateFn);
+    const finalWeekdayNames = [];
+
+    for (let i = 0; i < allWeekDays.length; i++) {
+        const weekDay = allWeekDays[i];
 
         if (weekdayTypesMap[weekDay.type]) {
-            finalWeekdayTypes.push(weekDay.type);
+            finalWeekdayNames.push(weekDay.displayName);
         }
     }
 
-    for (let i = 0; i < firstDayOfWeek; i++) {
-        const weekDay = datetimeConstants.allWeekDaysArray[i];
-
-        if (weekdayTypesMap[weekDay.type]) {
-            finalWeekdayTypes.push(weekDay.type);
-        }
-    }
-
-    const allWeekDays = getAllWeekDays(null, translateFn)
-    return joinMultiText(finalWeekdayTypes.map(type => getNameByKeyValue(allWeekDays, type, 'type', 'displayName')), translateFn);
+    return joinMultiText(finalWeekdayNames, translateFn);
 }
 
 function getI18nLongDateFormat(translateFn, formatTypeValue) {
     const defaultLongDateFormatTypeName = translateFn('default.longDateFormat');
-    return getDateTimeFormat(translateFn, datetimeConstants.allLongDateFormat, datetimeConstants.allLongDateFormatArray, 'format.longDate', defaultLongDateFormatTypeName, datetimeConstants.defaultLongDateFormat, formatTypeValue);
+    return getDateTimeFormat(translateFn, LongDateFormat.all(), LongDateFormat.values(), 'format.longDate', defaultLongDateFormatTypeName, LongDateFormat.Default, formatTypeValue);
 }
 
 function getI18nShortDateFormat(translateFn, formatTypeValue) {
     const defaultShortDateFormatTypeName = translateFn('default.shortDateFormat');
-    return getDateTimeFormat(translateFn, datetimeConstants.allShortDateFormat, datetimeConstants.allShortDateFormatArray, 'format.shortDate', defaultShortDateFormatTypeName, datetimeConstants.defaultShortDateFormat, formatTypeValue);
+    return getDateTimeFormat(translateFn, ShortDateFormat.all(), ShortDateFormat.values(), 'format.shortDate', defaultShortDateFormatTypeName, ShortDateFormat.Default, formatTypeValue);
 }
 
 function getI18nLongYearFormat(translateFn, formatTypeValue) {
     const defaultLongDateFormatTypeName = translateFn('default.longDateFormat');
-    return getDateTimeFormat(translateFn, datetimeConstants.allLongDateFormat, datetimeConstants.allLongDateFormatArray, 'format.longYear', defaultLongDateFormatTypeName, datetimeConstants.defaultLongDateFormat, formatTypeValue);
+    return getDateTimeFormat(translateFn, LongDateFormat.all(), LongDateFormat.values(), 'format.longYear', defaultLongDateFormatTypeName, LongDateFormat.Default, formatTypeValue);
 }
 
 function getI18nShortYearFormat(translateFn, formatTypeValue) {
     const defaultShortDateFormatTypeName = translateFn('default.shortDateFormat');
-    return getDateTimeFormat(translateFn, datetimeConstants.allShortDateFormat, datetimeConstants.allShortDateFormatArray, 'format.shortYear', defaultShortDateFormatTypeName, datetimeConstants.defaultShortDateFormat, formatTypeValue);
+    return getDateTimeFormat(translateFn, ShortDateFormat.all(), ShortDateFormat.values(), 'format.shortYear', defaultShortDateFormatTypeName, ShortDateFormat.Default, formatTypeValue);
 }
 
 function getI18nLongYearMonthFormat(translateFn, formatTypeValue) {
     const defaultLongDateFormatTypeName = translateFn('default.longDateFormat');
-    return getDateTimeFormat(translateFn, datetimeConstants.allLongDateFormat, datetimeConstants.allLongDateFormatArray, 'format.longYearMonth', defaultLongDateFormatTypeName, datetimeConstants.defaultLongDateFormat, formatTypeValue);
+    return getDateTimeFormat(translateFn, LongDateFormat.all(), LongDateFormat.values(), 'format.longYearMonth', defaultLongDateFormatTypeName, LongDateFormat.Default, formatTypeValue);
 }
 
 function getI18nShortYearMonthFormat(translateFn, formatTypeValue) {
     const defaultShortDateFormatTypeName = translateFn('default.shortDateFormat');
-    return getDateTimeFormat(translateFn, datetimeConstants.allShortDateFormat, datetimeConstants.allShortDateFormatArray, 'format.shortYearMonth', defaultShortDateFormatTypeName, datetimeConstants.defaultShortDateFormat, formatTypeValue);
+    return getDateTimeFormat(translateFn, ShortDateFormat.all(), ShortDateFormat.values(), 'format.shortYearMonth', defaultShortDateFormatTypeName, ShortDateFormat.Default, formatTypeValue);
 }
 
 function getI18nLongMonthDayFormat(translateFn, formatTypeValue) {
     const defaultLongDateFormatTypeName = translateFn('default.longDateFormat');
-    return getDateTimeFormat(translateFn, datetimeConstants.allLongDateFormat, datetimeConstants.allLongDateFormatArray, 'format.longMonthDay', defaultLongDateFormatTypeName, datetimeConstants.defaultLongDateFormat, formatTypeValue);
+    return getDateTimeFormat(translateFn, LongDateFormat.all(), LongDateFormat.values(), 'format.longMonthDay', defaultLongDateFormatTypeName, LongDateFormat.Default, formatTypeValue);
 }
 
 function getI18nShortMonthDayFormat(translateFn, formatTypeValue) {
     const defaultShortDateFormatTypeName = translateFn('default.shortDateFormat');
-    return getDateTimeFormat(translateFn, datetimeConstants.allShortDateFormat, datetimeConstants.allShortDateFormatArray, 'format.shortMonthDay', defaultShortDateFormatTypeName, datetimeConstants.defaultShortDateFormat, formatTypeValue);
+    return getDateTimeFormat(translateFn, ShortDateFormat.all(), ShortDateFormat.values(), 'format.shortMonthDay', defaultShortDateFormatTypeName, ShortDateFormat.Default, formatTypeValue);
 }
 
 function isLongDateMonthAfterYear(translateFn, formatTypeValue) {
     const defaultLongDateFormatTypeName = translateFn('default.longDateFormat');
-    const type = getDateTimeFormatType(datetimeConstants.allLongDateFormat, datetimeConstants.allLongDateFormatArray, defaultLongDateFormatTypeName, datetimeConstants.defaultLongDateFormat, formatTypeValue);
+    const type = getDateTimeFormatType(LongDateFormat.all(), LongDateFormat.values(), defaultLongDateFormatTypeName, LongDateFormat.Default, formatTypeValue);
     return type.isMonthAfterYear;
 }
 
 function isShortDateMonthAfterYear(translateFn, formatTypeValue) {
     const defaultShortDateFormatTypeName = translateFn('default.shortDateFormat');
-    const type = getDateTimeFormatType(datetimeConstants.allShortDateFormat, datetimeConstants.allShortDateFormatArray, defaultShortDateFormatTypeName, datetimeConstants.defaultShortDateFormat, formatTypeValue);
+    const type = getDateTimeFormatType(ShortDateFormat.all(), ShortDateFormat.values(), defaultShortDateFormatTypeName, ShortDateFormat.Default, formatTypeValue);
     return type.isMonthAfterYear;
 }
 
 function getI18nLongTimeFormat(translateFn, formatTypeValue) {
     const defaultLongTimeFormatTypeName = translateFn('default.longTimeFormat');
-    return getDateTimeFormat(translateFn, datetimeConstants.allLongTimeFormat, datetimeConstants.allLongTimeFormatArray, 'format.longTime', defaultLongTimeFormatTypeName, datetimeConstants.defaultLongTimeFormat, formatTypeValue);
+    return getDateTimeFormat(translateFn, LongTimeFormat.values(), LongTimeFormat.values(), 'format.longTime', defaultLongTimeFormatTypeName, LongTimeFormat.Default, formatTypeValue);
 }
 
 function getI18nShortTimeFormat(translateFn, formatTypeValue) {
     const defaultShortTimeFormatTypeName = translateFn('default.shortTimeFormat');
-    return getDateTimeFormat(translateFn, datetimeConstants.allShortTimeFormat, datetimeConstants.allShortTimeFormatArray, 'format.shortTime', defaultShortTimeFormatTypeName, datetimeConstants.defaultShortTimeFormat, formatTypeValue);
+    return getDateTimeFormat(translateFn, ShortTimeFormat.values(), ShortTimeFormat.values(), 'format.shortTime', defaultShortTimeFormatTypeName, ShortTimeFormat.Default, formatTypeValue);
 }
 
 function formatYearQuarter(translateFn, year, quarter) {
@@ -465,35 +489,35 @@ function formatYearQuarter(translateFn, year, quarter) {
 
 function isLongTime24HourFormat(translateFn, formatTypeValue) {
     const defaultLongTimeFormatTypeName = translateFn('default.longTimeFormat');
-    const type = getDateTimeFormatType(datetimeConstants.allLongTimeFormat, datetimeConstants.allLongTimeFormatArray, defaultLongTimeFormatTypeName, datetimeConstants.defaultLongTimeFormat, formatTypeValue);
+    const type = getDateTimeFormatType(LongTimeFormat.values(), LongTimeFormat.values(), defaultLongTimeFormatTypeName, LongTimeFormat.Default, formatTypeValue);
     return type.is24HourFormat;
 }
 
 function isLongTimeMeridiemIndicatorFirst(translateFn, formatTypeValue) {
     const defaultLongTimeFormatTypeName = translateFn('default.longTimeFormat');
-    const type = getDateTimeFormatType(datetimeConstants.allLongTimeFormat, datetimeConstants.allLongTimeFormatArray, defaultLongTimeFormatTypeName, datetimeConstants.defaultLongTimeFormat, formatTypeValue);
+    const type = getDateTimeFormatType(LongTimeFormat.values(), LongTimeFormat.values(), defaultLongTimeFormatTypeName, LongTimeFormat.Default, formatTypeValue);
     return type.isMeridiemIndicatorFirst;
 }
 
 function isShortTime24HourFormat(translateFn, formatTypeValue) {
     const defaultShortTimeFormatTypeName = translateFn('default.shortTimeFormat');
-    const type = getDateTimeFormatType(datetimeConstants.allShortTimeFormat, datetimeConstants.allShortTimeFormatArray, defaultShortTimeFormatTypeName, datetimeConstants.defaultShortTimeFormat, formatTypeValue);
+    const type = getDateTimeFormatType(ShortTimeFormat.values(), ShortTimeFormat.values(), defaultShortTimeFormatTypeName, ShortTimeFormat.Default, formatTypeValue);
     return type.is24HourFormat;
 }
 
 function isShortTimeMeridiemIndicatorFirst(translateFn, formatTypeValue) {
     const defaultShortTimeFormatTypeName = translateFn('default.shortTimeFormat');
-    const type = getDateTimeFormatType(datetimeConstants.allShortTimeFormat, datetimeConstants.allShortTimeFormatArray, defaultShortTimeFormatTypeName, datetimeConstants.defaultShortTimeFormat, formatTypeValue);
+    const type = getDateTimeFormatType(ShortTimeFormat.values(), ShortTimeFormat.values(), defaultShortTimeFormatTypeName, ShortTimeFormat.Default, formatTypeValue);
     return type.isMeridiemIndicatorFirst;
 }
 
 function getDateTimeFormats(translateFn, allFormatMap, allFormatArray, localeFormatPathPrefix, localeDefaultFormatTypeName, systemDefaultFormatType) {
     const defaultFormat = getDateTimeFormat(translateFn, allFormatMap, allFormatArray,
-        localeFormatPathPrefix, localeDefaultFormatTypeName, systemDefaultFormatType, datetimeConstants.defaultDateTimeFormatValue);
+        localeFormatPathPrefix, localeDefaultFormatTypeName, systemDefaultFormatType, LANGUAGE_DEFAULT_DATE_TIME_FORMAT_VALUE);
     const ret = [];
 
     ret.push({
-        type: datetimeConstants.defaultDateTimeFormatValue,
+        type: LANGUAGE_DEFAULT_DATE_TIME_FORMAT_VALUE,
         format: defaultFormat,
         displayName: `${translateFn('Language Default')} (${formatCurrentTime(defaultFormat)})`
     });
@@ -521,17 +545,16 @@ function getDateTimeFormat(translateFn, allFormatMap, allFormatArray, localeForm
 function getAllTimezones(includeSystemDefault, translateFn) {
     const defaultTimezoneOffset = getBrowserTimezoneOffset();
     const defaultTimezoneOffsetMinutes = getBrowserTimezoneOffsetMinutes();
-    const allTimezones = timezoneConstants.all;
     const allTimezoneInfos = [];
 
-    for (let i = 0; i < allTimezones.length; i++) {
-        const utcOffset = (allTimezones[i].timezoneName !== timezoneConstants.utcTimezoneName ? getTimezoneOffset(allTimezones[i].timezoneName) : '');
-        const displayName = translateFn(`timezone.${allTimezones[i].displayName}`);
+    for (let i = 0; i < ALL_TIMEZONES.length; i++) {
+        const utcOffset = (ALL_TIMEZONES[i].timezoneName !== UTC_TIMEZONE.timezoneName ? getTimezoneOffset(ALL_TIMEZONES[i].timezoneName) : '');
+        const displayName = translateFn(`timezone.${ALL_TIMEZONES[i].displayName}`);
 
         allTimezoneInfos.push({
-            name: allTimezones[i].timezoneName,
+            name: ALL_TIMEZONES[i].timezoneName,
             utcOffset: utcOffset,
-            utcOffsetMinutes: getTimezoneOffsetMinutes(allTimezones[i].timezoneName),
+            utcOffsetMinutes: getTimezoneOffsetMinutes(ALL_TIMEZONES[i].timezoneName),
             displayName: displayName,
             displayNameWithUtcOffset: `(UTC${utcOffset}) ${displayName}`
         });
@@ -595,11 +618,10 @@ function getTimezoneDifferenceDisplayText(utcOffset, translateFn) {
 }
 
 function getAllCurrencies(translateFn) {
-    const allCurrencyCodes = currencyConstants.all;
     const allCurrencies = [];
 
-    for (let currencyCode in allCurrencyCodes) {
-        if (!Object.prototype.hasOwnProperty.call(allCurrencyCodes, currencyCode)) {
+    for (let currencyCode in ALL_CURRENCIES) {
+        if (!Object.prototype.hasOwnProperty.call(ALL_CURRENCIES, currencyCode)) {
             continue;
         }
 
@@ -617,68 +639,66 @@ function getAllCurrencies(translateFn) {
 }
 
 function getAllWeekDays(firstDayOfWeek, translateFn) {
-    const allWeekDays = [];
+    const ret = [];
+    const allWeekDays = WeekDay.values();
 
     if (!isNumber(firstDayOfWeek)) {
-        firstDayOfWeek = datetimeConstants.allWeekDays.Sunday.type;
+        firstDayOfWeek = WeekDay.DefaultFirstDay.type;
     }
 
-    for (let i = firstDayOfWeek; i < datetimeConstants.allWeekDaysArray.length; i++) {
-        const weekDay = datetimeConstants.allWeekDaysArray[i];
+    for (let i = firstDayOfWeek; i < allWeekDays.length; i++) {
+        const weekDay = allWeekDays[i];
 
-        allWeekDays.push({
+        ret.push({
             type: weekDay.type,
             displayName: translateFn(`datetime.${weekDay.name}.long`)
         });
     }
 
     for (let i = 0; i < firstDayOfWeek; i++) {
-        const weekDay = datetimeConstants.allWeekDaysArray[i];
+        const weekDay = allWeekDays[i];
 
-        allWeekDays.push({
+        ret.push({
             type: weekDay.type,
             displayName: translateFn(`datetime.${weekDay.name}.long`)
         });
     }
 
-    return allWeekDays;
+    return ret;
 }
 
 function getAllDateRanges(scene, includeCustom, includeBillingCycle, translateFn) {
-    const allDateRanges = [];
+    const ret = [];
+    const allDateRanges = DateRange.values();
 
-    for (let dateRangeField in datetimeConstants.allDateRanges) {
-        if (!Object.prototype.hasOwnProperty.call(datetimeConstants.allDateRanges, dateRangeField)) {
+    for (let i = 0; i < allDateRanges.length; i++) {
+        const dateRange = allDateRanges[i];
+
+        if (!dateRange.isAvailableForScene(scene)) {
             continue;
         }
 
-        const dateRangeType = datetimeConstants.allDateRanges[dateRangeField];
-
-        if (!dateRangeType.availableScenes[scene]) {
-            continue;
-        }
-
-        if (dateRangeType.isBillingCycle) {
+        if (dateRange.isBillingCycle) {
             if (includeBillingCycle) {
-                allDateRanges.push({
-                    type: dateRangeType.type,
-                    displayName: translateFn(dateRangeType.name),
-                    isBillingCycle: dateRangeType.isBillingCycle
+                ret.push({
+                    type: dateRange.type,
+                    displayName: translateFn(dateRange.name),
+                    isBillingCycle: dateRange.isBillingCycle
                 });
             }
 
             continue;
         }
 
-        if (includeCustom || dateRangeType.type !== datetimeConstants.allDateRanges.Custom.type) {
-            allDateRanges.push({
-                type: dateRangeType.type,
-                displayName: translateFn(dateRangeType.name)
+        if (includeCustom || dateRange.type !== DateRange.Custom.type) {
+            ret.push({
+                type: dateRange.type,
+                displayName: translateFn(dateRange.name)
             });
         }
     }
 
-    return allDateRanges;
+    return ret;
 }
 
 function getAllRecentMonthDateRanges(userStore, includeAll, includeCustom, translateFn) {
@@ -687,7 +707,7 @@ function getAllRecentMonthDateRanges(userStore, includeAll, includeCustom, trans
 
     if (includeAll) {
         allRecentMonthDateRanges.push({
-            dateType: datetimeConstants.allDateRanges.All.type,
+            dateType: DateRange.All.type,
             minTime: 0,
             maxTime: 0,
             displayName: translateFn('All')
@@ -710,7 +730,7 @@ function getAllRecentMonthDateRanges(userStore, includeAll, includeCustom, trans
 
     if (includeCustom) {
         allRecentMonthDateRanges.push({
-            dateType: datetimeConstants.allDateRanges.Custom.type,
+            dateType: DateRange.Custom.type,
             minTime: 0,
             maxTime: 0,
             displayName: translateFn('Custom Date')
@@ -721,18 +741,16 @@ function getAllRecentMonthDateRanges(userStore, includeAll, includeCustom, trans
 }
 
 function getDateRangeDisplayName(userStore, dateType, startTime, endTime, translateFn) {
-    if (dateType === datetimeConstants.allDateRanges.All.type) {
-        return translateFn(datetimeConstants.allDateRanges.All.name);
+    if (dateType === DateRange.All.type) {
+        return translateFn(DateRange.All.name);
     }
 
-    for (let dateRangeField in datetimeConstants.allDateRanges) {
-        if (!Object.prototype.hasOwnProperty.call(datetimeConstants.allDateRanges, dateRangeField)) {
-            continue;
-        }
+    const allDateRanges = DateRange.values();
 
-        const dateRange = datetimeConstants.allDateRanges[dateRangeField];
+    for (let i = 0; i < allDateRanges.length; i++) {
+        const dateRange = allDateRanges[i];
 
-        if (dateRange && dateRange.type !== datetimeConstants.allDateRanges.Custom.type && dateRange.type === dateType && dateRange.name) {
+        if (dateRange && dateRange.type !== DateRange.Custom.type && dateRange.type === dateType && dateRange.name) {
             return translateFn(dateRange.name);
         }
     }
@@ -772,12 +790,12 @@ function getAllTimezoneTypesUsedForStatistics(currentTimezone, translateFn) {
 
     return [
         {
-            displayName: translateFn('Application Timezone') + ` (UTC${currentTimezoneOffset})`,
-            type: timezoneConstants.allTimezoneTypesUsedForStatistics.ApplicationTimezone
+            displayName: translateFn(TimezoneTypeForStatistics.ApplicationTimezone.name) + ` (UTC${currentTimezoneOffset})`,
+            type: TimezoneTypeForStatistics.ApplicationTimezone.type
         },
         {
-            displayName: translateFn('Transaction Timezone'),
-            type: timezoneConstants.allTimezoneTypesUsedForStatistics.TransactionTimezone
+            displayName: translateFn(TimezoneTypeForStatistics.TransactionTimezone.name),
+            type: TimezoneTypeForStatistics.TransactionTimezone.type
         }
     ];
 }
@@ -851,10 +869,10 @@ function getAllDigitGroupingTypes(translateFn) {
 
 function getAllCurrencyDisplayTypes(userStore, settingsStore, translateFn) {
     const defaultCurrencyDisplayTypeName = translateFn('default.currencyDisplayType');
-    let defaultCurrencyDisplayType = currencyConstants.allCurrencyDisplayType[defaultCurrencyDisplayTypeName];
+    let defaultCurrencyDisplayType = CurrencyDisplayType.parse(defaultCurrencyDisplayTypeName);
 
     if (!defaultCurrencyDisplayType) {
-        defaultCurrencyDisplayType = currencyConstants.defaultCurrencyDisplayType;
+        defaultCurrencyDisplayType = CurrencyDisplayType.Default;
     }
 
     const defaultCurrency = userStore.currentUserDefaultCurrency;
@@ -863,12 +881,14 @@ function getAllCurrencyDisplayTypes(userStore, settingsStore, translateFn) {
     const defaultSampleValue = getFormattedAmountWithCurrency(12345, defaultCurrency, translateFn, userStore, settingsStore, false, defaultCurrencyDisplayType);
 
     ret.push({
-        type: currencyConstants.defaultCurrencyDisplayTypeValue,
+        type: CurrencyDisplayType.LanguageDefaultType,
         displayName: `${translateFn('Language Default')} (${defaultSampleValue})`
     });
 
-    for (let i = 0; i < currencyConstants.allCurrencyDisplayTypeArray.length; i++) {
-        const type = currencyConstants.allCurrencyDisplayTypeArray[i];
+    const allCurrencyDisplayTypes = CurrencyDisplayType.values();
+
+    for (let i = 0; i < allCurrencyDisplayTypes.length; i++) {
+        const type = allCurrencyDisplayTypes[i];
         const sampleValue = getFormattedAmountWithCurrency(12345, defaultCurrency, translateFn, userStore, settingsStore, false, type);
         const displayName = `${translateFn(type.name)} (${sampleValue})`
 
@@ -882,22 +902,7 @@ function getAllCurrencyDisplayTypes(userStore, settingsStore, translateFn) {
 }
 
 function getAllCurrencySortingTypes(translateFn) {
-    const allCurrencySortingTypes = [];
-
-    for (const sortingTypeField in currencyConstants.allCurrencySortingTypes) {
-        if (!Object.prototype.hasOwnProperty.call(currencyConstants.allCurrencySortingTypes, sortingTypeField)) {
-            continue;
-        }
-
-        const sortingType = currencyConstants.allCurrencySortingTypes[sortingTypeField];
-
-        allCurrencySortingTypes.push({
-            type: sortingType.type,
-            displayName: translateFn(sortingType.name)
-        });
-    }
-
-    return allCurrencySortingTypes;
+    return getLocalizedDisplayNameAndType(CurrencySortingType.values(), translateFn);
 }
 
 function getCurrentDecimalSeparator(translateFn, decimalSeparator) {
@@ -971,15 +976,15 @@ function getFormattedAmount(value, translateFn, userStore, currencyCode) {
 }
 
 function getCurrentCurrencyDisplayType(translateFn, userStore) {
-    let currencyDisplayType = currencyConstants.allCurrencyDisplayTypeMap[userStore.currentUserCurrencyDisplayType];
+    let currencyDisplayType = CurrencyDisplayType.valueOf(userStore.currentUserCurrencyDisplayType);
 
     if (!currencyDisplayType) {
         const defaultCurrencyDisplayTypeName = translateFn('default.currencyDisplayType');
-        currencyDisplayType = currencyConstants.allCurrencyDisplayType[defaultCurrencyDisplayTypeName];
+        currencyDisplayType = CurrencyDisplayType.parse(defaultCurrencyDisplayTypeName);
     }
 
     if (!currencyDisplayType) {
-        currencyDisplayType = currencyConstants.defaultCurrencyDisplayType;
+        currencyDisplayType = CurrencyDisplayType.Default;
     }
 
     return currencyDisplayType;
@@ -1048,65 +1053,57 @@ function getAmountPrependAndAppendText(currencyCode, userStore, settingsStore, i
 }
 
 function getAllExpenseIncomeAmountColors(translateFn, expenseOrIncome) {
-    const allAmountColors = [];
+    const ret = [];
     let defaultAmountName = '';
 
     if (expenseOrIncome === 1) { // expense
-        defaultAmountName = colorConstants.defaultExpenseAmountColor.name;
+        defaultAmountName = PresetAmountColor.DefaultExpenseColor.name;
     } else if (expenseOrIncome === 2) { // income
-        defaultAmountName = colorConstants.defaultIncomeAmountColor.name;
+        defaultAmountName = PresetAmountColor.DefaultIncomeColor.name;
     }
 
     if (defaultAmountName) {
         defaultAmountName = translateFn('color.amount.' + defaultAmountName);
     }
 
-    allAmountColors.push({
-        type: colorConstants.defaultExpenseIncomeAmountValue,
+    ret.push({
+        type: PresetAmountColor.SystemDefaultType,
         displayName: translateFn('System Default') + (defaultAmountName ? ` (${defaultAmountName})` : '')
     });
 
-    for (let i = 0; i < colorConstants.allAmountColorsArray.length; i++) {
-        const amountColor = colorConstants.allAmountColorsArray[i];
+    const allPresetAmountColors = PresetAmountColor.values();
 
-        allAmountColors.push({
+    for (let i = 0; i < allPresetAmountColors.length; i++) {
+        const amountColor = allPresetAmountColors[i];
+
+        ret.push({
             type: amountColor.type,
             displayName: translateFn('color.amount.' + amountColor.name)
         });
     }
 
-    return allAmountColors;
+    return ret;
 }
 
 function getAllAccountCategories(translateFn) {
-    const allAccountCategories = [];
+    const ret = [];
+    const allCategories = AccountCategory.values();
 
-    for (let i = 0; i < accountConstants.allCategories.length; i++) {
-        const accountCategory = accountConstants.allCategories[i];
+    for (let i = 0; i < allCategories.length; i++) {
+        const accountCategory = allCategories[i];
 
-        allAccountCategories.push({
-            id: accountCategory.id,
+        ret.push({
+            type: accountCategory.type,
             displayName: translateFn(accountCategory.name),
             defaultAccountIconId: accountCategory.defaultAccountIconId
         });
     }
 
-    return allAccountCategories;
+    return ret;
 }
 
 function getAllAccountTypes(translateFn) {
-    const allAccountTypes = [];
-
-    for (let i = 0; i < accountConstants.allAccountTypesArray.length; i++) {
-        const accountType = accountConstants.allAccountTypesArray[i];
-
-        allAccountTypes.push({
-            id: accountType.id,
-            displayName: translateFn(accountType.name)
-        });
-    }
-
-    return allAccountTypes;
+    return getLocalizedDisplayNameAndType(AccountType.values(), translateFn);
 }
 
 function getAllCategoricalChartTypes(translateFn) {
@@ -1203,60 +1200,15 @@ function getAllStatisticsDateAggregationTypes(translateFn) {
 }
 
 function getAllTransactionEditScopeTypes(translateFn) {
-    const allEditScopeTypes = [];
-
-    for (const typeName in transactionConstants.allTransactionEditScopeTypes) {
-        if (!Object.prototype.hasOwnProperty.call(transactionConstants.allTransactionEditScopeTypes, typeName)) {
-            continue;
-        }
-
-        const editScopeType = transactionConstants.allTransactionEditScopeTypes[typeName];
-
-        allEditScopeTypes.push({
-            type: editScopeType.type,
-            displayName: translateFn(editScopeType.name)
-        });
-    }
-
-    return allEditScopeTypes;
+    return getLocalizedDisplayNameAndType(TransactionEditScopeType.values(), translateFn);
 }
 
 function getAllTransactionTagFilterTypes(translateFn) {
-    const allTagFilterTypes = [];
-
-    for (const typeName in transactionConstants.allTransactionTagFilterTypes) {
-        if (!Object.prototype.hasOwnProperty.call(transactionConstants.allTransactionTagFilterTypes, typeName)) {
-            continue;
-        }
-
-        const tagFilterType = transactionConstants.allTransactionTagFilterTypes[typeName];
-
-        allTagFilterTypes.push({
-            type: tagFilterType.type,
-            displayName: translateFn(tagFilterType.name)
-        });
-    }
-
-    return allTagFilterTypes;
+    return getLocalizedDisplayNameAndType(TransactionTagFilterType.values(), translateFn);
 }
 
 function getAllTransactionScheduledFrequencyTypes(translateFn) {
-    const allScheduledFrequencyTypes = [];
-
-    for (const typeName in templateConstants.allTemplateScheduledFrequencyTypes) {
-        if (!Object.prototype.hasOwnProperty.call(templateConstants.allTemplateScheduledFrequencyTypes, typeName)) {
-            continue;
-        }
-
-        const frequencyType = templateConstants.allTemplateScheduledFrequencyTypes[typeName];
-
-        allScheduledFrequencyTypes.push({
-            type: frequencyType.type,
-            displayName: translateFn(frequencyType.name)
-        });
-    }
-
-    return allScheduledFrequencyTypes;
+    return getLocalizedDisplayNameAndType(ScheduledTemplateFrequencyType.values(), translateFn);
 }
 
 function getAllTransactionDefaultCategories(categoryType, locale, translateFn) {
@@ -1264,7 +1216,7 @@ function getAllTransactionDefaultCategories(categoryType, locale, translateFn) {
     const categoryTypes = [];
 
     if (categoryType === 0) {
-        for (let i = categoryConstants.allCategoryTypes.Income; i <= categoryConstants.allCategoryTypes.Transfer; i++) {
+        for (let i = CategoryType.Income; i <= CategoryType.Transfer; i++) {
             categoryTypes.push(i);
         }
     } else {
@@ -1276,12 +1228,12 @@ function getAllTransactionDefaultCategories(categoryType, locale, translateFn) {
         const categoryType = categoryTypes[i];
         let defaultCategories = [];
 
-        if (categoryType === categoryConstants.allCategoryTypes.Income) {
-            defaultCategories = copyArrayTo(categoryConstants.defaultIncomeCategories, []);
-        } else if (categoryType === categoryConstants.allCategoryTypes.Expense) {
-            defaultCategories = copyArrayTo(categoryConstants.defaultExpenseCategories, []);
-        } else if (categoryType === categoryConstants.allCategoryTypes.Transfer) {
-            defaultCategories = copyArrayTo(categoryConstants.defaultTransferCategories, []);
+        if (categoryType === CategoryType.Income) {
+            defaultCategories = copyArrayTo(DEFAULT_INCOME_CATEGORIES, []);
+        } else if (categoryType === CategoryType.Expense) {
+            defaultCategories = copyArrayTo(DEFAULT_EXPENSE_CATEGORIES, []);
+        } else if (categoryType === CategoryType.Transfer) {
+            defaultCategories = copyArrayTo(DEFAULT_TRANSFER_CATEGORIES, []);
         }
 
         for (let j = 0; j < defaultCategories.length; j++) {
@@ -1331,15 +1283,15 @@ function getAllDisplayExchangeRates(settingsStore, exchangeRatesData, translateF
         });
     }
 
-    if (settingsStore.appSettings.currencySortByInExchangeRatesPage === currencyConstants.allCurrencySortingTypes.Name.type) {
+    if (settingsStore.appSettings.currencySortByInExchangeRatesPage === CurrencySortingType.Name.type) {
         availableExchangeRates.sort(function(c1, c2) {
             return c1.currencyDisplayName.localeCompare(c2.currencyDisplayName);
         });
-    } else if (settingsStore.appSettings.currencySortByInExchangeRatesPage === currencyConstants.allCurrencySortingTypes.CurrencyCode.type) {
+    } else if (settingsStore.appSettings.currencySortByInExchangeRatesPage === CurrencySortingType.CurrencyCode.type) {
         availableExchangeRates.sort(function(c1, c2) {
             return c1.currencyCode.localeCompare(c2.currencyCode);
         });
-    } else if (settingsStore.appSettings.currencySortByInExchangeRatesPage === currencyConstants.allCurrencySortingTypes.ExchangeRate.type) {
+    } else if (settingsStore.appSettings.currencySortByInExchangeRatesPage === CurrencySortingType.ExchangeRate.type) {
         availableExchangeRates.sort(function(c1, c2) {
             const rate1 = parseFloat(c1.rate);
             const rate2 = parseFloat(c2.rate);
@@ -1360,8 +1312,8 @@ function getAllDisplayExchangeRates(settingsStore, exchangeRatesData, translateF
 function getAllSupportedImportFileTypes(i18nGlobal, translateFn) {
     const allSupportedImportFileTypes = [];
 
-    for (let i = 0; i < fileConstants.supportedImportFileTypes.length; i++) {
-        const fileType = fileConstants.supportedImportFileTypes[i];
+    for (let i = 0; i < SUPPORTED_IMPORT_FILE_TYPES.length; i++) {
+        const fileType = SUPPORTED_IMPORT_FILE_TYPES[i];
         let document = {
             language: '',
             displayLanguageName: '',
@@ -1435,16 +1387,17 @@ function getEnableDisableOptions(translateFn) {
 
 function getCategorizedAccountsWithDisplayBalance(allVisibleAccounts, showAccountBalance, defaultCurrency, userStore, settingsStore, exchangeRatesStore, translateFn) {
     const ret = [];
+    const allCategories = AccountCategory.values();
     const categorizedAccounts = copyObjectTo(getCategorizedAccountsMap(allVisibleAccounts), {});
 
-    for (let i = 0; i < accountConstants.allCategories.length; i++) {
-        const category = accountConstants.allCategories[i];
+    for (let i = 0; i < allCategories.length; i++) {
+        const category = allCategories[i];
 
-        if (!categorizedAccounts[category.id]) {
+        if (!categorizedAccounts[category.type]) {
             continue;
         }
 
-        const accountCategory = categorizedAccounts[category.id];
+        const accountCategory = categorizedAccounts[category.type];
 
         if (accountCategory.accounts) {
             for (let i = 0; i < accountCategory.accounts.length; i++) {
@@ -1528,20 +1481,20 @@ function joinMultiText(textArray, translateFn) {
 }
 
 function getLocalizedError(error) {
-    if (error.errorCode === apiConstants.apiNotFoundErrorCode && apiConstants.specifiedApiNotFoundErrors[error.path]) {
+    if (error.errorCode === KnownErrorCode.ApiNotFound && SPECIFIED_API_NOT_FOUND_ERRORS[error.path]) {
         return {
-            message: `${apiConstants.specifiedApiNotFoundErrors[error.path].message}`
+            message: `${SPECIFIED_API_NOT_FOUND_ERRORS[error.path].message}`
         };
     }
 
-    if (error.errorCode !== apiConstants.validatorErrorCode) {
+    if (error.errorCode !== KnownErrorCode.ValidatorError) {
         return {
             message: `error.${error.errorMessage}`
         };
     }
 
-    for (let i = 0; i < apiConstants.parameterizedErrors.length; i++) {
-        const errorInfo = apiConstants.parameterizedErrors[i];
+    for (let i = 0; i < PARAMETERIZED_ERRORS.length; i++) {
+        const errorInfo = PARAMETERIZED_ERRORS[i];
         const matches = error.errorMessage.match(errorInfo.regex);
 
         if (matches && matches.length === errorInfo.parameters.length + 1) {
@@ -1608,9 +1561,9 @@ function setLanguage(i18nGlobal, locale, force) {
         weekdaysMin : getAllMinWeekdayNames(i18nGlobal.t),
         meridiem: function (hours) {
             if (isPM(hours)) {
-                return i18nGlobal.t(`datetime.${datetimeConstants.allMeridiemIndicators.PM}.content`);
+                return i18nGlobal.t(`datetime.${MeridiemIndicator.PM.name}.content`);
             } else {
-                return i18nGlobal.t(`datetime.${datetimeConstants.allMeridiemIndicators.AM}.content`);
+                return i18nGlobal.t(`datetime.${MeridiemIndicator.AM.name}.content`);
             }
         }
     });
@@ -1620,10 +1573,10 @@ function setLanguage(i18nGlobal, locale, force) {
 
     const defaultCurrency = getDefaultCurrency(i18nGlobal.t);
     const defaultFirstDayOfWeekName = getDefaultFirstDayOfWeek(i18nGlobal.t);
-    let defaultFirstDayOfWeek = datetimeConstants.defaultFirstDayOfWeek;
+    let defaultFirstDayOfWeek = WeekDay.DefaultFirstDay.type;
 
-    if (datetimeConstants.allWeekDays[defaultFirstDayOfWeekName]) {
-        defaultFirstDayOfWeek = datetimeConstants.allWeekDays[defaultFirstDayOfWeekName].type;
+    if (WeekDay.parse(defaultFirstDayOfWeekName)) {
+        defaultFirstDayOfWeek = WeekDay.parse(defaultFirstDayOfWeekName).type;
     }
 
     return {
@@ -1714,7 +1667,7 @@ export function i18nFunctions(i18nGlobal) {
         getDefaultCurrency: () => getDefaultCurrency(i18nGlobal.t),
         getDefaultFirstDayOfWeek: () => getDefaultFirstDayOfWeek(i18nGlobal.t),
         getCurrencyName: (currencyCode) => getCurrencyName(currencyCode, i18nGlobal.t),
-        getAllMeridiemIndicatorNames: () => getAllMeridiemIndicatorNames(i18nGlobal.t),
+        getAllMeridiemIndicators: () => getAllMeridiemIndicators(i18nGlobal.t),
         getAllLongMonthNames: () => getAllLongMonthNames(i18nGlobal.t),
         getAllShortMonthNames: () => getAllShortMonthNames(i18nGlobal.t),
         getAllLongWeekdayNames: () => getAllLongWeekdayNames(i18nGlobal.t),

@@ -337,13 +337,13 @@ import { useUserStore } from '@/stores/user.js';
 import { useAccountsStore } from '@/stores/account.js';
 import { useOverviewStore } from '@/stores/overview.js';
 
-import datetimeConstants from '@/consts/datetime.js';
-import fileConstants from '@/consts/file.js';
-import { getNameByKeyValue } from '@/lib/common.js';
-import { generateRandomUUID } from '@/lib/misc.js';
+import { WeekDay } from '@/core/datetime.ts';
+import { SUPPORTED_IMAGE_EXTENSIONS } from '@/consts/file.ts';
+import { getNameByKeyValue } from '@/lib/common.ts';
+import { generateRandomUUID } from '@/lib/misc.ts';
 import { getCategorizedAccounts } from '@/lib/account.js';
-import { isUserVerifyEmailEnabled } from '@/lib/server_settings.js';
-import { setExpenseAndIncomeAmountColor } from '@/lib/ui.js';
+import { isUserVerifyEmailEnabled } from '@/lib/server_settings.ts';
+import { setExpenseAndIncomeAmountColor } from '@/lib/ui/common.ts';
 
 import {
     mdiAccount,
@@ -354,7 +354,7 @@ export default {
     data() {
         const self = this;
         const defaultFirstDayOfWeekName = self.$locale.getDefaultFirstDayOfWeek();
-        const defaultFirstDayOfWeek = datetimeConstants.allWeekDays[defaultFirstDayOfWeekName] ? datetimeConstants.allWeekDays[defaultFirstDayOfWeekName].type : datetimeConstants.defaultFirstDayOfWeek;
+        const defaultFirstDayOfWeek = WeekDay.parse(defaultFirstDayOfWeekName) ? WeekDay.parse(defaultFirstDayOfWeekName).type : WeekDay.DefaultFirstDay.type;
 
         return {
             newProfile: {
@@ -460,7 +460,7 @@ export default {
             return this.$locale.getAllTransactionEditScopeTypes();
         },
         supportedImageExtensions() {
-            return fileConstants.supportedImageExtensions;
+            return SUPPORTED_IMAGE_EXTENSIONS;
         },
         currentUserAvatar() {
             return this.userStore.getUserAvatarUrl(this.oldProfile, this.avatarNoCacheId);
