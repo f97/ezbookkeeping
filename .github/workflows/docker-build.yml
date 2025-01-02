@@ -31,8 +31,8 @@ jobs:
         with:
           context: .
           push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
           tags: ghcr.io/${{ github.repository }}:latest
           platforms: |
             linux/amd64
