@@ -14,7 +14,7 @@ import { TransactionType, TransactionTagFilterType } from '@/core/transaction.ts
 import { TRANSACTION_MIN_AMOUNT, TRANSACTION_MAX_AMOUNT } from '@/consts/transaction.ts';
 import userState from '@/lib/userstate.js';
 import services from '@/lib/services.js';
-import logger from '@/lib/logger.js';
+import logger from '@/lib/logger.ts';
 import {
     isDefined,
     isNumber,
@@ -33,7 +33,7 @@ import {
     getDay,
     getDayOfWeekName
 } from '@/lib/datetime.ts';
-import { getAmountWithDecimalNumberCount } from '@/lib/numeral.js';
+import { getAmountWithDecimalNumberCount } from '@/lib/numeral.ts';
 import { getCurrencyFraction } from '@/lib/currency.ts';
 import { getFirstAvailableCategoryId } from '@/lib/category.js';
 

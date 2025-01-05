@@ -1,26 +1,26 @@
+import { useI18n as useVueI18n } from 'vue-i18n';
 import moment from 'moment-timezone';
 
 import { defaultLanguage, allLanguages } from '@/locales/index.ts';
 
-import { Month, WeekDay, MeridiemIndicator, LongDateFormat, ShortDateFormat, LongTimeFormat, ShortTimeFormat, DateRangeScene, DateRange, LANGUAGE_DEFAULT_DATE_TIME_FORMAT_VALUE } from '@/core/datetime.ts';
+import { Month, WeekDay, MeridiemIndicator, LongDateFormat, ShortDateFormat, LongTimeFormat, ShortTimeFormat, DateRange, LANGUAGE_DEFAULT_DATE_TIME_FORMAT_VALUE } from '@/core/datetime.ts';
 import { TimezoneTypeForStatistics } from '@/core/timezone.ts';
+import { DecimalSeparator, DigitGroupingSymbol, DigitGroupingType } from '@/core/numeral.ts';
 import { CurrencyDisplayType, CurrencySortingType } from '@/core/currency.ts';
 import { PresetAmountColor } from '@/core/color.ts';
 import { AccountType, AccountCategory } from '@/core/account.ts';
 import { CategoryType } from '@/core/category.ts';
 import { TransactionEditScopeType, TransactionTagFilterType } from '@/core/transaction.ts';
 import { ScheduledTemplateFrequencyType } from '@/core/template.ts';
+import { CategoricalChartType, TrendChartType, ChartDataType, ChartSortingType, ChartDateAggregationType } from '@/core/statistics.ts';
 
-import numeralConstants from '@/consts/numeral.js';
 import { UTC_TIMEZONE, ALL_TIMEZONES } from '@/consts/timezone.ts';
 import { ALL_CURRENCIES } from '@/consts/currency.ts';
 import { SUPPORTED_IMPORT_FILE_TYPES } from '@/consts/file.ts';
 import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES, DEFAULT_TRANSFER_CATEGORIES } from '@/consts/category.ts';
-import statisticsConstants from '@/consts/statistics.js';
 import { KnownErrorCode, SPECIFIED_API_NOT_FOUND_ERRORS, PARAMETERIZED_ERRORS } from '@/consts/api.ts';
 
 import {
-    isDefined,
     isString,
     isNumber,
     isBoolean,
@@ -51,7 +51,7 @@ import {
     formatAmount,
     formatExchangeRateAmount,
     getAdaptiveDisplayAmountRate
-} from './numeral.js';
+} from './numeral.ts';
 
 import {
     getCurrencyFraction,
@@ -64,7 +64,7 @@ import {
     getAllFilteredAccountsBalance
 } from './account.js';
 
-import logger from './logger.js';
+import logger from './logger.ts';
 import services from './services.js';
 
 function getLanguageDisplayName(translateFn, languageName) {
@@ -802,16 +802,16 @@ function getAllTimezoneTypesUsedForStatistics(currentTimezone, translateFn) {
 
 function getAllDecimalSeparators(translateFn) {
     const defaultDecimalSeparatorTypeName = translateFn('default.decimalSeparator');
-    return getNumeralSeparatorFormats(translateFn, numeralConstants.allDecimalSeparator, numeralConstants.allDecimalSeparatorArray, defaultDecimalSeparatorTypeName, numeralConstants.defaultDecimalSeparator);
+    return getNumeralSeparatorFormats(translateFn, DecimalSeparator.values(), DecimalSeparator.parse(defaultDecimalSeparatorTypeName), DecimalSeparator.Default, DecimalSeparator.LanguageDefaultType);
 }
 
 function getAllDigitGroupingSymbols(translateFn) {
     const defaultDigitGroupingSymbolTypeName = translateFn('default.digitGroupingSymbol');
-    return getNumeralSeparatorFormats(translateFn, numeralConstants.allDigitGroupingSymbol, numeralConstants.allDigitGroupingSymbolArray, defaultDigitGroupingSymbolTypeName, numeralConstants.defaultDigitGroupingSymbol);
+    return getNumeralSeparatorFormats(translateFn, DigitGroupingSymbol.values(), DigitGroupingSymbol.parse(defaultDigitGroupingSymbolTypeName), DigitGroupingSymbol.Default, DigitGroupingSymbol.LanguageDefaultType);
 }
 
-function getNumeralSeparatorFormats(translateFn, allSeparatorMap, allSeparatorArray, localeDefaultTypeName, systemDefaultType) {
-    let defaultSeparatorType = allSeparatorMap[localeDefaultTypeName];
+function getNumeralSeparatorFormats(translateFn, allSeparatorArray, localeDefaultType, systemDefaultType, languageDefaultValue) {
+    let defaultSeparatorType = localeDefaultType;
 
     if (!defaultSeparatorType) {
         defaultSeparatorType = systemDefaultType;
@@ -820,7 +820,7 @@ function getNumeralSeparatorFormats(translateFn, allSeparatorMap, allSeparatorAr
     const ret = [];
 
     ret.push({
-        type: numeralConstants.defaultValue,
+        type: languageDefaultValue,
         symbol: defaultSeparatorType.symbol,
         displayName: `${translateFn('Language Default')} (${defaultSeparatorType.symbol})`
     });
@@ -840,22 +840,24 @@ function getNumeralSeparatorFormats(translateFn, allSeparatorMap, allSeparatorAr
 
 function getAllDigitGroupingTypes(translateFn) {
     const defaultDigitGroupingTypeName = translateFn('default.digitGrouping');
-    let defaultDigitGroupingType = numeralConstants.allDigitGroupingType[defaultDigitGroupingTypeName];
+    let defaultDigitGroupingType = DigitGroupingType.parse(defaultDigitGroupingTypeName);
 
     if (!defaultDigitGroupingType) {
-        defaultDigitGroupingType = numeralConstants.defaultDigitGroupingType;
+        defaultDigitGroupingType = DigitGroupingType.Default;
     }
 
     const ret = [];
 
     ret.push({
-        type: numeralConstants.defaultValue,
+        type: DigitGroupingType.LanguageDefaultType,
         enabled: defaultDigitGroupingType.enabled,
         displayName: `${translateFn('Language Default')} (${translateFn('numeral.' + defaultDigitGroupingType.name)})`
     });
 
-    for (let i = 0; i < numeralConstants.allDigitGroupingTypeArray.length; i++) {
-        const type = numeralConstants.allDigitGroupingTypeArray[i];
+    const allDigitGroupingTypes = DigitGroupingType.values();
+
+    for (let i = 0; i < allDigitGroupingTypes.length; i++) {
+        const type = allDigitGroupingTypes[i];
 
         ret.push({
             type: type.type,
@@ -906,14 +908,14 @@ function getAllCurrencySortingTypes(translateFn) {
 }
 
 function getCurrentDecimalSeparator(translateFn, decimalSeparator) {
-    let decimalSeparatorType = numeralConstants.allDecimalSeparatorMap[decimalSeparator];
+    let decimalSeparatorType = DecimalSeparator.valueOf(decimalSeparator);
 
     if (!decimalSeparatorType) {
         const defaultDecimalSeparatorTypeName = translateFn('default.decimalSeparator');
-        decimalSeparatorType = numeralConstants.allDecimalSeparator[defaultDecimalSeparatorTypeName];
+        decimalSeparatorType = DecimalSeparator.parse(defaultDecimalSeparatorTypeName);
 
         if (!decimalSeparatorType) {
-            decimalSeparatorType = numeralConstants.defaultDecimalSeparator;
+            decimalSeparatorType = DecimalSeparator.Default;
         }
     }
 
@@ -921,14 +923,14 @@ function getCurrentDecimalSeparator(translateFn, decimalSeparator) {
 }
 
 function getCurrentDigitGroupingSymbol(translateFn, digitGroupingSymbol) {
-    let digitGroupingSymbolType = numeralConstants.allDigitGroupingSymbolMap[digitGroupingSymbol];
+    let digitGroupingSymbolType = DigitGroupingSymbol.valueOf(digitGroupingSymbol);
 
     if (!digitGroupingSymbolType) {
         const defaultDigitGroupingSymbolTypeName = translateFn('default.digitGroupingSymbol');
-        digitGroupingSymbolType = numeralConstants.allDigitGroupingSymbol[defaultDigitGroupingSymbolTypeName];
+        digitGroupingSymbolType = DigitGroupingSymbol.parse(defaultDigitGroupingSymbolTypeName);
 
         if (!digitGroupingSymbolType) {
-            digitGroupingSymbolType = numeralConstants.defaultDigitGroupingSymbol;
+            digitGroupingSymbolType = DigitGroupingSymbol.Default;
         }
     }
 
@@ -936,14 +938,14 @@ function getCurrentDigitGroupingSymbol(translateFn, digitGroupingSymbol) {
 }
 
 function getCurrentDigitGroupingType(translateFn, digitGrouping) {
-    let digitGroupingType = numeralConstants.allDigitGroupingTypeMap[digitGrouping];
+    let digitGroupingType = DigitGroupingType.valueOf(digitGrouping);
 
     if (!digitGroupingType) {
         const defaultDigitGroupingTypeName = translateFn('default.digitGrouping');
-        digitGroupingType = numeralConstants.allDigitGroupingType[defaultDigitGroupingTypeName];
+        digitGroupingType = DigitGroupingType.parse(defaultDigitGroupingTypeName);
 
         if (!digitGroupingType) {
-            digitGroupingType = numeralConstants.defaultDigitGroupingType;
+            digitGroupingType = DigitGroupingType.Default;
         }
     }
 
@@ -1107,96 +1109,23 @@ function getAllAccountTypes(translateFn) {
 }
 
 function getAllCategoricalChartTypes(translateFn) {
-    const allChartTypes = [];
-
-    for (let i = 0; i < statisticsConstants.allCategoricalChartTypesArray.length; i++) {
-        const chartType = statisticsConstants.allCategoricalChartTypesArray[i];
-
-        allChartTypes.push({
-            type: chartType.type,
-            displayName: translateFn(chartType.name)
-        });
-    }
-
-    return allChartTypes;
+    return getLocalizedDisplayNameAndType(CategoricalChartType.values(), translateFn);
 }
 
 function getAllTrendChartTypes(translateFn) {
-    const allChartTypes = [];
-
-    for (let i = 0; i < statisticsConstants.allTrendChartTypesArray.length; i++) {
-        const chartType = statisticsConstants.allTrendChartTypesArray[i];
-
-        allChartTypes.push({
-            type: chartType.type,
-            displayName: translateFn(chartType.name)
-        });
-    }
-
-    return allChartTypes;
+    return getLocalizedDisplayNameAndType(TrendChartType.values(), translateFn);
 }
 
 function getAllStatisticsChartDataTypes(translateFn, analysisType) {
-    const allChartDataTypes = [];
-
-    for (const dataTypeField in statisticsConstants.allChartDataTypes) {
-        if (!Object.prototype.hasOwnProperty.call(statisticsConstants.allChartDataTypes, dataTypeField)) {
-            continue;
-        }
-
-        const chartDataType = statisticsConstants.allChartDataTypes[dataTypeField];
-
-        if (isDefined(analysisType) && !chartDataType.availableAnalysisTypes[analysisType]) {
-            continue;
-        }
-
-        allChartDataTypes.push({
-            type: chartDataType.type,
-            displayName: translateFn(chartDataType.name),
-            availableAnalysisTypes: chartDataType.availableAnalysisTypes
-        });
-    }
-
-    return allChartDataTypes;
+    return getLocalizedDisplayNameAndType(ChartDataType.values(analysisType), translateFn);
 }
 
 function getAllStatisticsSortingTypes(translateFn) {
-    const allSortingTypes = [];
-
-    for (const sortingTypeField in statisticsConstants.allSortingTypes) {
-        if (!Object.prototype.hasOwnProperty.call(statisticsConstants.allSortingTypes, sortingTypeField)) {
-            continue;
-        }
-
-        const sortingType = statisticsConstants.allSortingTypes[sortingTypeField];
-
-        allSortingTypes.push({
-            type: sortingType.type,
-            displayName: translateFn(sortingType.name),
-            displayFullName: translateFn(sortingType.fullName)
-        });
-    }
-
-    return allSortingTypes;
+    return getLocalizedDisplayNameAndType(ChartSortingType.values(), translateFn);
 }
 
 function getAllStatisticsDateAggregationTypes(translateFn) {
-    const aggregationTypes = [];
-
-    for (const aggregationTypeField in statisticsConstants.allDateAggregationTypes) {
-        if (!Object.prototype.hasOwnProperty.call(statisticsConstants.allDateAggregationTypes, aggregationTypeField)) {
-            continue;
-        }
-
-        const aggregationType = statisticsConstants.allDateAggregationTypes[aggregationTypeField];
-
-        aggregationTypes.push({
-            type: aggregationType.type,
-            displayName: translateFn(aggregationType.name)
-        });
-    }
-
-    return aggregationTypes;
+    return getLocalizedDisplayNameAndType(ChartDateAggregationType.values(), translateFn);
 }
 
 function getAllTransactionEditScopeTypes(translateFn) {
@@ -1746,8 +1675,16 @@ export function i18nFunctions(i18nGlobal) {
         getCategorizedAccountsWithDisplayBalance: (allVisibleAccounts, showAccountBalance, defaultCurrency, settingsStore, userStore, exchangeRatesStore) => getCategorizedAccountsWithDisplayBalance(allVisibleAccounts, showAccountBalance, defaultCurrency, userStore, settingsStore, exchangeRatesStore, i18nGlobal.t),
         getServerTipContent: (tipConfig) => getServerTipContent(tipConfig, i18nGlobal),
         joinMultiText: (textArray) => joinMultiText(textArray, i18nGlobal.t),
+        tt: (...args) => i18nGlobal.t(...args),
+        ti: (text, isTranslate) => translateIf(text, isTranslate, i18nGlobal.t),
+        te: (message) => translateError(message, i18nGlobal.t),
         setLanguage: (locale, force) => setLanguage(i18nGlobal, locale, force),
         setTimeZone: (timezone) => setTimeZone(timezone),
         initLocale: (lastUserLanguage, timezone) => initLocale(i18nGlobal, lastUserLanguage, timezone)
     };
+}
+
+export function useI18n() {
+    const i18nGlobal = useVueI18n();
+    return i18nFunctions(i18nGlobal);
 }

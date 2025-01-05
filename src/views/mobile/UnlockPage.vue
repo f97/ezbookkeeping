@@ -12,7 +12,7 @@
                 </template>
             </f7-list-item>
             <f7-list-item class="list-item-pincode-input padding-horizontal margin-horizontal">
-                <pin-code-input :secure="true" :length="6" v-model="pinCode" @pincode:confirm="unlockByPin" />
+                <pin-code-input :secure="true" :length="6" :auto-confirm="true" v-model="pinCode" @pincode:confirm="unlockByPin" />
             </f7-list-item>
         </f7-list>
 
@@ -74,7 +74,7 @@ import { useTransactionsStore } from '@/stores/transaction.js';
 import { useExchangeRatesStore } from '@/stores/exchangeRates.js';
 
 import { APPLICATION_LOGO_PATH } from '@/consts/asset.ts';
-import logger from '@/lib/logger.js';
+import logger from '@/lib/logger.ts';
 import webauthn from '@/lib/webauthn.js';
 import { setExpenseAndIncomeAmountColor } from '@/lib/ui/common.ts';
 import { isModalShowing } from '@/lib/ui/mobile.js';

@@ -32,7 +32,7 @@
                                 <v-row>
                                     <v-col cols="12">
                                         <pin-code-input :disabled="verifyingByWebAuthn" :autofocus="true"
-                                                        :secure="true" :length="6"
+                                                        :secure="true" :length="6" :auto-confirm="true"
                                                         v-model="pinCode" @pincode:confirm="unlockByPin" />
                                     </v-col>
 
@@ -119,7 +119,7 @@ import { useExchangeRatesStore } from '@/stores/exchangeRates.js';
 
 import { APPLICATION_LOGO_PATH } from '@/consts/asset.ts';
 import { ThemeType } from '@/core/theme.ts';
-import logger from '@/lib/logger.js';
+import logger from '@/lib/logger.ts';
 import webauthn from '@/lib/webauthn.js';
 import { setExpenseAndIncomeAmountColor } from '@/lib/ui/common.ts';
 

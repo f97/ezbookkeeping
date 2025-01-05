@@ -33,7 +33,7 @@
                     <v-row class="mb-3">
                         <v-col cols="12" md="12">
                             <div style="max-width: 428px">
-                                <pin-code-input :secure="true" :length="6" v-model="pinCode" />
+                                <pin-code-input :secure="true" :length="6" v-model="pinCode" @pincode:confirm="confirm" />
                             </div>
                         </v-col>
                     </v-row>
@@ -66,7 +66,7 @@ import { useSettingsStore } from '@/stores/setting.js';
 import { useUserStore } from '@/stores/user.js';
 import { useTransactionsStore } from '@/stores/transaction.js';
 
-import logger from '@/lib/logger.js';
+import logger from '@/lib/logger.ts';
 import webauthn from '@/lib/webauthn.js';
 
 export default {
@@ -147,6 +147,13 @@ export default {
         });
     },
     methods: {
+        confirm() {
+            if (this.isEnableApplicationLock) {
+                this.disable();
+            } else {
+                this.enable();
+            }
+        },
         enable() {
             if (this.settingsStore.appSettings.applicationLock) {
                 this.$refs.snackbar.showMessage('Application lock has been enabled');
