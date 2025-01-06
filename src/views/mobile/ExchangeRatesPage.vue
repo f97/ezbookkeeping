@@ -92,9 +92,9 @@
 
 <script>
 import { mapStores } from 'pinia';
-import { useSettingsStore } from '@/stores/setting.js';
-import { useUserStore } from '@/stores/user.js';
-import { useExchangeRatesStore } from '@/stores/exchangeRates.js';
+import { useSettingsStore } from '@/stores/setting.ts';
+import { useUserStore } from '@/stores/user.ts';
+import { useExchangeRatesStore } from '@/stores/exchangeRates.ts';
 
 import { TRANSACTION_MIN_AMOUNT, TRANSACTION_MAX_AMOUNT } from '@/consts/transaction.ts';
 import { getConvertedAmount } from '@/lib/numeral.ts';

@@ -10,16 +10,17 @@ import routes from './router/mobile.js';
 
 import { mapStores } from 'pinia';
 import { useRootStore } from '@/stores/index.js';
-import { useSettingsStore } from '@/stores/setting.js';
-import { useUserStore } from '@/stores/user.js';
-import { useTokensStore } from '@/stores/token.js';
-import { useExchangeRatesStore } from '@/stores/exchangeRates.js';
+import { useSettingsStore } from '@/stores/setting.ts';
+import { useUserStore } from '@/stores/user.ts';
+import { useTokensStore } from '@/stores/token.ts';
+import { useExchangeRatesStore } from '@/stores/exchangeRates.ts';
 
 import { APPLICATION_LOGO_PATH } from '@/consts/asset.ts';
 import { ThemeType } from '@/core/theme.ts';
 import { isProduction } from '@/lib/version.ts';
 import { getTheme, isEnableAnimate } from '@/lib/settings.ts';
 import { initMapProvider } from '@/lib/map/index.ts';
+import { isUserLogined, isUserUnlocked } from '@/lib/userstate.ts';
 import { setExpenseAndIncomeAmountColor } from '@/lib/ui/common.ts';
 import { isModalShowing, setAppFontSize } from '@/lib/ui/mobile.js';
 
@@ -135,8 +136,8 @@ export default {
 
         setExpenseAndIncomeAmountColor(self.userStore.currentUserExpenseAmountColor, self.userStore.currentUserIncomeAmountColor);
 
-        if (self.$user.isUserLogined()) {
-            if (!self.settingsStore.appSettings.applicationLock || self.$user.isUserUnlocked()) {
+        if (isUserLogined()) {
+            if (!self.settingsStore.appSettings.applicationLock || isUserUnlocked()) {
                 // refresh token if user is logined
                 self.tokensStore.refreshTokenAndRevokeOldToken().then(response => {
                     if (response.user) {

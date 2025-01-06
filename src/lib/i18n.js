@@ -65,7 +65,7 @@ import {
 } from './account.js';
 
 import logger from './logger.ts';
-import services from './services.js';
+import services from './services.ts';
 
 function getLanguageDisplayName(translateFn, languageName) {
     return translateFn(`language.${languageName}`);
@@ -1509,8 +1509,8 @@ function setLanguage(i18nGlobal, locale, force) {
     }
 
     return {
-        defaultCurrency: defaultCurrency,
-        defaultFirstDayOfWeek: defaultFirstDayOfWeek
+        currency: defaultCurrency,
+        firstDayOfWeek: defaultFirstDayOfWeek
     };
 }
 

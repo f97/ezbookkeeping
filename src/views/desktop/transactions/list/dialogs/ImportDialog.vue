@@ -596,15 +596,15 @@
 import BatchReplaceDialog from './BatchReplaceDialog.vue';
 
 import { mapStores } from 'pinia';
-import { useSettingsStore } from '@/stores/setting.js';
-import { useUserStore } from '@/stores/user.js';
+import { useSettingsStore } from '@/stores/setting.ts';
+import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.js';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.js';
 import { useTransactionTagsStore } from '@/stores/transactionTag.js';
 import { useTransactionsStore } from '@/stores/transaction.js';
 import { useOverviewStore } from '@/stores/overview.js';
 import { useStatisticsStore } from '@/stores/statistics.js';
-import { useExchangeRatesStore } from '@/stores/exchangeRates.js';
+import { useExchangeRatesStore } from '@/stores/exchangeRates.ts';
 
 import { CategoryType } from '@/core/category.ts';
 import { TransactionType } from '@/core/transaction.ts';

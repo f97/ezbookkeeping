@@ -114,11 +114,12 @@ import { useTheme } from 'vuetify';
 
 import { mapStores } from 'pinia';
 import { useRootStore } from '@/stores/index.js';
-import { useSettingsStore } from '@/stores/setting.js';
+import { useSettingsStore } from '@/stores/setting.ts';
 
 import { APPLICATION_LOGO_PATH } from '@/consts/asset.ts';
 import { ThemeType } from '@/core/theme.ts';
 import { isUserVerifyEmailEnabled } from '@/lib/server_settings.ts';
+import { isUserLogined } from '@/lib/userstate.ts';
 
 import {
     mdiChevronLeft
@@ -183,7 +184,7 @@ export default {
 
         self.rootStore.verifyEmail({
             token: self.token,
-            requestNewToken: !self.$user.isUserLogined()
+            requestNewToken: !isUserLogined()
         }).then(() => {
             self.loading = false;
             self.verified = true;
@@ -219,7 +220,7 @@ export default {
             });
         },
         onSnackbarShowStateChanged(newValue) {
-            if (!newValue && this.verified && this.$user.isUserLogined()) {
+            if (!newValue && this.verified && isUserLogined()) {
                 this.$router.replace('/');
             }
         },

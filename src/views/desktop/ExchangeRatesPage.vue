@@ -137,9 +137,9 @@
 import { useDisplay } from 'vuetify';
 
 import { mapStores } from 'pinia';
-import { useSettingsStore } from '@/stores/setting.js';
-import { useUserStore } from '@/stores/user.js';
-import { useExchangeRatesStore } from '@/stores/exchangeRates.js';
+import { useSettingsStore } from '@/stores/setting.ts';
+import { useUserStore } from '@/stores/user.ts';
+import { useExchangeRatesStore } from '@/stores/exchangeRates.ts';
 
 import logger from '@/lib/logger.ts';
 import { getConvertedAmount } from '@/lib/numeral.ts';

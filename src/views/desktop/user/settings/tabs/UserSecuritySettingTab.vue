@@ -131,9 +131,9 @@
 <script>
 import { mapStores } from 'pinia';
 import { useRootStore } from '@/stores/index.js';
-import { useSettingsStore } from '@/stores/setting.js';
-import { useUserStore } from '@/stores/user.js';
-import { useTokensStore } from '@/stores/token.js';
+import { useSettingsStore } from '@/stores/setting.ts';
+import { useUserStore } from '@/stores/user.ts';
+import { useTokensStore } from '@/stores/token.ts';
 
 import { isEquals } from '@/lib/common.ts';
 import { parseSessionInfo } from '@/lib/session.ts';

@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 
-import { useSettingsStore } from '@/stores/setting.js';
-import { useUserStore } from './user.js';
-import { useExchangeRatesStore } from './exchangeRates.js';
+import { useSettingsStore } from '@/stores/setting.ts';
+import { useUserStore } from './user.ts';
+import { useExchangeRatesStore } from './exchangeRates.ts';
 
 import { isNumber, isEquals } from '@/lib/common.ts';
 import {
@@ -16,7 +16,7 @@ import {
     getThisYearFirstUnixTime,
     getThisYearLastUnixTime
 } from '@/lib/datetime.ts';
-import services from '@/lib/services.js';
+import services from '@/lib/services.ts';
 import logger from '@/lib/logger.ts';
 
 function updateTransactionDateRange(state) {

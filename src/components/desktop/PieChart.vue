@@ -7,8 +7,8 @@
 import { useTheme } from 'vuetify';
 
 import { mapStores } from 'pinia';
-import { useSettingsStore } from '@/stores/setting.js';
-import { useUserStore } from '@/stores/user.js';
+import { useSettingsStore } from '@/stores/setting.ts';
+import { useUserStore } from '@/stores/user.ts';
 
 import { DEFAULT_ICON_COLOR, DEFAULT_CHART_COLORS } from '@/consts/color.ts';
 import { ThemeType } from '@/core/theme.ts';

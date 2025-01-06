@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
 
-import { useSettingsStore } from './setting.js';
-import { useUserStore } from './user.js';
+import { useSettingsStore } from './setting.ts';
+import { useUserStore } from './user.ts';
 import { useAccountsStore } from './account.js';
 import { useTransactionCategoriesStore } from './transactionCategory.js';
-import { useExchangeRatesStore } from './exchangeRates.js';
+import { useExchangeRatesStore } from './exchangeRates.ts';
 
 import { DateRangeScene, DateRange } from '@/core/datetime';
 import { CategoryType } from '@/core/category.ts';
@@ -21,7 +21,7 @@ import {
 } from '@/core/statistics.ts';
 import { DEFAULT_ACCOUNT_ICON, DEFAULT_CATEGORY_ICON } from '@/consts/icon.ts';
 import { DEFAULT_ACCOUNT_COLOR, DEFAULT_CATEGORY_COLOR } from '@/consts/color.ts';
-import services from '@/lib/services.js';
+import services from '@/lib/services.ts';
 import logger from '@/lib/logger.ts';
 import {
     isEquals,

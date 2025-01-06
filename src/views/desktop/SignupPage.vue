@@ -239,15 +239,16 @@ import { useTheme } from 'vuetify';
 
 import { mapStores } from 'pinia';
 import { useRootStore } from '@/stores/index.js';
-import { useSettingsStore } from '@/stores/setting.js';
-import { useUserStore } from '@/stores/user.js';
+import { useSettingsStore } from '@/stores/setting.ts';
+import { useUserStore } from '@/stores/user.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.js';
-import { useExchangeRatesStore } from '@/stores/exchangeRates.js';
+import { useExchangeRatesStore } from '@/stores/exchangeRates.ts';
 
 import { APPLICATION_LOGO_PATH } from '@/consts/asset.ts';
 import { CategoryType } from '@/core/category.ts';
 import { ThemeType } from '@/core/theme.ts';
 import { categorizedArrayToPlainArray } from '@/lib/common.ts';
+import { isUserLogined } from '@/lib/userstate.ts';
 import { setExpenseAndIncomeAmountColor } from '@/lib/ui/common.ts';
 
 import {
@@ -436,7 +437,7 @@ export default {
                 user: self.user,
                 presetCategories: presetCategories
             }).then(response => {
-                if (!self.$user.isUserLogined()) {
+                if (!isUserLogined()) {
                     self.submitting = false;
 
                     if (self.usePresetCategories && !response.presetCategoriesSaved) {

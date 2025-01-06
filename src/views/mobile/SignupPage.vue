@@ -177,13 +177,14 @@
 <script>
 import { mapStores } from 'pinia';
 import { useRootStore } from '@/stores/index.js';
-import { useSettingsStore } from '@/stores/setting.js';
-import { useUserStore } from '@/stores/user.js';
+import { useSettingsStore } from '@/stores/setting.ts';
+import { useUserStore } from '@/stores/user.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.js';
-import { useExchangeRatesStore } from '@/stores/exchangeRates.js';
+import { useExchangeRatesStore } from '@/stores/exchangeRates.ts';
 
 import { CategoryType } from '@/core/category.ts';
 import { getNameByKeyValue, categorizedArrayToPlainArray } from '@/lib/common.ts';
+import { isUserLogined } from '@/lib/userstate.ts';
 import { setExpenseAndIncomeAmountColor } from '@/lib/ui/common.ts';
 
 export default {
@@ -307,7 +308,7 @@ export default {
                 user: self.user,
                 presetCategories: presetCategories
             }).then(response => {
-                if (!self.$user.isUserLogined()) {
+                if (!isUserLogined()) {
                     self.submitting = false;
                     self.$hideLoading();
 

@@ -24,7 +24,7 @@ import { type Ref, ref, computed, watch, useTemplateRef } from 'vue';
 interface PinCode {
     value: string;
     inputType: string;
-    inputTimer: number | null;
+    inputTimer: unknown | null;
     focused: boolean;
 }
 
@@ -43,7 +43,7 @@ const emit = defineEmits<{
 }>();
 
 const codes: Ref<PinCode[]> = ref([]);
-const pinCodeInputs: Ref<HTMLInputElement[]> = useTemplateRef('pin-code-input');
+const pinCodeInputs = useTemplateRef<HTMLInputElement[]>('pin-code-input');
 
 const finalPinCode = computed<string>(() => {
     let ret = '';
@@ -129,7 +129,7 @@ function setInputType(index: number): void {
 }
 
 function setFocus(index: number): void {
-    if (pinCodeInputs.value[index]) {
+    if (pinCodeInputs.value && pinCodeInputs.value[index]) {
         pinCodeInputs.value[index].focus();
         pinCodeInputs.value[index].select();
     }
@@ -239,13 +239,13 @@ function onPaste(index: number, event: ClipboardEvent): void {
     event.preventDefault();
 }
 
-function onInput(index: number, event: InputEvent): void {
-    if (!event.target.value) {
+function onInput(index: number, event: Event | { target: { value: string }, preventDefault: () => void }): void {
+    if (!event.target || !(event.target as { value: string }).value) {
         event.preventDefault();
         return;
     }
 
-    autoFillText(index, event.target.value);
+    autoFillText(index, (event.target as { value: string }).value);
 
     event.preventDefault();
 }

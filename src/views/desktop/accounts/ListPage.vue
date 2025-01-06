@@ -260,10 +260,10 @@ import EditDialog from './list/dialogs/EditDialog.vue';
 import { useDisplay } from 'vuetify';
 
 import { mapStores } from 'pinia';
-import { useSettingsStore } from '@/stores/setting.js';
-import { useUserStore } from '@/stores/user.js';
+import { useSettingsStore } from '@/stores/setting.ts';
+import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.js';
-import { useExchangeRatesStore } from '@/stores/exchangeRates.js';
+import { useExchangeRatesStore } from '@/stores/exchangeRates.ts';
 
 import { AccountType, AccountCategory } from '@/core/account.ts';
 import { isObject } from '@/lib/common.ts';
