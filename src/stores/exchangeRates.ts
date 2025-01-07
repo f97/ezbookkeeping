@@ -1,7 +1,7 @@
 import { type Ref, ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 
-import type {LatestExchangeRate, LatestExchangeRateResponse} from '@/models/exchange_rate.ts';
+import type { LatestExchangeRate, LatestExchangeRateResponse } from '@/models/exchange_rate.ts';
 
 import { isEquals } from '@/lib/common.ts';
 import { getCurrentUnixTime, formatUnixTime } from '@/lib/datetime.ts';
@@ -142,9 +142,9 @@ export const useExchangeRatesStore = defineStore('exchangeRates', () => {
     }
 
     return {
-        // state
+        // states
         latestExchangeRates,
-        // computed state
+        // computed states
         exchangeRatesLastUpdateTime,
         latestExchangeRateMap,
         // functions

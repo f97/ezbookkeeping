@@ -1,8 +1,10 @@
+import { useI18n as useVueI18n } from 'vue-i18n';
 import { f7, f7ready } from 'framework7-vue';
 
 import { FontSize, FONT_SIZE_PREVIEW_CLASSNAME_PREFIX } from '@/core/font.ts';
+import { translateError } from '@/locales/helper';
+
 import { isEnableAnimate } from '../settings.ts';
-import { translateError } from '../i18n.js';
 
 export function showAlert(message, confirmCallback, translateFn) {
     f7ready((f7) => {
@@ -191,4 +193,14 @@ export function scrollToSelectedItem(parentEl, containerSelector, selectedItemSe
     }
 
     container.scrollTop(targetPos);
+}
+
+export function useI18nUIComponents() {
+    const i18nGlobal = useVueI18n();
+
+    return {
+        showAlert: (message, confirmCallback) => showAlert(message, confirmCallback, i18nGlobal.t),
+        showConfirm: (message, confirmCallback, cancelCallback) => showConfirm(message, confirmCallback, cancelCallback, i18nGlobal.t),
+        showToast: (message, timeout) => showToast(message, timeout, i18nGlobal.t)
+    };
 }
