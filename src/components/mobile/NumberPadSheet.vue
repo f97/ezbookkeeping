@@ -228,33 +228,28 @@ function inputNum(num: number): void {
     currentValue.value = newValue;
 }
 
-function inputDoubleNum(num: number): void {
-    inputNum(num);
-    inputNum(num);
-}
-
 function inputTripleNum(num: number): void {
     inputNum(num);
     inputNum(num);
     inputNum(num);
 }
 
-function pasteFromClipboard(): void {
-    navigator.clipboard.readText()
-        .then((clipboardText) => {
-            // Remove all characters except digits and dots (.)
-            const sanitizedText = clipboardText.replace(/[^0-9.]/g, '');
-            const num = parseFloat(sanitizedText); // Convert the sanitized string to a floating-point number
+async function pasteFromClipboard(): void {
+    try {
+        const clipboardText = await navigator.clipboard.readText();
+        // Remove all non-digit characters, keeping only numbers
+        const sanitizedText = clipboardText.replace(/\D/g, '');
+        
+        const num = parseInt(sanitizedText);
 
-            if (!isNaN(num)) {
-                this.inputNum(num); // Call inputNum with the processed number
-            } else {
-                this.$toast('Clipboard does not contain a valid numeric value!');
-            }
-        })
-        .catch((err) => {
-            this.$toast(err.message);
-        });
+        if (!isNaN(num)) {
+            this.inputNum(num);
+        } else {
+            this.$toast('Clipboard does not contain a valid numeric value!');
+        }
+    } catch (err) {
+        this.$toast(err.message);
+    }
 }
 
 function inputDecimalSeparator(): void {
