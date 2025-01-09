@@ -237,18 +237,17 @@ function inputTripleNum(num: number): void {
 async function pasteFromClipboard(): void {
     try {
         const clipboardText = await navigator.clipboard.readText();
-        // Remove all non-digit characters, keeping only numbers
         const sanitizedText = clipboardText.replace(/\D/g, '');
         
         const num = parseInt(sanitizedText);
 
         if (!isNaN(num)) {
-            this.inputNum(num);
+            inputNum(num);
         } else {
-            this.$toast('Clipboard does not contain a valid numeric value!');
+            showToast('Clipboard does not contain a valid numeric value!');
         }
     } catch (err) {
-        this.$toast(err.message);
+        showToast(err.message);
     }
 }
 
