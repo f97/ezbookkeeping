@@ -62,6 +62,11 @@ export interface LocalizedRecentMonthDateRange {
     readonly displayName: string;
 }
 
+export interface LocalizedMeridiemIndicator {
+    readonly values: string[];
+    readonly displayValues: string[];
+}
+
 export class YearUnixTime implements UnixTimeRange {
     public readonly year: number;
     public readonly minUnixTime: number;
@@ -494,7 +499,3 @@ export class DateRange implements TypeAndName {
         return dateRange?.isBillingCycle || false;
     }
 }
-
-export type AllDateTimeFormatMap = Record<string, LongDateFormat> | Record<string, ShortDateFormat> | Record<string, LongTimeFormat> | Record<string, ShortTimeFormat>;
-export type AllDateTimeFormatArray = LongDateFormat[] | ShortDateFormat[] | LongTimeFormat[] | ShortTimeFormat[];
-export type AllDateTimeFormatType = LongDateFormat | ShortDateFormat | LongTimeFormat | ShortTimeFormat;

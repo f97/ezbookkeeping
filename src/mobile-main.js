@@ -80,8 +80,8 @@ import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 
 import { getVersion, getBuildTime } from '@/lib/version.ts';
+import { getI18nOptions } from '@/locales/helpers.ts';
 import {
-    getI18nOptions,
     translateIf,
     i18nFunctions
 } from '@/locales/helper.js';
@@ -92,7 +92,7 @@ import {
     showLoading,
     hideLoading,
     routeBackOnError
-} from '@/lib/ui/mobile.js';
+} from '@/lib/ui/mobile.ts';
 
 import PinCodeInput from '@/components/common/PinCodeInput.vue';
 import MapView from '@/components/common/MapView.vue';
@@ -117,7 +117,7 @@ import MapSheet from '@/components/mobile/MapSheet.vue';
 import TransactionTagSelectionSheet from '@/components/mobile/TransactionTagSelectionSheet.vue';
 import ScheduleFrequencySheet from '@/components/mobile/ScheduleFrequencySheet.vue';
 
-import TextareaAutoSize from '@/directives/mobile/textareaAutoSize.js';
+import TextareaAutoSize from '@/directives/mobile/textareaAutoSize.ts';
 
 import '@/styles/mobile/global.css';
 import '@/styles/mobile/font-size-default.css';
