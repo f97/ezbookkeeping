@@ -328,7 +328,7 @@ import { mapStores } from 'pinia';
 import { useSettingsStore } from '@/stores/setting.ts';
 import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.js';
-import { useTransactionCategoriesStore } from '@/stores/transactionCategory.js';
+import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useStatisticsStore } from '@/stores/statistics.js';
 
 import { DateRangeScene, DateRange } from '@/core/datetime.ts';
@@ -728,7 +728,7 @@ export default {
             } else if (this.analysisType === StatisticsAnalysisType.TrendAnalysis) {
                 const chartDateType = getDateTypeByDateRange(getYearMonthFirstUnixTime(startTime), getYearMonthLastUnixTime(endTime), this.firstDayOfWeek, DateRangeScene.TrendAnalysis);
 
-                this.statisticsStore.updateTransactionStatisticsFilter({
+                changed = this.statisticsStore.updateTransactionStatisticsFilter({
                     trendChartDateType: chartDateType,
                     trendChartStartYearMonth: startTime,
                     trendChartEndYearMonth: endTime

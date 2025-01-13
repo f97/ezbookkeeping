@@ -1,4 +1,3 @@
-import { useI18n as useVueI18n } from 'vue-i18n';
 import moment from 'moment-timezone';
 
 import { DEFAULT_LANGUAGE, allLanguages } from '@/locales/index.ts';
@@ -11,8 +10,7 @@ import { PresetAmountColor } from '@/core/color.ts';
 import { AccountType, AccountCategory } from '@/core/account.ts';
 import { CategoryType } from '@/core/category.ts';
 import { TransactionEditScopeType, TransactionTagFilterType } from '@/core/transaction.ts';
-import { ScheduledTemplateFrequencyType } from '@/core/template.ts';
-import { CategoricalChartType, TrendChartType, ChartDataType, ChartSortingType, ChartDateAggregationType } from '@/core/statistics.ts';
+import { CategoricalChartType, TrendChartType, ChartSortingType, ChartDateAggregationType } from '@/core/statistics.ts';
 
 import { UTC_TIMEZONE, ALL_TIMEZONES } from '@/consts/timezone.ts';
 import { ALL_CURRENCIES } from '@/consts/currency.ts';
@@ -49,14 +47,12 @@ import {
     appendDigitGroupingSymbol,
     parseAmount,
     formatAmount,
-    formatExchangeRateAmount,
     getAdaptiveDisplayAmountRate
 } from '@/lib/numeral.ts';
 
 import {
     getCurrencyFraction,
-    appendCurrencySymbol,
-    getAmountPrependAndAppendCurrencySymbol
+    appendCurrencySymbol
 } from '@/lib/currency.ts';
 
 import {
@@ -246,24 +242,6 @@ function getCurrencyUnitName(currencyCode, isPlural, translateFn) {
     return '';
 }
 
-function getAllMeridiemIndicators(translateFn) {
-    const allMeridiemIndicators = MeridiemIndicator.values();
-    const meridiemIndicatorNames = [];
-    const localizedMeridiemIndicatorNames = [];
-
-    for (let i = 0; i < allMeridiemIndicators.length; i++) {
-        const indicator = allMeridiemIndicators[i];
-
-        meridiemIndicatorNames.push(indicator.name);
-        localizedMeridiemIndicatorNames.push(translateFn(`datetime.${indicator.name}.content`));
-    }
-
-    return {
-        values: meridiemIndicatorNames,
-        displayValues: localizedMeridiemIndicatorNames
-    };
-}
-
 function getAllLongMonthNames(translateFn) {
     const ret = [];
     const allMonths = Month.values();
@@ -342,14 +320,6 @@ function getAllLongTimeFormats(translateFn) {
 function getAllShortTimeFormats(translateFn) {
     const defaultShortTimeFormatTypeName = translateFn('default.shortTimeFormat');
     return getDateTimeFormats(translateFn, ShortTimeFormat.values(), ShortTimeFormat.values(), 'format.shortTime', defaultShortTimeFormatTypeName, ShortTimeFormat.Default);
-}
-
-function getMonthShortName(monthName, translateFn) {
-    return translateFn(`datetime.${monthName}.short`);
-}
-
-function getMonthLongName(monthName, translateFn) {
-    return translateFn(`datetime.${monthName}.long`);
 }
 
 function getMonthdayOrdinal(monthDay, translateFn) {
@@ -454,18 +424,6 @@ function getI18nShortMonthDayFormat(translateFn, formatTypeValue) {
     return getDateTimeFormat(translateFn, ShortDateFormat.all(), ShortDateFormat.values(), 'format.shortMonthDay', defaultShortDateFormatTypeName, ShortDateFormat.Default, formatTypeValue);
 }
 
-function isLongDateMonthAfterYear(translateFn, formatTypeValue) {
-    const defaultLongDateFormatTypeName = translateFn('default.longDateFormat');
-    const type = getDateTimeFormatType(LongDateFormat.all(), LongDateFormat.values(), formatTypeValue, defaultLongDateFormatTypeName, LongDateFormat.Default);
-    return type.isMonthAfterYear;
-}
-
-function isShortDateMonthAfterYear(translateFn, formatTypeValue) {
-    const defaultShortDateFormatTypeName = translateFn('default.shortDateFormat');
-    const type = getDateTimeFormatType(ShortDateFormat.all(), ShortDateFormat.values(), formatTypeValue, defaultShortDateFormatTypeName, ShortDateFormat.Default);
-    return type.isMonthAfterYear;
-}
-
 function getI18nLongTimeFormat(translateFn, formatTypeValue) {
     const defaultLongTimeFormatTypeName = translateFn('default.longTimeFormat');
     return getDateTimeFormat(translateFn, LongTimeFormat.values(), LongTimeFormat.values(), 'format.longTime', defaultLongTimeFormatTypeName, LongTimeFormat.Default, formatTypeValue);
@@ -485,30 +443,6 @@ function formatYearQuarter(translateFn, year, quarter) {
     } else {
         return '';
     }
-}
-
-function isLongTime24HourFormat(translateFn, formatTypeValue) {
-    const defaultLongTimeFormatTypeName = translateFn('default.longTimeFormat');
-    const type = getDateTimeFormatType(LongTimeFormat.all(), LongTimeFormat.values(), formatTypeValue, defaultLongTimeFormatTypeName, LongTimeFormat.Default);
-    return type.is24HourFormat;
-}
-
-function isLongTimeMeridiemIndicatorFirst(translateFn, formatTypeValue) {
-    const defaultLongTimeFormatTypeName = translateFn('default.longTimeFormat');
-    const type = getDateTimeFormatType(LongTimeFormat.all(), LongTimeFormat.values(), formatTypeValue, defaultLongTimeFormatTypeName, LongTimeFormat.Default);
-    return type.isMeridiemIndicatorFirst;
-}
-
-function isShortTime24HourFormat(translateFn, formatTypeValue) {
-    const defaultShortTimeFormatTypeName = translateFn('default.shortTimeFormat');
-    const type = getDateTimeFormatType(ShortTimeFormat.all(), ShortTimeFormat.values(), formatTypeValue, defaultShortTimeFormatTypeName, ShortTimeFormat.Default);
-    return type.is24HourFormat;
-}
-
-function isShortTimeMeridiemIndicatorFirst(translateFn, formatTypeValue) {
-    const defaultShortTimeFormatTypeName = translateFn('default.shortTimeFormat');
-    const type = getDateTimeFormatType(ShortTimeFormat.all(), ShortTimeFormat.values(), formatTypeValue, defaultShortTimeFormatTypeName, ShortTimeFormat.Default);
-    return type.isMeridiemIndicatorFirst;
 }
 
 function getDateTimeFormats(translateFn, allFormatMap, allFormatArray, localeFormatPathPrefix, localeDefaultFormatTypeName, systemDefaultFormatType) {
@@ -1036,21 +970,9 @@ function getFormattedAmountWithCurrency(value, currencyCode, translateFn, userSt
     return appendCurrencySymbol(value, currencyDisplayType, currencyCode, currencyUnit, currencyName, isPlural);
 }
 
-function getFormattedExchangeRateAmount(value, translateFn, userStore) {
-    const numberFormatOptions = getNumberFormatOptions(translateFn, userStore);
-    return formatExchangeRateAmount(value, numberFormatOptions);
-}
-
 function getAdaptiveAmountRate(amount1, amount2, fromExchangeRate, toExchangeRate, translateFn, userStore) {
     const numberFormatOptions = getNumberFormatOptions(translateFn, userStore);
     return getAdaptiveDisplayAmountRate(amount1, amount2, fromExchangeRate, toExchangeRate, numberFormatOptions);
-}
-
-function getAmountPrependAndAppendText(currencyCode, userStore, settingsStore, isPlural, translateFn) {
-    const currencyDisplayType = getCurrentCurrencyDisplayType(translateFn, userStore);
-    const currencyUnit = getCurrencyUnitName(currencyCode, isPlural, translateFn);
-    const currencyName = getCurrencyName(currencyCode, translateFn);
-    return getAmountPrependAndAppendCurrencySymbol(currencyDisplayType, currencyCode, currencyUnit, currencyName, isPlural);
 }
 
 function getAllExpenseIncomeAmountColors(translateFn, expenseOrIncome) {
@@ -1115,10 +1037,6 @@ function getAllTrendChartTypes(translateFn) {
     return getLocalizedDisplayNameAndType(TrendChartType.values(), translateFn);
 }
 
-function getAllStatisticsChartDataTypes(translateFn, analysisType) {
-    return getLocalizedDisplayNameAndType(ChartDataType.values(analysisType), translateFn);
-}
-
 function getAllStatisticsSortingTypes(translateFn) {
     return getLocalizedDisplayNameAndType(ChartSortingType.values(), translateFn);
 }
@@ -1133,10 +1051,6 @@ function getAllTransactionEditScopeTypes(translateFn) {
 
 function getAllTransactionTagFilterTypes(translateFn) {
     return getLocalizedDisplayNameAndType(TransactionTagFilterType.values(), translateFn);
-}
-
-function getAllTransactionScheduledFrequencyTypes(translateFn) {
-    return getLocalizedDisplayNameAndType(ScheduledTemplateFrequencyType.values(), translateFn);
 }
 
 function getAllTransactionDefaultCategories(categoryType, locale, translateFn) {
@@ -1301,16 +1215,6 @@ function getAllSupportedImportFileTypes(i18nGlobal, translateFn) {
     }
 
     return allSupportedImportFileTypes;
-}
-
-function getEnableDisableOptions(translateFn) {
-    return [{
-        value: true,
-        displayName: translateFn('Enable')
-    },{
-        value: false,
-        displayName: translateFn('Disable')
-    }];
 }
 
 function getCategorizedAccountsWithDisplayBalance(allVisibleAccounts, showAccountBalance, defaultCurrency, userStore, settingsStore, exchangeRatesStore, translateFn) {
@@ -1571,7 +1475,6 @@ export function i18nFunctions(i18nGlobal) {
         getDefaultCurrency: () => getDefaultCurrency(i18nGlobal.t),
         getDefaultFirstDayOfWeek: () => getDefaultFirstDayOfWeek(i18nGlobal.t),
         getCurrencyName: (currencyCode) => getCurrencyName(currencyCode, i18nGlobal.t),
-        getAllMeridiemIndicators: () => getAllMeridiemIndicators(i18nGlobal.t),
         getAllLongMonthNames: () => getAllLongMonthNames(i18nGlobal.t),
         getAllShortMonthNames: () => getAllShortMonthNames(i18nGlobal.t),
         getAllLongWeekdayNames: () => getAllLongWeekdayNames(i18nGlobal.t),
@@ -1581,8 +1484,6 @@ export function i18nFunctions(i18nGlobal) {
         getAllShortDateFormats: () => getAllShortDateFormats(i18nGlobal.t),
         getAllLongTimeFormats: () => getAllLongTimeFormats(i18nGlobal.t),
         getAllShortTimeFormats: () => getAllShortTimeFormats(i18nGlobal.t),
-        getMonthShortName: (month) => getMonthShortName(month, i18nGlobal.t),
-        getMonthLongName: (month) => getMonthLongName(month, i18nGlobal.t),
         getMonthdayOrdinal: (monthDay) => getMonthdayOrdinal(monthDay, i18nGlobal.t),
         getMonthdayShortName: (monthDay) => getMonthdayShortName(monthDay, i18nGlobal.t),
         getWeekdayShortName: (weekDay) => getWeekdayShortName(weekDay, i18nGlobal.t),
@@ -1602,12 +1503,6 @@ export function i18nFunctions(i18nGlobal) {
         formatUnixTimeToLongTime: (userStore, unixTime, utcOffset, currentUtcOffset) => formatUnixTime(unixTime, getI18nLongTimeFormat(i18nGlobal.t, userStore.currentUserLongTimeFormat), utcOffset, currentUtcOffset),
         formatUnixTimeToShortTime: (userStore, unixTime, utcOffset, currentUtcOffset) => formatUnixTime(unixTime, getI18nShortTimeFormat(i18nGlobal.t, userStore.currentUserShortTimeFormat), utcOffset, currentUtcOffset),
         formatYearQuarter: (year, quarter) => formatYearQuarter(i18nGlobal.t, year, quarter),
-        isLongDateMonthAfterYear: (userStore) => isLongDateMonthAfterYear(i18nGlobal.t, userStore.currentUserLongDateFormat),
-        isShortDateMonthAfterYear: (userStore) => isShortDateMonthAfterYear(i18nGlobal.t, userStore.currentUserShortDateFormat),
-        isLongTime24HourFormat: (userStore) => isLongTime24HourFormat(i18nGlobal.t, userStore.currentUserLongTimeFormat),
-        isLongTimeMeridiemIndicatorFirst: (userStore) => isLongTimeMeridiemIndicatorFirst(i18nGlobal.t, userStore.currentUserLongTimeFormat),
-        isShortTime24HourFormat: (userStore) => isShortTime24HourFormat(i18nGlobal.t, userStore.currentUserShortTimeFormat),
-        isShortTimeMeridiemIndicatorFirst: (userStore) => isShortTimeMeridiemIndicatorFirst(i18nGlobal.t, userStore.currentUserShortTimeFormat),
         getAllTimezones: (includeSystemDefault) => getAllTimezones(includeSystemDefault, i18nGlobal.t),
         getTimezoneDifferenceDisplayText: (utcOffset) => getTimezoneDifferenceDisplayText(utcOffset, i18nGlobal.t),
         getAllCurrencies: () => getAllCurrencies(i18nGlobal.t),
@@ -1628,38 +1523,25 @@ export function i18nFunctions(i18nGlobal) {
         parseAmount: (userStore, value) => getParsedAmountNumber(value, i18nGlobal.t, userStore),
         formatAmount: (userStore, value, currencyCode) => getFormattedAmount(value, i18nGlobal.t, userStore, currencyCode),
         formatAmountWithCurrency: (settingsStore, userStore, value, currencyCode) => getFormattedAmountWithCurrency(value, currencyCode, i18nGlobal.t, userStore, settingsStore),
-        formatExchangeRateAmount: (userStore, value) => getFormattedExchangeRateAmount(value, i18nGlobal.t, userStore),
         getAdaptiveAmountRate: (userStore, amount1, amount2, fromExchangeRate, toExchangeRate) => getAdaptiveAmountRate(amount1, amount2, fromExchangeRate, toExchangeRate, i18nGlobal.t, userStore),
-        getAmountPrependAndAppendText: (settingsStore, userStore, currencyCode, isPlural) => getAmountPrependAndAppendText(currencyCode, userStore, settingsStore, isPlural, i18nGlobal.t),
         getAllExpenseAmountColors: () => getAllExpenseIncomeAmountColors(i18nGlobal.t, 1),
         getAllIncomeAmountColors: () => getAllExpenseIncomeAmountColors(i18nGlobal.t, 2),
         getAllAccountCategories: () => getAllAccountCategories(i18nGlobal.t),
         getAllAccountTypes: () => getAllAccountTypes(i18nGlobal.t),
         getAllCategoricalChartTypes: () => getAllCategoricalChartTypes(i18nGlobal.t),
         getAllTrendChartTypes: () => getAllTrendChartTypes(i18nGlobal.t),
-        getAllStatisticsChartDataTypes: (analysisType) => getAllStatisticsChartDataTypes(i18nGlobal.t, analysisType),
         getAllStatisticsSortingTypes: () => getAllStatisticsSortingTypes(i18nGlobal.t),
         getAllStatisticsDateAggregationTypes: () => getAllStatisticsDateAggregationTypes(i18nGlobal.t),
         getAllTransactionEditScopeTypes: () => getAllTransactionEditScopeTypes(i18nGlobal.t),
         getAllTransactionTagFilterTypes: () => getAllTransactionTagFilterTypes(i18nGlobal.t),
-        getAllTransactionScheduledFrequencyTypes: () => getAllTransactionScheduledFrequencyTypes(i18nGlobal.t),
         getAllTransactionDefaultCategories: (categoryType, locale) => getAllTransactionDefaultCategories(categoryType, locale, i18nGlobal.t),
         getAllDisplayExchangeRates: (settingsStore, exchangeRatesData) => getAllDisplayExchangeRates(settingsStore, exchangeRatesData, i18nGlobal.t),
         getAllSupportedImportFileTypes: () => getAllSupportedImportFileTypes(i18nGlobal, i18nGlobal.t),
-        getEnableDisableOptions: () => getEnableDisableOptions(i18nGlobal.t),
         getCategorizedAccountsWithDisplayBalance: (allVisibleAccounts, showAccountBalance, defaultCurrency, settingsStore, userStore, exchangeRatesStore) => getCategorizedAccountsWithDisplayBalance(allVisibleAccounts, showAccountBalance, defaultCurrency, userStore, settingsStore, exchangeRatesStore, i18nGlobal.t),
         getServerTipContent: (tipConfig) => getServerTipContent(tipConfig, i18nGlobal),
         joinMultiText: (textArray) => joinMultiText(textArray, i18nGlobal.t),
-        tt: (...args) => i18nGlobal.t(...args),
-        ti: (text, isTranslate) => translateIf(text, isTranslate, i18nGlobal.t),
-        te: (message) => translateError(message, i18nGlobal.t),
         setLanguage: (locale, force) => setLanguage(i18nGlobal, locale, force),
         setTimeZone: (timezone) => setTimeZone(timezone),
         initLocale: (lastUserLanguage, timezone) => initLocale(i18nGlobal, lastUserLanguage, timezone)
     };
-}
-
-export function useI18n() {
-    const i18nGlobal = useVueI18n();
-    return i18nFunctions(i18nGlobal);
 }

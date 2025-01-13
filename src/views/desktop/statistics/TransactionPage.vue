@@ -287,13 +287,15 @@
                                   :min-time="query.categoricalChartStartTime"
                                   :max-time="query.categoricalChartEndTime"
                                   v-model:show="showCustomDateRangeDialog"
-                                  @dateRange:change="setCustomDateFilter" />
+                                  @dateRange:change="setCustomDateFilter"
+                                  @error="showError" />
 
     <month-range-selection-dialog :title="$t('Custom Date Range')"
                                   :min-time="query.trendChartStartYearMonth"
                                   :max-time="query.trendChartEndYearMonth"
                                   v-model:show="showCustomMonthRangeDialog"
-                                  @dateRange:change="setCustomDateFilter" />
+                                  @dateRange:change="setCustomDateFilter"
+                                  @error="showError" />
 
     <v-dialog width="800" v-model="showFilterAccountDialog">
         <account-filter-settings-card type="statisticsCurrent" :dialog-mode="true"
@@ -320,7 +322,7 @@ import { mapStores } from 'pinia';
 import { useSettingsStore } from '@/stores/setting.ts';
 import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.js';
-import { useTransactionCategoriesStore } from '@/stores/transactionCategory.js';
+import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useStatisticsStore } from '@/stores/statistics.js';
 
 import { DateRangeScene, DateRange } from '@/core/datetime.ts';
@@ -1041,6 +1043,9 @@ export default {
         },
         clickTrendChartItem(item) {
             this.$router.push(this.getTransactionItemLinkUrl(item.itemId, item.dateRange));
+        },
+        showError(message) {
+            this.$refs.snackbar.showError(message);
         },
         getDisplayAmount(amount, currency, textLimit) {
             amount = this.getDisplayCurrency(amount, currency);

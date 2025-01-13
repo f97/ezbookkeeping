@@ -1,4 +1,4 @@
-import type { TypeAndName } from '@/core/base.ts';
+import type { TypeAndName, TypeAndDisplayName } from '@/core/base.ts';
 
 export interface NumberFormatOptions {
     digitGrouping?: number;
@@ -8,7 +8,25 @@ export interface NumberFormatOptions {
     trimTailZero?: boolean;
 }
 
-export class DecimalSeparator implements TypeAndName {
+export interface NumeralSymbolType {
+    readonly type: number;
+    readonly name: string;
+    readonly symbol: string;
+}
+
+export interface LocalizedNumeralSymbolType extends TypeAndDisplayName {
+    readonly type: number;
+    readonly symbol: string;
+    readonly displayName: string;
+}
+
+export interface LocalizedDigitGroupingType extends TypeAndDisplayName {
+    readonly type: number;
+    readonly enabled: boolean;
+    readonly displayName: string;
+}
+
+export class DecimalSeparator implements TypeAndName, NumeralSymbolType {
     private static readonly allInstances: DecimalSeparator[] = [];
     private static readonly allInstancesByType: Record<number, DecimalSeparator> = {};
     private static readonly allInstancesByTypeName: Record<string, DecimalSeparator> = {};
@@ -16,7 +34,6 @@ export class DecimalSeparator implements TypeAndName {
     public static readonly LanguageDefaultType: number = 0;
     public static readonly Dot = new DecimalSeparator(1, 'Dot', '.');
     public static readonly Comma = new DecimalSeparator(2, 'Comma', ',');
-    public static readonly Space = new DecimalSeparator(3, 'Space', ' ');
 
     public static readonly Default = DecimalSeparator.Dot;
 
@@ -38,16 +55,16 @@ export class DecimalSeparator implements TypeAndName {
         return DecimalSeparator.allInstances;
     }
 
-    public static valueOf(type: number): DecimalSeparator {
+    public static valueOf(type: number): DecimalSeparator | undefined {
         return DecimalSeparator.allInstancesByType[type];
     }
 
-    public static parse(typeName: string): DecimalSeparator {
+    public static parse(typeName: string): DecimalSeparator | undefined {
         return DecimalSeparator.allInstancesByTypeName[typeName];
     }
 }
 
-export class DigitGroupingSymbol implements TypeAndName {
+export class DigitGroupingSymbol implements TypeAndName, NumeralSymbolType {
     private static readonly allInstances: DigitGroupingSymbol[] = [];
     private static readonly allInstancesByType: Record<number, DigitGroupingSymbol> = {};
     private static readonly allInstancesByTypeName: Record<string, DigitGroupingSymbol> = {};
@@ -78,11 +95,11 @@ export class DigitGroupingSymbol implements TypeAndName {
         return DigitGroupingSymbol.allInstances;
     }
 
-    public static valueOf(type: number): DigitGroupingSymbol {
+    public static valueOf(type: number): DigitGroupingSymbol | undefined {
         return DigitGroupingSymbol.allInstancesByType[type];
     }
 
-    public static parse(typeName: string): DigitGroupingSymbol {
+    public static parse(typeName: string): DigitGroupingSymbol | undefined {
         return DigitGroupingSymbol.allInstancesByTypeName[typeName];
     }
 }
@@ -118,11 +135,11 @@ export class DigitGroupingType implements TypeAndName {
         return DigitGroupingType.allInstances;
     }
 
-    public static valueOf(type: number): DigitGroupingType {
+    public static valueOf(type: number): DigitGroupingType | undefined {
         return DigitGroupingType.allInstancesByType[type];
     }
 
-    public static parse(typeName: string): DigitGroupingType {
+    public static parse(typeName: string): DigitGroupingType | undefined {
         return DigitGroupingType.allInstancesByTypeName[typeName];
     }
 }
@@ -155,7 +172,7 @@ export class AmountFilterType {
         return AmountFilterType.allInstances;
     }
 
-    public static valueOf(type: string): AmountFilterType {
+    public static valueOf(type: string): AmountFilterType | undefined {
         return AmountFilterType.allInstancesByType[type];
     }
 }

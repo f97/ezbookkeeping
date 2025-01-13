@@ -585,7 +585,8 @@
                                  :min-time="filters.minDatetime"
                                  :max-time="filters.maxDatetime"
                                  v-model:show="showCustomDateRangeDialog"
-                                 @dateRange:change="changeCustomDateFilter" />
+                                 @dateRange:change="changeCustomDateFilter"
+                                 @error="showError" />
     <batch-replace-dialog ref="batchReplaceDialog" />
     <confirm-dialog ref="confirmDialog"/>
     <snack-bar ref="snackbar" />
@@ -599,8 +600,8 @@ import { mapStores } from 'pinia';
 import { useSettingsStore } from '@/stores/setting.ts';
 import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.js';
-import { useTransactionCategoriesStore } from '@/stores/transactionCategory.js';
-import { useTransactionTagsStore } from '@/stores/transactionTag.js';
+import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
+import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
 import { useTransactionsStore } from '@/stores/transaction.js';
 import { useOverviewStore } from '@/stores/overview.ts';
 import { useStatisticsStore } from '@/stores/statistics.js';
@@ -627,7 +628,7 @@ import {
     getTransactionPrimaryCategoryName,
     getTransactionSecondaryCategoryName,
     getFirstAvailableCategoryId
-} from '@/lib/category.js';
+} from '@/lib/category.ts';
 
 import {
     mdiFilterOutline,
@@ -1567,6 +1568,9 @@ export default {
                     });
                 }
             });
+        },
+        showError(message) {
+            this.$refs.snackbar.showError(message);
         },
         getAllUsedCategoryNames() {
             const categoryNames = {};

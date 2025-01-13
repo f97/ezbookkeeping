@@ -66,11 +66,10 @@
 </template>
 
 <script setup lang="ts">
-import { type Ref, ref, computed } from 'vue';
+import { ref, computed } from 'vue';
 
-import { useI18n } from '@/locales/helper.js';
+import { useI18n } from '@/locales/helpers.ts';
 import { useI18nUIComponents } from '@/lib/ui/mobile.ts';
-import { useUserStore } from '@/stores/user.ts';
 
 import { ALL_CURRENCIES } from '@/consts/currency.ts';
 import { isString, isNumber, removeAll } from '@/lib/common.ts';
@@ -84,7 +83,6 @@ const {
     formatAmount
 } = useI18n();
 const { showToast } = useI18nUIComponents();
-const userStore = useUserStore();
 
 const props = defineProps<{
     modelValue: number | string;
@@ -95,15 +93,15 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    (e: 'update:modelValue', value: number): void,
-    (e: 'update:show', value: boolean): void
+    (e: 'update:modelValue', value: number): void;
+    (e: 'update:show', value: boolean): void;
 }>();
 
-const previousValue: Ref<string> = ref('');
-const currentSymbol: Ref<string> = ref('');
-const currentValue: Ref<string> = ref(getStringValue(props.modelValue));
+const previousValue = ref<string>('');
+const currentSymbol = ref<string>('');
+const currentValue = ref<string>(getStringValue(props.modelValue));
 
-const decimalSeparator = computed<string>(() => getCurrentDecimalSeparator(userStore));
+const decimalSeparator = computed<string>(() => getCurrentDecimalSeparator());
 
 const supportDecimalSeparator = computed<boolean>(() => {
     if (!props.currency || !ALL_CURRENCIES[props.currency] || !isNumber(ALL_CURRENCIES[props.currency].fraction)) {
@@ -114,8 +112,8 @@ const supportDecimalSeparator = computed<boolean>(() => {
 });
 
 const currentDisplay = computed<string>(() => {
-    const finalPreviousValue = appendDigitGroupingSymbol(userStore, previousValue.value);
-    const finalCurrentValue = appendDigitGroupingSymbol(userStore, currentValue.value);
+    const finalPreviousValue = appendDigitGroupingSymbol(previousValue.value);
+    const finalCurrentValue = appendDigitGroupingSymbol(currentValue.value);
 
     if (currentSymbol.value) {
         return `${finalPreviousValue} ${currentSymbol.value} ${finalCurrentValue}`;
@@ -147,15 +145,15 @@ function getStringValue(value: number | string): string {
         return '';
     }
 
-    let str = formatAmount(userStore, value, props.currency);
+    let str = formatAmount(value, props.currency);
 
-    const digitGroupingSymbol = getCurrentDigitGroupingSymbol(userStore);
+    const digitGroupingSymbol = getCurrentDigitGroupingSymbol();
 
     if (str.indexOf(digitGroupingSymbol) >= 0) {
         str = removeAll(str, digitGroupingSymbol);
     }
 
-    const decimalSeparator = getCurrentDecimalSeparator(userStore);
+    const decimalSeparator = getCurrentDecimalSeparator();
     const decimalSeparatorPos = str.indexOf(decimalSeparator);
 
     if (decimalSeparatorPos < 0) {
@@ -210,7 +208,7 @@ function inputNum(num: number): void {
     const newValue = currentValue.value + num.toString();
 
     if (isNumber(props.minValue)) {
-        const current = parseAmount(userStore, newValue);
+        const current = parseAmount(newValue);
 
         if (current < (props.minValue as number)) {
             return;
@@ -218,7 +216,7 @@ function inputNum(num: number): void {
     }
 
     if (isNumber(props.maxValue)) {
-        const current = parseAmount(userStore, newValue);
+        const current = parseAmount(newValue);
 
         if (current > (props.maxValue as number)) {
             return;
@@ -309,8 +307,8 @@ function clear(): void {
 
 function confirm(): boolean {
     if (currentSymbol.value && currentValue.value.length >= 1) {
-        const previous = parseAmount(userStore, previousValue.value);
-        const current = parseAmount(userStore, currentValue.value);
+        const previous = parseAmount(previousValue.value);
+        const current = parseAmount(currentValue.value);
         let finalValue = 0;
 
         switch (currentSymbol.value) {
@@ -353,7 +351,7 @@ function confirm(): boolean {
 
         return true;
     } else {
-        const value = parseAmount(userStore, currentValue.value);
+        const value = parseAmount(currentValue.value);
 
         emit('update:modelValue', value);
         close();

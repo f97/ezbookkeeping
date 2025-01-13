@@ -12,3 +12,10 @@ export interface TypeAndDisplayName {
     readonly type: number;
     readonly displayName: string;
 }
+
+export interface LocalizedSwitchOption {
+    readonly value: boolean;
+    readonly displayName: string;
+}
+
+export type BeforeResolveFunction = (callback: () => void) => void;

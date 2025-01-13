@@ -112,7 +112,7 @@
                         <span>{{ $t('None') }}</span>
                     </div>
                 </template>
-                <tree-view-selection-sheet primary-key-field="id" primary-value-field="id" primary-title-field="name"
+                <tree-view-selection-sheet primary-key-field="id" primary-title-field="name"
                                            primary-icon-field="icon" primary-icon-type="category" primary-color-field="color"
                                            primary-hidden-field="hidden" primary-sub-items-field="subCategories"
                                            secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
@@ -143,7 +143,7 @@
                         <span>{{ $t('None') }}</span>
                     </div>
                 </template>
-                <tree-view-selection-sheet primary-key-field="id" primary-value-field="id" primary-title-field="name"
+                <tree-view-selection-sheet primary-key-field="id" primary-title-field="name"
                                            primary-icon-field="icon" primary-icon-type="category" primary-color-field="color"
                                            primary-hidden-field="hidden" primary-sub-items-field="subCategories"
                                            secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
@@ -174,7 +174,7 @@
                         <span>{{ $t('None') }}</span>
                     </div>
                 </template>
-                <tree-view-selection-sheet primary-key-field="id" primary-value-field="id" primary-title-field="name"
+                <tree-view-selection-sheet primary-key-field="id" primary-title-field="name"
                                            primary-icon-field="icon" primary-icon-type="category" primary-color-field="color"
                                            primary-hidden-field="hidden" primary-sub-items-field="subCategories"
                                            secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
@@ -431,10 +431,11 @@
 <script>
 import { mapStores } from 'pinia';
 import { useSettingsStore } from '@/stores/setting.ts';
+import { useEnvironmentsStore } from '@/stores/environment.ts';
 import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.js';
-import { useTransactionCategoriesStore } from '@/stores/transactionCategory.js';
-import { useTransactionTagsStore } from '@/stores/transactionTag.js';
+import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
+import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
 import { useTransactionsStore } from '@/stores/transaction.js';
 import { useTransactionTemplatesStore } from '@/stores/transactionTemplate.js';
 import { useExchangeRatesStore } from '@/stores/exchangeRates.ts';
@@ -462,7 +463,7 @@ import {
     getTransactionPrimaryCategoryName,
     getTransactionSecondaryCategoryName,
     getFirstAvailableCategoryId
-} from '@/lib/category.js';
+} from '@/lib/category.ts';
 import { setTransactionModelByTransaction } from '@/lib/transaction.js';
 import {
     isTransactionPicturesEnabled,
@@ -512,9 +513,9 @@ export default {
         };
     },
     computed: {
-        ...mapStores(useSettingsStore, useUserStore, useAccountsStore, useTransactionCategoriesStore, useTransactionTagsStore, useTransactionsStore, useTransactionTemplatesStore, useExchangeRatesStore),
+        ...mapStores(useSettingsStore, useEnvironmentsStore, useUserStore, useAccountsStore, useTransactionCategoriesStore, useTransactionTagsStore, useTransactionsStore, useTransactionTemplatesStore, useExchangeRatesStore),
         isDarkMode() {
-            return this.$root.isDarkMode;
+            return this.environmentsStore.framework7DarkMode;
         },
         title() {
             if (this.type === 'transaction') {

@@ -1,3 +1,4 @@
+import { type Ref, watch } from 'vue';
 import { useI18n as useVueI18n } from 'vue-i18n';
 import { f7, f7ready } from 'framework7-vue';
 import type { Dialog, Picker, Router } from 'framework7/types';
@@ -8,7 +9,7 @@ import { isEnableAnimate } from '../settings.ts';
 // @ts-expect-error the above file is migrating to ts
 import { translateError } from '@/locales/helper.js';
 
-interface Framework7Dom {
+export interface Framework7Dom {
     length: number;
     [index: number]: Element;
     find: (selector?: string) => Framework7Dom;
@@ -36,7 +37,7 @@ export function showAlert(message: string, confirmCallback: (dialog: Dialog.Dial
     });
 }
 
-export function showConfirm(message: string, confirmCallback: (dialog: Dialog.Dialog, e: Event) => void, cancelCallback: (dialog: Dialog.Dialog, e: Event) => void, translateFn: TranslateFunction): void {
+export function showConfirm(message: string, confirmCallback: (dialog: Dialog.Dialog, e: Event) => void, cancelCallback: ((dialog: Dialog.Dialog, e: Event) => void) | undefined, translateFn: TranslateFunction): void {
     f7ready((f7) => {
         f7.dialog.create({
             title: translateFn('global.app.title'),
@@ -66,7 +67,7 @@ export function showToast(message: string, timeout: number | undefined, translat
     });
 }
 
-export function showLoading(delayConditionFunc: () => boolean, delayMills: number): void {
+export function showLoading(delayConditionFunc?: () => boolean, delayMills?: number): void {
     if (!delayConditionFunc) {
         f7ready((f7) => {
             return f7.preloader.show();
@@ -89,7 +90,7 @@ export function hideLoading() {
     });
 }
 
-export function createInlinePicker(containerEl: HTMLElement, inputEl: HTMLElement, cols: Picker.ColumnParameters[], value: unknown[], events?: { change: (picker: Picker.Picker, value: unknown, displayValue: unknown) => void }): Picker.Picker {
+export function createInlinePicker(containerEl: string, inputEl: string, cols: Picker.ColumnParameters[], value: string[], events?: { change: (picker: Picker.Picker, value: unknown, displayValue: unknown) => void }): Picker.Picker {
     return f7.picker.create({
         containerEl: containerEl,
         inputEl: inputEl,
@@ -211,9 +212,26 @@ export function scrollToSelectedItem(parentEl: Framework7Dom, containerSelector:
 export function useI18nUIComponents() {
     const i18nGlobal = useVueI18n();
 
+    function routeBackOnError<T>(f7router: Router.Router, errorRef: Ref<T>): void {
+        const unwatch = watch(errorRef, (newValue) => {
+            if (newValue) {
+                setTimeout(() => {
+                    if (unwatch) {
+                        unwatch();
+                    }
+
+                    f7router.back();
+                }, 200);
+            }
+        }, {
+            immediate: true
+        });
+    }
+
     return {
         showAlert: (message: string, confirmCallback: (dialog: Dialog.Dialog, e: Event) => void) => showAlert(message, confirmCallback, i18nGlobal.t),
-        showConfirm: (message: string, confirmCallback: (dialog: Dialog.Dialog, e: Event) => void, cancelCallback: (dialog: Dialog.Dialog, e: Event) => void): void => showConfirm(message, confirmCallback, cancelCallback, i18nGlobal.t),
-        showToast: (message: string, timeout?: number): void => showToast(message, timeout, i18nGlobal.t)
+        showConfirm: (message: string, confirmCallback: (dialog: Dialog.Dialog, e: Event) => void, cancelCallback?: (dialog: Dialog.Dialog, e: Event) => void): void => showConfirm(message, confirmCallback, cancelCallback, i18nGlobal.t),
+        showToast: (message: string, timeout?: number): void => showToast(message, timeout, i18nGlobal.t),
+        routeBackOnError
     }
 }

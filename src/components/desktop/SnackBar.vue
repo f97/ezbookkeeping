@@ -9,24 +9,29 @@
 </template>
 
 <script setup lang="ts">
-import { type Ref, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 import { useI18n } from '@/locales/helpers.ts';
 
 import { isObject } from '@/lib/common.ts';
 
 const emit = defineEmits<{
-    (e: 'update:show', value: boolean): void
+    (e: 'update:show', value: boolean): void;
 }>();
 
 const { tt, te } = useI18n();
 
-const showState: Ref<boolean> = ref(false);
-const messageContent: Ref<string> = ref('');
+const showState= ref<boolean>(false);
+const messageContent = ref<string>('');
 
-function showMessage(message: string, options: Record<string, unknown>): void {
+function showMessage(message: string, options?: Record<string, unknown>): void {
     showState.value = true;
-    messageContent.value = tt(message, options);
+
+    if (options) {
+        messageContent.value = tt(message, options);
+    } else {
+        messageContent.value = tt(message);
+    }
 }
 
 function showError(error: string | { message: string }): void {
@@ -35,7 +40,7 @@ function showError(error: string | { message: string }): void {
     if (isObject(error) && (error as { message: string }).message) {
         messageContent.value = te((error as { message: string }).message);
     } else {
-        messageContent.value = te(error);
+        messageContent.value = te(error as string);
     }
 }
 

@@ -38,6 +38,15 @@ export function isYearMonthValid(year: number, month: number): boolean {
     return year > 0 && month >= 0 && month <= 11;
 }
 
+export function getYearMonthObjectFromUnixTime(unixTime: number): YearMonth {
+    const datetime = moment.unix(unixTime);
+
+    return {
+        year: datetime.year(),
+        month: datetime.month()
+    };
+}
+
 export function getYearMonthObjectFromString(yearMonth: string): YearMonth | null {
     if (!isString(yearMonth)) {
         return null;
@@ -228,12 +237,12 @@ export function getDay(date: SupportedDate): number {
 
 export function getDayOfWeekName(date: SupportedDate): string {
     const dayOfWeek = moment(date).days();
-    return WeekDay.valueOf(dayOfWeek).name;
+    return (WeekDay.valueOf(dayOfWeek) as WeekDay).name;
 }
 
 export function getMonthName(date: SupportedDate): string {
     const month = moment(date).month();
-    return Month.valueOf(month + 1).name;
+    return (Month.valueOf(month + 1) as Month).name;
 }
 
 export function getAMOrPM(hour: number): string {
