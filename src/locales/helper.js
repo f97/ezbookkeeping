@@ -314,12 +314,12 @@ function getAllShortDateFormats(translateFn) {
 
 function getAllLongTimeFormats(translateFn) {
     const defaultLongTimeFormatTypeName = translateFn('default.longTimeFormat');
-    return getDateTimeFormats(translateFn, LongTimeFormat.values(), LongTimeFormat.values(), 'format.longTime', defaultLongTimeFormatTypeName, LongTimeFormat.Default);
+    return getDateTimeFormats(translateFn, LongTimeFormat.all(), LongTimeFormat.values(), 'format.longTime', defaultLongTimeFormatTypeName, LongTimeFormat.Default);
 }
 
 function getAllShortTimeFormats(translateFn) {
     const defaultShortTimeFormatTypeName = translateFn('default.shortTimeFormat');
-    return getDateTimeFormats(translateFn, ShortTimeFormat.values(), ShortTimeFormat.values(), 'format.shortTime', defaultShortTimeFormatTypeName, ShortTimeFormat.Default);
+    return getDateTimeFormats(translateFn, ShortTimeFormat.all(), ShortTimeFormat.values(), 'format.shortTime', defaultShortTimeFormatTypeName, ShortTimeFormat.Default);
 }
 
 function getMonthdayOrdinal(monthDay, translateFn) {
@@ -426,12 +426,12 @@ function getI18nShortMonthDayFormat(translateFn, formatTypeValue) {
 
 function getI18nLongTimeFormat(translateFn, formatTypeValue) {
     const defaultLongTimeFormatTypeName = translateFn('default.longTimeFormat');
-    return getDateTimeFormat(translateFn, LongTimeFormat.values(), LongTimeFormat.values(), 'format.longTime', defaultLongTimeFormatTypeName, LongTimeFormat.Default, formatTypeValue);
+    return getDateTimeFormat(translateFn, LongTimeFormat.all(), LongTimeFormat.values(), 'format.longTime', defaultLongTimeFormatTypeName, LongTimeFormat.Default, formatTypeValue);
 }
 
 function getI18nShortTimeFormat(translateFn, formatTypeValue) {
     const defaultShortTimeFormatTypeName = translateFn('default.shortTimeFormat');
-    return getDateTimeFormat(translateFn, ShortTimeFormat.values(), ShortTimeFormat.values(), 'format.shortTime', defaultShortTimeFormatTypeName, ShortTimeFormat.Default, formatTypeValue);
+    return getDateTimeFormat(translateFn, ShortTimeFormat.all(), ShortTimeFormat.values(), 'format.shortTime', defaultShortTimeFormatTypeName, ShortTimeFormat.Default, formatTypeValue);
 }
 
 function formatYearQuarter(translateFn, year, quarter) {
@@ -1108,49 +1108,6 @@ function getAllTransactionDefaultCategories(categoryType, locale, translateFn) {
     return allCategories;
 }
 
-function getAllDisplayExchangeRates(settingsStore, exchangeRatesData, translateFn) {
-    if (!exchangeRatesData || !exchangeRatesData.exchangeRates) {
-        return [];
-    }
-
-    const availableExchangeRates = [];
-
-    for (let i = 0; i < exchangeRatesData.exchangeRates.length; i++) {
-        const exchangeRate = exchangeRatesData.exchangeRates[i];
-
-        availableExchangeRates.push({
-            currencyCode: exchangeRate.currency,
-            currencyDisplayName: getCurrencyName(exchangeRate.currency, translateFn),
-            rate: exchangeRate.rate
-        });
-    }
-
-    if (settingsStore.appSettings.currencySortByInExchangeRatesPage === CurrencySortingType.Name.type) {
-        availableExchangeRates.sort(function(c1, c2) {
-            return c1.currencyDisplayName.localeCompare(c2.currencyDisplayName);
-        });
-    } else if (settingsStore.appSettings.currencySortByInExchangeRatesPage === CurrencySortingType.CurrencyCode.type) {
-        availableExchangeRates.sort(function(c1, c2) {
-            return c1.currencyCode.localeCompare(c2.currencyCode);
-        });
-    } else if (settingsStore.appSettings.currencySortByInExchangeRatesPage === CurrencySortingType.ExchangeRate.type) {
-        availableExchangeRates.sort(function(c1, c2) {
-            const rate1 = parseFloat(c1.rate);
-            const rate2 = parseFloat(c2.rate);
-
-            if (rate1 > rate2) {
-                return 1;
-            } else if (rate1 < rate2) {
-                return -1;
-            } else {
-                return 0;
-            }
-        });
-    }
-
-    return availableExchangeRates;
-}
-
 function getAllSupportedImportFileTypes(i18nGlobal, translateFn) {
     const allSupportedImportFileTypes = [];
 
@@ -1535,7 +1492,6 @@ export function i18nFunctions(i18nGlobal) {
         getAllTransactionEditScopeTypes: () => getAllTransactionEditScopeTypes(i18nGlobal.t),
         getAllTransactionTagFilterTypes: () => getAllTransactionTagFilterTypes(i18nGlobal.t),
         getAllTransactionDefaultCategories: (categoryType, locale) => getAllTransactionDefaultCategories(categoryType, locale, i18nGlobal.t),
-        getAllDisplayExchangeRates: (settingsStore, exchangeRatesData) => getAllDisplayExchangeRates(settingsStore, exchangeRatesData, i18nGlobal.t),
         getAllSupportedImportFileTypes: () => getAllSupportedImportFileTypes(i18nGlobal, i18nGlobal.t),
         getCategorizedAccountsWithDisplayBalance: (allVisibleAccounts, showAccountBalance, defaultCurrency, settingsStore, userStore, exchangeRatesStore) => getCategorizedAccountsWithDisplayBalance(allVisibleAccounts, showAccountBalance, defaultCurrency, userStore, settingsStore, exchangeRatesStore, i18nGlobal.t),
         getServerTipContent: (tipConfig) => getServerTipContent(tipConfig, i18nGlobal),
