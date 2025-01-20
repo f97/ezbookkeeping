@@ -38,6 +38,7 @@ import {
 } from '@/core/numeral.ts';
 
 import {
+    type LocalizedCurrencyInfo,
     type CurrencyPrependAndAppendText,
     CurrencyDisplayType,
     CurrencySortingType
@@ -167,10 +168,6 @@ export function useI18n() {
     const userStore = useUserStore();
 
     // private functions
-    function getLanguageInfo(languageKey: string): LanguageInfo | undefined {
-        return ALL_LANGUAGES[languageKey];
-    }
-
     function getLanguageDisplayName(languageName: string): string {
         return t(`language.${languageName}`);
     }
@@ -532,6 +529,20 @@ export function useI18n() {
         return textArray.join(separator);
     }
 
+    function getServerTipContent(tipConfig: Record<string, string>): string {
+        if (!tipConfig) {
+            return '';
+        }
+
+        const currentLanguage = getCurrentLanguageTag();
+
+        if (isString(tipConfig[currentLanguage])) {
+            return tipConfig[currentLanguage];
+        }
+
+        return tipConfig['default'] || '';
+    }
+
     function getCurrentLanguageTag(): string {
         return locale.value;
     }
@@ -605,6 +616,29 @@ export function useI18n() {
         }];
     }
 
+    function getAllCurrencies(): LocalizedCurrencyInfo[] {
+        const allCurrencies: LocalizedCurrencyInfo[] = [];
+
+        for (const currencyCode in ALL_CURRENCIES) {
+            if (!Object.prototype.hasOwnProperty.call(ALL_CURRENCIES, currencyCode)) {
+                continue;
+            }
+
+            const localizedCurrencyInfo: LocalizedCurrencyInfo = {
+                currencyCode: currencyCode,
+                displayName: getCurrencyName(currencyCode)
+            };
+
+            allCurrencies.push(localizedCurrencyInfo);
+        }
+
+        allCurrencies.sort(function(c1, c2) {
+            return c1.displayName.localeCompare(c2.displayName);
+        })
+
+        return allCurrencies;
+    }
+
     function getAllMeridiemIndicators(): LocalizedMeridiemIndicator {
         const allMeridiemIndicators = MeridiemIndicator.values();
         const meridiemIndicatorNames = [];
@@ -643,7 +677,7 @@ export function useI18n() {
         return getAllWeekdayNames('min');
     }
 
-    function getAllWeekDays(firstDayOfWeek: number): TypeAndDisplayName[] {
+    function getAllWeekDays(firstDayOfWeek?: number): TypeAndDisplayName[] {
         const ret: TypeAndDisplayName[] = [];
         const allWeekDays = WeekDay.values();
 
@@ -948,6 +982,10 @@ export function useI18n() {
         }
 
         return availableExchangeRates;
+    }
+
+    function getLanguageInfo(languageKey: string): LanguageInfo | undefined {
+        return ALL_LANGUAGES[languageKey];
     }
 
     function getMonthShortName(monthName: string): string {
@@ -1298,6 +1336,7 @@ export function useI18n() {
         ti: translateIf,
         te: translateError,
         joinMultiText,
+        getServerTipContent,
         // get current language info
         getCurrentLanguageTag,
         getCurrentLanguageInfo,
@@ -1308,6 +1347,7 @@ export function useI18n() {
         // get all localized info of specified type
         getAllLanguageOptions,
         getAllEnableDisableOptions,
+        getAllCurrencies,
         getAllMeridiemIndicators,
         getAllLongMonthNames,
         getAllShortMonthNames,
@@ -1337,6 +1377,7 @@ export function useI18n() {
         getAllTransactionDefaultCategories,
         getAllDisplayExchangeRates,
         // get localized info
+        getLanguageInfo,
         getMonthShortName,
         getMonthLongName,
         getMonthdayOrdinal,
@@ -1362,6 +1403,8 @@ export function useI18n() {
         formatUnixTimeToShortDate: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedShortDateFormat(), utcOffset, currentUtcOffset),
         formatUnixTimeToLongYear: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedLongYearFormat(), utcOffset, currentUtcOffset),
         formatUnixTimeToShortYear: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedShortYearFormat(), utcOffset, currentUtcOffset),
+        formatUnixTimeToLongMonth: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, 'MMMM', utcOffset, currentUtcOffset),
+        formatUnixTimeToShortMonth: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, 'MMM', utcOffset, currentUtcOffset),
         formatUnixTimeToLongYearMonth: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedLongYearMonthFormat(), utcOffset, currentUtcOffset),
         formatUnixTimeToShortYearMonth: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedShortYearMonthFormat(), utcOffset, currentUtcOffset),
         formatUnixTimeToLongMonthDay: (unixTime: number, utcOffset?: number, currentUtcOffset?: number) => formatUnixTime(unixTime, getLocalizedLongMonthDayFormat(), utcOffset, currentUtcOffset),

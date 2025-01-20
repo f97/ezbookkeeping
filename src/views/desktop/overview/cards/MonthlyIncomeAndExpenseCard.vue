@@ -42,7 +42,7 @@ import {
 } from '@/lib/datetime.ts';
 import { getExpenseAndIncomeAmountColor } from '@/lib/ui/common.ts';
 
-interface MonthlyIncomeAndExpenseCardClickEvent {
+export interface MonthlyIncomeAndExpenseCardClickEvent {
     transactionType: TransactionType;
     monthStartTime: number;
 }
@@ -54,6 +54,7 @@ const props = defineProps<{
     isDarkMode?: boolean;
     enableClickItem?: boolean;
 }>();
+
 const emit = defineEmits<{
     (e: 'click', event: MonthlyIncomeAndExpenseCardClickEvent): void;
 }>();

@@ -81,10 +81,14 @@ import { useI18n } from '@/locales/helpers.ts';
 import { useI18nUIComponents, showLoading, hideLoading } from '@/lib/ui/mobile.ts';
 import { useDataManagementPageBase } from '@/views/base/users/DataManagementPageBase.ts';
 
-import { useRootStore } from '@/stores/index.js';
+import { useRootStore } from '@/stores/index.ts';
 import { useUserStore } from '@/stores/user.ts';
 
 import { isDataExportingEnabled } from '@/lib/server_settings.ts';
+
+const props = defineProps<{
+    f7router: Router.Router;
+}>();
 
 const { tt } = useI18n();
 const { showToast, routeBackOnError } = useI18nUIComponents();
@@ -92,10 +96,6 @@ const { dataStatistics, displayDataStatistics, getExportFileName } = useDataMana
 
 const rootStore = useRootStore();
 const userStore = useUserStore();
-
-const props = defineProps<{
-    f7router: Router.Router;
-}>();
 
 const loading = ref<boolean>(true);
 const loadingError = ref<unknown | null>(null);

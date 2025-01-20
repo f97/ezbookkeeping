@@ -78,7 +78,7 @@ import { useI18n } from '@/locales/helpers.ts';
 import { useI18nUIComponents, showLoading, hideLoading } from '@/lib/ui/mobile.ts';
 import { useAppSettingPageBase } from '@/views/base/settings/AppSettingsPageBase.ts';
 
-import { useRootStore } from '@/stores/index.js';
+import { useRootStore } from '@/stores/index.ts';
 import { useSettingsStore } from '@/stores/setting.ts';
 import { useUserStore } from '@/stores/user.ts';
 import { useExchangeRatesStore } from '@/stores/exchangeRates.ts';
@@ -86,6 +86,10 @@ import { useExchangeRatesStore } from '@/stores/exchangeRates.ts';
 import { getVersion, getDesktopVersionPath } from '@/lib/version.ts';
 import { isUserScheduledTransactionEnabled } from '@/lib/server_settings.ts';
 import { setExpenseAndIncomeAmountColor } from '@/lib/ui/common.ts';
+
+const props = defineProps<{
+    f7router: Router.Router;
+}>();
 
 const { tt, getCurrentLanguageTag, formatUnixTimeToLongDate, initLocale } = useI18n();
 const { showToast, showConfirm } = useI18nUIComponents();
@@ -95,10 +99,6 @@ const rootStore = useRootStore();
 const settingsStore = useSettingsStore();
 const userStore = useUserStore();
 const exchangeRatesStore = useExchangeRatesStore();
-
-const props = defineProps<{
-    f7router: Router.Router;
-}>();
 
 const version = `v${getVersion()}`;
 
@@ -168,7 +168,7 @@ function logout() {
     });
 }
 
-function onPageAfterIn() {
+function onPageAfterIn(): void {
     currentLocale.value = getCurrentLanguageTag();
 }
 </script>

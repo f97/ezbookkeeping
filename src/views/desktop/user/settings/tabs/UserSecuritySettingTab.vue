@@ -130,7 +130,7 @@
 
 <script>
 import { mapStores } from 'pinia';
-import { useRootStore } from '@/stores/index.js';
+import { useRootStore } from '@/stores/index.ts';
 import { useSettingsStore } from '@/stores/setting.ts';
 import { useUserStore } from '@/stores/user.ts';
 import { useTokensStore } from '@/stores/token.ts';
@@ -243,7 +243,7 @@ export default {
                     self.settingsStore.updateLocalizedDefaultSettings(localeDefaultSettings);
                 }
 
-                self.reloadSessions();
+                self.reloadSessions(true);
 
                 self.$refs.snackbar.showMessage('Your profile has been successfully updated');
             }).catch(error => {
@@ -255,16 +255,18 @@ export default {
                 }
             });
         },
-        reloadSessions() {
+        reloadSessions(silent) {
             const self = this;
 
             self.loadingSession = true;
 
             self.tokensStore.getAllTokens().then(tokens => {
-                if (isEquals(self.tokens, tokens)) {
-                    self.$refs.snackbar.showMessage('Session list is up to date');
-                } else {
-                    self.$refs.snackbar.showMessage('Session list has been updated');
+                if (!silent) {
+                    if (isEquals(self.tokens, tokens)) {
+                        self.$refs.snackbar.showMessage('Session list is up to date');
+                    } else {
+                        self.$refs.snackbar.showMessage('Session list has been updated');
+                    }
                 }
 
                 self.tokens = tokens;
