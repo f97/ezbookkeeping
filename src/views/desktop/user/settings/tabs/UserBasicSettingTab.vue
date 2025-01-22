@@ -410,9 +410,7 @@ const avatarUrl = ref<string>('');
 const avatarProvider = ref<string | undefined>('');
 const avatarNoCacheId = ref<string>('');
 
-const currentUserAvatar = computed<string | null>(() => {
-    return userStore.getUserAvatarUrl(avatarUrl.value, avatarNoCacheId.value);
-});
+const currentUserAvatar = computed<string | null>(() => userStore.getUserAvatarUrl(avatarUrl.value, avatarNoCacheId.value));
 
 function init(): void {
     loading.value = true;
@@ -451,9 +449,7 @@ function save(): void {
 
     saving.value = true;
 
-    rootStore.updateUserProfile({
-        profile: newProfile.value
-    }).then(response => {
+    rootStore.updateUserProfile(newProfile.value.toProfileUpdateRequest()).then(response => {
         saving.value = false;
 
         doAfterProfileUpdate(response.user);
