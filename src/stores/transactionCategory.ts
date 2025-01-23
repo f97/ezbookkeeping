@@ -195,7 +195,7 @@ export const useTransactionCategoriesStore = defineStore('transactionCategories'
                 const transactionCategories = TransactionCategory.ofMap(data.result);
 
                 if (force && data.result && isEquals(allTransactionCategories.value, transactionCategories)) {
-                    reject({ message: 'Category list is up to date' });
+                    reject({ message: 'Category list is up to date', isUpToDate: true });
                     return;
                 }
 
@@ -456,7 +456,7 @@ export const useTransactionCategoriesStore = defineStore('transactionCategories'
         });
     }
 
-    function deleteCategory({ category, beforeResolve }: { category: TransactionCategory, beforeResolve: BeforeResolveFunction }): Promise<boolean> {
+    function deleteCategory({ category, beforeResolve }: { category: TransactionCategory, beforeResolve?: BeforeResolveFunction }): Promise<boolean> {
         return new Promise((resolve, reject) => {
             services.deleteTransactionCategory({
                 id: category.id
