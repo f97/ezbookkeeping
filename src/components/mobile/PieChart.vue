@@ -58,13 +58,13 @@
                     </p>
                     <f7-link class="pie-chart-selected-item-info" :no-link-class="!enableClickItem" v-if="selectedItem" @click="clickItem(selectedItem)">
                         <span class="skeleton-text" v-if="skeleton">Name</span>
-                        <span v-else-if="!skeleton && selectedItem.name">{{ selectedItem.name }}</span>
+                        <span v-else-if="!skeleton && selectedItem.displayName">{{ selectedItem.displayName }}</span>
                         <span class="skeleton-text" v-if="skeleton">Value</span>
                         <span v-else-if="!skeleton && showValue" :style="getColorStyle(selectedItem ? selectedItem.color : '')">{{ selectedItem.displayValue }}</span>
                         <f7-icon class="item-navigate-icon" f7="chevron_right" v-if="enableClickItem"></f7-icon>
                     </f7-link>
                     <f7-link :no-link-class="true" v-else-if="!validItems || !validItems.length">
-                        {{ $t('No transaction data') }}
+                        {{ tt('No transaction data') }}
                     </f7-link>
                 </div>
 
@@ -76,205 +76,152 @@
     </div>
 </template>
 
-<script>
-import { mapStores } from 'pinia';
-import { useSettingsStore } from '@/stores/setting.ts';
-import { useUserStore } from '@/stores/user.ts';
+<script setup lang="ts">
+import { computed } from 'vue';
 
-import { DEFAULT_ICON_COLOR, DEFAULT_CHART_COLORS } from '@/consts/color.ts';
-import { formatPercent } from '@/lib/numeral.ts';
+import { useI18n } from '@/locales/helpers.ts';
+import { type CommonPieChartDataItem, type CommonPieChartProps, usePieChartBase } from '@/components/base/PieChartBase.ts'
 
-export default {
-    props: [
-        'skeleton',
-        'items',
-        'nameField',
-        'valueField',
-        'percentField',
-        'colorField',
-        'hiddenField',
-        'minValidPercent',
-        'defaultCurrency',
-        'showValue',
-        'showCenterText',
-        'showSelectedItemInfo',
-        'enableClickItem',
-        'centerTextBackground',
-    ],
-    emits: [
-        'click'
-    ],
-    data: function () {
-        const diameter = 100;
+import type { ColorValue } from '@/core/color.ts';
+import { DEFAULT_ICON_COLOR } from '@/consts/color.ts';
 
-        return {
-            diameter: diameter,
-            circumference: diameter * Math.PI,
-            selectedIndex: 0
-        }
-    },
-    computed: {
-        ...mapStores(useSettingsStore, useUserStore),
-        validItems: function () {
-            let totalValidValue = 0;
+interface MobilePieChartProps extends CommonPieChartProps {
+    showCenterText?: boolean;
+    showSelectedItemInfo?: boolean;
+    centerTextBackground?: ColorValue;
+}
 
-            for (let i = 0; i < this.items.length; i++) {
-                const item = this.items[i];
+const props = defineProps<MobilePieChartProps>();
 
-                if (item[this.valueField] && item[this.valueField] > 0 && (!this.hiddenField || !item[this.hiddenField])) {
-                    totalValidValue += item[this.valueField];
-                }
-            }
+const emit = defineEmits<{
+    (e: 'click', value: Record<string, unknown>): void;
+}>();
 
-            const validItems = [];
+const { tt } = useI18n();
+const { selectedIndex, validItems } = usePieChartBase(props);
 
-            for (let i = 0; i < this.items.length; i++) {
-                const item = this.items[i];
+const diameter: number = 100;
+const circumference: number = diameter * Math.PI;
 
-                if (item[this.valueField] && item[this.valueField] > 0 &&
-                    (!this.hiddenField || !item[this.hiddenField]) &&
-                    (!this.minValidPercent || item[this.valueField] / totalValidValue > this.minValidPercent)) {
-                    const finalItem = {
-                        name: item[this.nameField],
-                        value: item[this.valueField],
-                        percent: (item[this.percentField] > 0 || item[this.percentField] === 0 || item[this.percentField] === '0') ? item[this.percentField] : (item[this.valueField] / totalValidValue * 100),
-                        actualPercent: item[this.valueField] / totalValidValue,
-                        color: item[this.colorField] ? item[this.colorField] : DEFAULT_CHART_COLORS[validItems.length % DEFAULT_CHART_COLORS.length],
-                        sourceItem: item
-                    };
+const totalValidValue = computed<number>(() => {
+    let totalValidValue = 0;
 
-                    finalItem.displayPercent = formatPercent(finalItem.percent, 2, '&lt;0.01');
-                    finalItem.displayValue = this.getDisplayCurrency(finalItem.value, this.defaultCurrency);
+    for (let i = 0; i < validItems.value.length; i++) {
+        totalValidValue += validItems.value[i].value;
+    }
 
-                    validItems.push(finalItem);
-                }
-            }
+    return totalValidValue;
+});
 
-            return validItems;
-        },
-        totalValidValue: function () {
-            let totalValidValue = 0;
+const itemCommonDashOffset = computed<number>(() => {
+    if (totalValidValue.value <= 0) {
+        return 0;
+    }
 
-            for (let i = 0; i < this.validItems.length; i++) {
-                totalValidValue += this.validItems[i].value;
-            }
+    let offset = 0;
 
-            return totalValidValue;
-        },
-        itemCommonDashOffset: function () {
-            if (this.totalValidValue <= 0) {
-                return 0;
-            }
+    for (let i = 0; i < Math.min(selectedIndex.value + 1, validItems.value.length); i++) {
+        const item = validItems.value[i];
 
-            let offset = 0;
-
-            for (let i = 0; i < Math.min(this.selectedIndex + 1, this.validItems.length); i++) {
-                const item = this.validItems[i];
-
-                if (item.actualPercent > 0) {
-                    if (i === this.selectedIndex) {
-                        offset += -this.circumference * (1 - item.actualPercent) / 2;
-                    } else {
-                        offset += -this.circumference * (1 - item.actualPercent);
-                    }
-                }
-            }
-
-            return offset;
-        },
-        selectedItem: function () {
-            if (!this.validItems || !this.validItems.length) {
-                return null;
-            }
-
-            let selectedIndex = this.selectedIndex;
-
-            if (selectedIndex < 0 || selectedIndex >= this.validItems.length) {
-                selectedIndex = 0;
-            }
-
-            return this.validItems[selectedIndex];
-        }
-    },
-    watch: {
-        'items': {
-            handler() {
-                this.selectedIndex = 0;
-            },
-            deep: true
-        }
-    },
-    methods: {
-        switchSelectedIndex: function (index) {
-            this.selectedIndex = index;
-        },
-        switchSelectedItem: function (offset) {
-            let newSelectedIndex = this.selectedIndex + offset;
-
-            while (newSelectedIndex < 0) {
-                newSelectedIndex += this.validItems.length;
-            }
-
-            this.selectedIndex = newSelectedIndex % this.validItems.length;
-        },
-        clickItem: function (item) {
-            if (this.enableClickItem) {
-                this.$emit('click', item.sourceItem);
-            }
-        },
-        getColor: function (color) {
-            if (color && color !== DEFAULT_ICON_COLOR) {
-                color = '#' + color;
+        if (item.actualPercent > 0) {
+            if (i === selectedIndex.value) {
+                offset += -circumference * (1 - item.actualPercent) / 2;
             } else {
-                color = 'var(--default-icon-color)';
+                offset += -circumference * (1 - item.actualPercent);
             }
-
-            return color;
-        },
-        getColorStyle: function (color, additionalFieldName) {
-            const ret = {
-                color: this.getColor(color)
-            };
-
-            if (additionalFieldName) {
-                ret[additionalFieldName] = ret.color;
-            }
-
-            return ret;
-        },
-        getItemStrokeDash(item) {
-            const length = item.actualPercent * this.circumference;
-            return `${length} ${this.circumference - length}`;
-        },
-        getItemDashOffset(item, items, offset) {
-            let allPreviousPercent = 0;
-
-            for (let i = 0; i < items.length; i++) {
-                const curItem = items[i];
-
-                if (curItem === item) {
-                    break;
-                }
-
-                allPreviousPercent += curItem.actualPercent;
-            }
-
-            if (offset) {
-                offset += this.circumference / 4;
-            } else {
-                offset = this.circumference / 4;
-            }
-
-            if (allPreviousPercent <= 0) {
-                return offset;
-            }
-
-            const allPreviousLength = allPreviousPercent * this.circumference;
-            return this.circumference - allPreviousLength + offset;
-        },
-        getDisplayCurrency(value, currencyCode) {
-            return this.$locale.formatAmountWithCurrency(this.settingsStore, this.userStore, value, currencyCode);
         }
+    }
+
+    return offset;
+});
+
+function getColor(color: ColorValue): ColorValue {
+    if (color && color !== DEFAULT_ICON_COLOR) {
+        color = '#' + color;
+    } else {
+        color = 'var(--default-icon-color)';
+    }
+
+    return color;
+}
+
+function getColorStyle(color: ColorValue, additionalFieldName?: string): Record<string, string> {
+    const finalColor = getColor(color);
+
+    const ret: Record<string, string> = {
+        color: finalColor
+    };
+
+    if (additionalFieldName) {
+        ret[additionalFieldName] = finalColor;
+    }
+
+    return ret;
+}
+
+function getItemStrokeDash(item: CommonPieChartDataItem): string {
+    const length = item.actualPercent * circumference;
+    return `${length} ${circumference - length}`;
+}
+
+function getItemDashOffset(item: CommonPieChartDataItem, items: CommonPieChartDataItem[], offset?: number): number {
+    let allPreviousPercent = 0;
+
+    for (let i = 0; i < items.length; i++) {
+        const curItem = items[i];
+
+        if (curItem === item) {
+            break;
+        }
+
+        allPreviousPercent += curItem.actualPercent;
+    }
+
+    if (offset) {
+        offset += circumference / 4;
+    } else {
+        offset = circumference / 4;
+    }
+
+    if (allPreviousPercent <= 0) {
+        return offset;
+    }
+
+    const allPreviousLength = allPreviousPercent * circumference;
+    return circumference - allPreviousLength + offset;
+}
+
+const selectedItem = computed<CommonPieChartDataItem | null>(() => {
+    if (!validItems.value || !validItems.value.length) {
+        return null;
+    }
+
+    let index = selectedIndex.value;
+
+    if (index < 0 || index >= validItems.value.length) {
+        index = 0;
+    }
+
+    return validItems.value[index];
+});
+
+function switchSelectedIndex(index: number): void {
+    selectedIndex.value = index;
+}
+
+function switchSelectedItem(offset: number): void {
+    let newSelectedIndex = selectedIndex.value + offset;
+
+    while (newSelectedIndex < 0) {
+        newSelectedIndex += validItems.value.length;
+    }
+
+    selectedIndex.value = newSelectedIndex % validItems.value.length;
+}
+
+function clickItem(item: CommonPieChartDataItem): void {
+    if (props.enableClickItem) {
+        emit('click', item.sourceItem);
     }
 }
 </script>
