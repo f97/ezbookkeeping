@@ -190,7 +190,6 @@
             <f7-list-item
                 link="#" no-chevron
                 class="list-item-with-header-and-title"
-                :class="{ 'disabled': editAccountId }"
                 :header="tt('Account Balance')"
                 :title="formatAmountWithCurrency(account.balance, account.currency)"
                 @click="accountContext.showBalanceSheet = true"
@@ -518,6 +517,7 @@ interface AccountContext {
     showBalanceDateTimeSheet: boolean;
     balanceDateTimeSheetMode: string;
 }
+import { TransactionType } from '@/core/transaction.ts';
 
 const props = defineProps<{
     f7route: Router.Route;
@@ -686,6 +686,22 @@ function onPageAfterIn(): void {
 watch(() => account.value.type, () => {
     if (subAccounts.value.length < 1) {
         addSubAccountAndContext();
+    }
+});
+
+watch(() => account.value.balance, (newBalance, oldBalance) => {
+    if(!oldBalance) {
+        return;
+    }
+    const amountDiff = newBalance - oldBalance;
+    const router = props.f7router;
+
+    if(amountDiff > 0) {
+        const url = `/transaction/add?amount=${amountDiff}&type=${TransactionType.Expense.toString()}`;
+        router.navigate(url);
+    } else if(amountDiff < 0) {
+        const url = `/transaction/add?amount=${amountDiff}&type=${TransactionType.Income.toString()}`;
+        router.navigate(url);
     }
 });
 

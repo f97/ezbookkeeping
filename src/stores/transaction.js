@@ -600,7 +600,7 @@ export const useTransactionsStore = defineStore('transactions', {
             this.transactionDraft = null;
             clearUserTransactionDraft();
         },
-        generateNewTransactionModel(type) {
+        generateNewTransactionModel(type, amount = 0) {
             const settingsStore = useSettingsStore();
             const now = getCurrentUnixTime();
             const currentTimezone = settingsStore.appSettings.timeZone;
@@ -623,8 +623,8 @@ export const useTransactionsStore = defineStore('transactions', {
                 transferCategory: '',
                 sourceAccountId: '',
                 destinationAccountId: '',
-                sourceAmount: 0,
-                destinationAmount: 0,
+                sourceAmount: Number(amount) * 100,
+                destinationAmount: Number(amount) * 100,
                 hideAmount: false,
                 tagIds: [],
                 pictures: [],

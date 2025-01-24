@@ -478,7 +478,7 @@ export default {
     data() {
         const query = this.f7route.query;
         const transactionsStore = useTransactionsStore();
-        const newTransaction = transactionsStore.generateNewTransactionModel(query.type);
+        const newTransaction = transactionsStore.generateNewTransactionModel(query.type, query.amount);
 
         return {
             type: 'transaction',
