@@ -57,7 +57,7 @@ export function showConfirm(message: string, confirmCallback: (dialog: Dialog.Di
     });
 }
 
-export function showToast(message: string, timeout: number | undefined, translateFn: TranslateFunction):void {
+export function showToast(message: string, timeout: number | undefined, translateFn: TranslateFunction): void {
     f7ready((f7) => {
         f7.toast.create({
             text: translateError(message, translateFn),
@@ -84,7 +84,7 @@ export function showLoading(delayConditionFunc?: () => boolean, delayMills?: num
     });
 }
 
-export function hideLoading() {
+export function hideLoading(): void {
     f7ready((f7) => {
         return f7.preloader.hide();
     });
