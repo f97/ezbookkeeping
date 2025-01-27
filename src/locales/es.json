@@ -6,9 +6,10 @@
     },
     "language": {
         "English": "Inglés",
-        "Simplified Chinese": "Chino simplificado",
         "Spanish": "Español",
-        "Vietnamese": "Vietnamita"
+        "Russian": "Ruso",
+        "Vietnamese": "Vietnamita",
+        "Simplified Chinese": "Chino simplificado"
     },
     "default": {
         "currency": "EUR",
