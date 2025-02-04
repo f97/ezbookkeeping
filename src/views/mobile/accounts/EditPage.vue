@@ -191,7 +191,7 @@
                 link="#" no-chevron
                 class="list-item-with-header-and-title"
                 :header="tt('Account Balance')"
-                :title="formatAmountWithCurrency(account.balance, account.currency)"
+                :title="formatAmountWithCurrency(account.balance, account.currency, true)"
                 @click="accountContext.showBalanceSheet = true"
             >
                 <number-pad-sheet :min-value="TRANSACTION_MIN_AMOUNT"
@@ -419,7 +419,7 @@
                     class="list-item-with-header-and-title"
                     :class="{ 'disabled': editAccountId }"
                     :header="tt('Sub-account Balance')"
-                    :title="formatAmountWithCurrency(subAccount.balance, subAccount.currency)"
+                    :title="formatAmountWithCurrency(subAccount.balance, subAccount.currency, true)"
                     @click="subAccountContexts[idx].showBalanceSheet = true"
                 >
                     <number-pad-sheet :min-value="TRANSACTION_MIN_AMOUNT"
