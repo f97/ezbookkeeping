@@ -33,17 +33,17 @@ export function useAccountListPageBaseBase() {
 
     const netAssets = computed<string>(() => {
         const netAssets = accountsStore.getNetAssets(showAccountBalance.value);
-        return formatAmountWithCurrency(netAssets, defaultCurrency.value);
+        return formatAmountWithCurrency(netAssets, defaultCurrency.value, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     });
 
     const totalAssets = computed<string>(() => {
         const totalAssets = accountsStore.getTotalAssets(showAccountBalance.value);
-        return formatAmountWithCurrency(totalAssets, defaultCurrency.value);
+        return formatAmountWithCurrency(totalAssets, defaultCurrency.value, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     });
 
     const totalLiabilities = computed<string>(() => {
         const totalLiabilities = accountsStore.getTotalLiabilities(showAccountBalance.value);
-        return formatAmountWithCurrency(totalLiabilities, defaultCurrency.value);
+        return formatAmountWithCurrency(totalLiabilities, defaultCurrency.value, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     });
 
     function accountCategoryTotalBalance(accountCategory?: AccountCategory): string {
@@ -52,7 +52,7 @@ export function useAccountListPageBaseBase() {
         }
 
         const totalBalance = accountsStore.getAccountCategoryTotalBalance(showAccountBalance.value, accountCategory);
-        return formatAmountWithCurrency(totalBalance, defaultCurrency.value);
+        return formatAmountWithCurrency(totalBalance, defaultCurrency.value, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     }
 
     return {
