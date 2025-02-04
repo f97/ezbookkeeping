@@ -426,7 +426,7 @@ function accountBalance(account: Account): string | null {
             return '';
         }
 
-        return formatAmountWithCurrency(balance, account.currency, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        return formatAmountWithCurrency(balance, account.currency);
     } else if (account.type === AccountType.MultiSubAccounts.type) {
         const balanceResult = accountsStore.getAccountSubAccountBalance(showAccountBalance.value, showHidden.value, account, activeSubAccount.value[account.id]);
 
@@ -434,7 +434,7 @@ function accountBalance(account: Account): string | null {
             return '';
         }
 
-        return formatAmountWithCurrency(balanceResult.balance, balanceResult.currency, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        return formatAmountWithCurrency(balanceResult.balance, balanceResult.currency);
     } else {
         return null;
     }

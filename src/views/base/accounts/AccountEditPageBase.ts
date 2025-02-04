@@ -19,7 +19,7 @@ export interface DayAndDisplayName {
 }
 
 export function useAccountEditPageBaseBase() {
-    const { tt, getAllCurrencies, getAllAccountCategories, getAllAccountTypes, getMonthdayShortName, formatAmountWithCurrency } = useI18n();
+    const { tt, getAllCurrencies, getAllAccountCategories, getAllAccountTypes, getMonthdayShortName } = useI18n();
 
     const userStore = useUserStore();
 
