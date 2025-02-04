@@ -932,7 +932,7 @@ export function useI18n() {
         if (categoryType === CategoryType.Expense) {
             defaultAmountName = PresetAmountColor.DefaultExpenseColor.name;
         } else if (categoryType === CategoryType.Income) { // income
-            defaultAmountName = PresetAmountColor.DefaultIncomeColor.name;
+            defaultAmountName = t('color.amount.' + PresetAmountColor.DefaultIncomeColor.name);
         }
 
         if (defaultAmountName) {
@@ -1721,7 +1721,51 @@ export function useI18n() {
         appendDigitGroupingSymbol: getNumberWithDigitGroupingSymbol,
         parseAmount: getParsedAmountNumber,
         formatAmount: getFormattedAmount,
-        formatAmountWithCurrency: getFormattedAmountWithCurrency,
+        formatAmountWithCurrency: (value: number | string, currencyCode?: string | false, notConvertValue?: boolean, currencyDisplayType?: CurrencyDisplayType): string => {
+            if (isNumber(value)) {
+                value = value.toString();
+            }
+
+            let textualValue = value;
+            const isPlural: boolean = textualValue !== '100' && textualValue !== '-100';
+
+            if (!notConvertValue) {
+                const numberFormatOptions = getNumberFormatOptions();
+                const hasIncompleteFlag = isString(textualValue) && textualValue.charAt(textualValue.length - 1) === '+';
+
+                if (hasIncompleteFlag) {
+                    textualValue = textualValue.substring(0, textualValue.length - 1);
+                }
+
+                textualValue = formatAmount(textualValue, numberFormatOptions);
+
+                if (hasIncompleteFlag) {
+                    textualValue = textualValue + '+';
+                }
+            }
+
+            let finalCurrencyCode = '';
+
+            if (!isBoolean(currencyCode) && !currencyCode) {
+                finalCurrencyCode = userStore.currentUserDefaultCurrency;
+            } else if (isBoolean(currencyCode) && !currencyCode) {
+                finalCurrencyCode = '';
+            } else {
+                finalCurrencyCode = currencyCode;
+            }
+
+            if (!finalCurrencyCode) {
+                return textualValue;
+            }
+
+            if (!currencyDisplayType) {
+                currencyDisplayType = getCurrentCurrencyDisplayType();
+            }
+
+            const currencyUnit = getCurrencyUnitName(finalCurrencyCode, isPlural);
+            const currencyName = getCurrencyName(finalCurrencyCode);
+            return appendCurrencySymbol(textualValue, currencyDisplayType, finalCurrencyCode, currencyUnit, currencyName, isPlural);
+        },
         formatExchangeRateAmount: getFormattedExchangeRateAmount,
         getAdaptiveAmountRate,
         getAmountPrependAndAppendText,
