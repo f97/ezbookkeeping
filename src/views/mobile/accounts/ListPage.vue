@@ -243,7 +243,7 @@ function accountBalance(account: Account): string {
         return '';
     }
 
-    return formatAmountWithCurrency(balance, account.currency, true);
+    return formatAmountWithCurrency(balance, account.currency);
 }
 
 function getAccountDomId(account: Account): string {
