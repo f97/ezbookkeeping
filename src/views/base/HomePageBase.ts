@@ -38,17 +38,17 @@ export function useHomePageBase() {
 
     const netAssets = computed<string>(() => {
         const netAssets = accountsStore.getNetAssets(showAmountInHomePage.value);
-        return formatAmountWithCurrency(netAssets, defaultCurrency.value);
+        return formatAmountWithCurrency(netAssets, defaultCurrency.value, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     });
 
     const totalAssets = computed<string>(() => {
         const totalAssets = accountsStore.getTotalAssets(showAmountInHomePage.value);
-        return formatAmountWithCurrency(totalAssets, defaultCurrency.value);
+        return formatAmountWithCurrency(totalAssets, defaultCurrency.value, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     });
 
     const totalLiabilities = computed<string>(() => {
         const totalLiabilities = accountsStore.getTotalLiabilities(showAmountInHomePage.value);
-        return formatAmountWithCurrency(totalLiabilities, defaultCurrency.value);
+        return formatAmountWithCurrency(totalLiabilities, defaultCurrency.value, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     });
 
     const displayDateRange = computed<TransactionOverviewDisplayTime>(() => {
