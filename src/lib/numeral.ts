@@ -133,6 +133,7 @@ export function parseAmount(str: string, options: NumberFormatOptions): number {
 
 export function formatAmount(value: number | string, options: NumberFormatOptions): string {
     let textualValue = '';
+    const isIgnoreDecimalNumber = true;
 
     if (isNumber(value)) {
         textualValue = value.toString();
@@ -195,7 +196,7 @@ export function formatAmount(value: number | string, options: NumberFormatOption
 
     integer = appendDigitGroupingSymbol(integer, options);
 
-    if (decimals !== '') {
+    if (decimals !== '' && !isIgnoreDecimalNumber) {
         textualValue = `${integer}${decimalSeparator}${decimals}`;
     } else {
         textualValue = integer;

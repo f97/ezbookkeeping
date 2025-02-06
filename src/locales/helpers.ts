@@ -1447,6 +1447,7 @@ export function useI18n() {
 
         const currencyUnit = getCurrencyUnitName(finalCurrencyCode, isPlural);
         const currencyName = getCurrencyName(finalCurrencyCode);
+
         return appendCurrencySymbol(textualValue, currencyDisplayType, finalCurrencyCode, currencyUnit, currencyName, isPlural);
     }
 
