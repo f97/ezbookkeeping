@@ -732,6 +732,7 @@ function open(options: TransactionEditOptions): Promise<TransactionEditResponse 
             }
         }
     });
+            console.log("🚀 ~ template:", template)
 
     return new Promise((resolve, reject) => {
         resolveFunc = resolve;

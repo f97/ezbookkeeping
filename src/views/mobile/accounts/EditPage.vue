@@ -693,14 +693,15 @@ watch(() => account.value.balance, (newBalance, oldBalance) => {
     if(!oldBalance) {
         return;
     }
-    const amountDiff = Math.abs(newBalance - oldBalance);
+    const diff = newBalance - oldBalance;
+    const amountDiff = Math.abs(diff);
     const router = props.f7router;
 
-    if(amountDiff > 0) {
-        const url = `/transaction/add?amount=${amountDiff}&type=${TransactionType.Expense.toString()}`;
+    if(diff > 0) {
+        const url = `/transaction/add?amount=${amountDiff}&type=${TransactionType.Expense.toString()}&accountId=${account.value.id}`;
         router.navigate(url);
     } else {
-        const url = `/transaction/add?amount=${amountDiff}&type=${TransactionType.Income.toString()}`;
+        const url = `/transaction/add?amount=${amountDiff}&type=${TransactionType.Income.toString()}&accountId=${account.value.id}`;
         router.navigate(url);
     }
 });

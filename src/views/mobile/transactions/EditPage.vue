@@ -791,12 +791,20 @@ function init(): void {
     }
 
     const queryType = query['type'] ? parseInt(query['type']) : 0;
-
+    const queryAmount = query['amount'] ? parseInt(query['amount']) : 0;
+    
     if (queryType &&
         queryType >= TransactionType.Income &&
         queryType <= TransactionType.Transfer) {
         transaction.value.type = queryType;
     }
+
+    if(queryAmount &&
+        queryAmount >= TRANSACTION_MIN_AMOUNT &&
+        queryAmount <= TRANSACTION_MAX_AMOUNT) {
+        transaction.value.sourceAmount = queryAmount;
+        transaction.value.destinationAmount = queryAmount;
+    }   
 
     if (mode.value === TransactionEditPageMode.Add) {
         clientSessionId.value = generateRandomUUID();
