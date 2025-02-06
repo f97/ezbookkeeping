@@ -1,4 +1,4 @@
-import uaParser from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js';
 
 import { TOKEN_CLI_USER_AGENT, type TokenInfoResponse, SessionInfo } from '@/models/token.ts';
 
@@ -19,7 +19,7 @@ interface UserAgentInfo {
 }
 
 function parseUserAgent(ua: string): UserAgentInfo {
-    const uaParseRet = uaParser(ua);
+    const uaParseRet = UAParser(ua);
 
     return {
         device: {
