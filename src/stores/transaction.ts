@@ -39,11 +39,11 @@ import {
     isDefined,
     isNumber,
     isString,
+    isArray1SubsetOfArray2,
     splitItemsToMap,
     countSplitItems
 } from '@/lib/common.ts';
 import {
-    getCurrentUnixTime,
     getTimezoneOffsetMinutes,
     getBrowserTimezoneOffsetMinutes,
     getActualUnixTimeForStore,
@@ -423,7 +423,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         }
     }
 
-    function isTransactionDraftModified(transaction?: Transaction): boolean {
+    function isTransactionDraftModified(transaction?: Transaction, initCategoryId?: string, initAccountId?: string, initTagIds?: string): boolean {
         if (!transaction) {
             return false;
         }
@@ -436,11 +436,11 @@ export const useTransactionsStore = defineStore('transactions', () => {
             return true;
         }
 
-        if (transaction.sourceAccountId && transaction.sourceAccountId !== '0' && transaction.sourceAccountId !== userStore.currentUserDefaultAccountId) {
+        if (transaction.sourceAccountId && transaction.sourceAccountId !== '0' && transaction.sourceAccountId !== userStore.currentUserDefaultAccountId && transaction.sourceAccountId !== initAccountId) {
             return true;
         }
 
-        if (transaction.type === TransactionType.Transfer && transaction.destinationAccountId && transaction.destinationAccountId !== '0' && transaction.destinationAccountId !== userStore.currentUserDefaultAccountId) {
+        if (transaction.type === TransactionType.Transfer && transaction.destinationAccountId && transaction.destinationAccountId !== '0' && transaction.destinationAccountId !== userStore.currentUserDefaultAccountId && transaction.destinationAccountId !== initAccountId) {
             return true;
         }
 
@@ -450,19 +450,19 @@ export const useTransactionsStore = defineStore('transactions', () => {
             if (transaction.type === TransactionType.Expense) {
                 const defaultCategoryId = getFirstAvailableCategoryId(allCategories[CategoryType.Expense]);
 
-                if (transaction.expenseCategoryId && transaction.expenseCategoryId !== '0' && transaction.expenseCategoryId !== defaultCategoryId) {
+                if (transaction.expenseCategoryId && transaction.expenseCategoryId !== '0' && transaction.expenseCategoryId !== defaultCategoryId && transaction.expenseCategoryId !== initCategoryId) {
                     return true;
                 }
             } else if (transaction.type === TransactionType.Income) {
                 const defaultCategoryId = getFirstAvailableCategoryId(allCategories[CategoryType.Income]);
 
-                if (transaction.incomeCategoryId && transaction.incomeCategoryId !== '0' && transaction.incomeCategoryId !== defaultCategoryId) {
+                if (transaction.incomeCategoryId && transaction.incomeCategoryId !== '0' && transaction.incomeCategoryId !== defaultCategoryId && transaction.incomeCategoryId !== initCategoryId) {
                     return true;
                 }
             } else if (transaction.type === TransactionType.Transfer) {
                 const defaultCategoryId = getFirstAvailableCategoryId(allCategories[CategoryType.Transfer]);
 
-                if (transaction.transferCategoryId && transaction.transferCategoryId !== '0' && transaction.transferCategoryId !== defaultCategoryId) {
+                if (transaction.transferCategoryId && transaction.transferCategoryId !== '0' && transaction.transferCategoryId !== defaultCategoryId && transaction.transferCategoryId !== initCategoryId) {
                     return true;
                 }
             }
@@ -473,7 +473,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         }
 
         if (transaction.tagIds && transaction.tagIds.length > 0) {
-            return true;
+            return !initTagIds || !isArray1SubsetOfArray2(transaction.tagIds, initTagIds.split(','));
         }
 
         if (transaction.pictures && transaction.pictures.length > 0) {
@@ -487,14 +487,14 @@ export const useTransactionsStore = defineStore('transactions', () => {
         return false;
     }
 
-    function saveTransactionDraft(transaction?: Transaction): void {
+    function saveTransactionDraft(transaction?: Transaction, initCategoryId?: string, initAccountId?: string, initTagIds?: string): void {
         if (settingsStore.appSettings.autoSaveTransactionDraft !== 'enabled' && settingsStore.appSettings.autoSaveTransactionDraft !== 'confirmation') {
             clearTransactionDraft();
             return;
         }
 
         if (transaction) {
-            if (!isTransactionDraftModified(transaction)) {
+            if (!isTransactionDraftModified(transaction, initCategoryId, initAccountId, initTagIds)) {
                 clearTransactionDraft();
                 return;
             }
@@ -508,21 +508,6 @@ export const useTransactionsStore = defineStore('transactions', () => {
     function clearTransactionDraft(): void {
         transactionDraft.value = null;
         clearUserTransactionDraft();
-    }
-
-    function generateNewTransactionModel(type: string, amount: string = ""): Transaction {
-        const now: number = getCurrentUnixTime();
-        const currentTimezone: string = settingsStore.appSettings.timeZone;
-
-        let defaultType: TransactionType = TransactionType.Expense;
-
-        if (type === TransactionType.Income.toString()) {
-            defaultType = TransactionType.Income;
-        } else if (type === TransactionType.Transfer.toString()) {
-            defaultType = TransactionType.Transfer;
-        }
-
-        return Transaction.createNewTransaction(defaultType, now, currentTimezone, getTimezoneOffsetMinutes(currentTimezone), amount);
     }
 
     function setTransactionSuitableDestinationAmount(transaction: Transaction, oldValue: number, newValue: number): void {
@@ -1133,7 +1118,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         });
     }
 
-    function uploadTransactionPicture({ pictureFile, clientSessionId }: { pictureFile: File, clientSessionId: string }): Promise<TransactionPictureInfoBasicResponse> {
+    function uploadTransactionPicture({ pictureFile, clientSessionId }: { pictureFile: File, clientSessionId?: string }): Promise<TransactionPictureInfoBasicResponse> {
         return new Promise((resolve, reject) => {
             services.uploadTransactionPicture({ pictureFile, clientSessionId }).then(response => {
                 const data = response.data;
@@ -1183,9 +1168,9 @@ export const useTransactionsStore = defineStore('transactions', () => {
         });
     }
 
-    function getTransactionPictureUrl(pictureInfo?: TransactionPictureInfoBasicResponse | null, disableBrowserCache?: boolean | string): string | null {
+    function getTransactionPictureUrl(pictureInfo?: TransactionPictureInfoBasicResponse | null, disableBrowserCache?: boolean | string): string | undefined {
         if (!pictureInfo || !pictureInfo.originalUrl) {
-            return null;
+            return undefined;
         }
 
         return services.getTransactionPictureUrlWithToken(pictureInfo.originalUrl, disableBrowserCache);
@@ -1218,7 +1203,6 @@ export const useTransactionsStore = defineStore('transactions', () => {
         isTransactionDraftModified,
         saveTransactionDraft,
         clearTransactionDraft,
-        generateNewTransactionModel,
         setTransactionSuitableDestinationAmount,
         updateTransactionListInvalidState,
         resetTransactions,
