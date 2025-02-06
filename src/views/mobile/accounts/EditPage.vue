@@ -697,10 +697,10 @@ watch(() => account.value.balance, (newBalance, oldBalance) => {
     const amountDiff = Math.abs(diff);
     const router = props.f7router;
 
-    if(diff > 0) {
+    if(diff < 0) {
         const url = `/transaction/add?amount=${amountDiff}&type=${TransactionType.Expense.toString()}&accountId=${account.value.id}`;
         router.navigate(url);
-    } else {
+    } else if(diff > 0) {
         const url = `/transaction/add?amount=${amountDiff}&type=${TransactionType.Income.toString()}&accountId=${account.value.id}`;
         router.navigate(url);
     }
