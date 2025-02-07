@@ -32,11 +32,12 @@
                     <v-col cols="12">
                         <two-column-select primary-key-field="id" primary-value-field="id" primary-title-field="name"
                                            primary-icon-field="icon" primary-icon-type="category" primary-color-field="color"
-                                           primary-hidden-field="hidden" primary-sub-items-field="subCategories"
+                                           primary-hidden-field="hidden" primary-sub-items-field="secondaryCategories"
                                            secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
                                            secondary-icon-field="icon" secondary-icon-type="category" secondary-color-field="color"
                                            secondary-hidden-field="hidden"
                                            :disabled="!hasAvailableExpenseCategories"
+                                           :enable-filter="true" :filter-placeholder="tt('Find category')" :filter-no-items-text="tt('No available category')"
                                            :show-selection-primary-text="true"
                                            :custom-selection-primary-text="getTransactionPrimaryCategoryName(targetItem, allCategories[CategoryType.Expense])"
                                            :custom-selection-secondary-text="getTransactionSecondaryCategoryName(targetItem, allCategories[CategoryType.Expense])"
@@ -48,11 +49,12 @@
                         </two-column-select>
                         <two-column-select primary-key-field="id" primary-value-field="id" primary-title-field="name"
                                            primary-icon-field="icon" primary-icon-type="category" primary-color-field="color"
-                                           primary-hidden-field="hidden" primary-sub-items-field="subCategories"
+                                           primary-hidden-field="hidden" primary-sub-items-field="secondaryCategories"
                                            secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
                                            secondary-icon-field="icon" secondary-icon-type="category" secondary-color-field="color"
                                            secondary-hidden-field="hidden"
                                            :disabled="!hasAvailableIncomeCategories"
+                                           :enable-filter="true" :filter-placeholder="tt('Find category')" :filter-no-items-text="tt('No available category')"
                                            :show-selection-primary-text="true"
                                            :custom-selection-primary-text="getTransactionPrimaryCategoryName(targetItem, allCategories[CategoryType.Income])"
                                            :custom-selection-secondary-text="getTransactionSecondaryCategoryName(targetItem, allCategories[CategoryType.Income])"
@@ -64,11 +66,12 @@
                         </two-column-select>
                         <two-column-select primary-key-field="id" primary-value-field="id" primary-title-field="name"
                                            primary-icon-field="icon" primary-icon-type="category" primary-color-field="color"
-                                           primary-hidden-field="hidden" primary-sub-items-field="subCategories"
+                                           primary-hidden-field="hidden" primary-sub-items-field="secondaryCategories"
                                            secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
                                            secondary-icon-field="icon" secondary-icon-type="category" secondary-color-field="color"
                                            secondary-hidden-field="hidden"
                                            :disabled="!hasAvailableTransferCategories"
+                                           :enable-filter="true" :filter-placeholder="tt('Find category')" :filter-no-items-text="tt('No available category')"
                                            :show-selection-primary-text="true"
                                            :custom-selection-primary-text="getTransactionPrimaryCategoryName(targetItem, allCategories[CategoryType.Transfer])"
                                            :custom-selection-secondary-text="getTransactionSecondaryCategoryName(targetItem, allCategories[CategoryType.Transfer])"
@@ -105,6 +108,7 @@
                                            secondary-title-field="name" secondary-footer-field="displayBalance"
                                            secondary-icon-field="icon" secondary-icon-type="account" secondary-color-field="color"
                                            :disabled="!allVisibleAccounts.length"
+                                           :enable-filter="true" :filter-placeholder="tt('Find account')" :filter-no-items-text="tt('No available account')"
                                            :custom-selection-primary-text="getAccountDisplayName(targetItem)"
                                            :label="tt('Target Account')"
                                            :placeholder="tt('Target Account')"
@@ -141,7 +145,7 @@
                             v-model="targetItem"
                         >
                             <template #chip="{ props, item }">
-                                <v-chip :prepend-icon="icons.tag" :text="item.title" v-bind="props"/>
+                                <v-chip :prepend-icon="mdiPound" :text="item.title" v-bind="props"/>
                             </template>
 
                             <template #item="{ props, item }">
@@ -149,7 +153,7 @@
                                     <template #title>
                                         <v-list-item-title>
                                             <div class="d-flex align-center">
-                                                <v-icon size="20" start :icon="icons.tag"/>
+                                                <v-icon size="20" start :icon="mdiPound"/>
                                                 <span>{{ item.title }}</span>
                                             </div>
                                         </v-list-item-title>
@@ -210,10 +214,6 @@ const settingsStore = useSettingsStore();
 const accountsStore = useAccountsStore();
 const transactionCategoriesStore = useTransactionCategoriesStore();
 const transactionTagsStore = useTransactionTagsStore();
-
-const icons = {
-    tag: mdiPound
-};
 
 const showState = ref<boolean>(false);
 const mode = ref<string>('');

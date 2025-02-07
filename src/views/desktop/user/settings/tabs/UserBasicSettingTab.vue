@@ -14,13 +14,13 @@
                         <v-img :src="currentUserAvatar" v-if="currentUserAvatar">
                             <template #placeholder>
                                 <div class="d-flex align-center justify-center fill-height bg-light-primary">
-                                    <v-icon color="primary" size="48" class="user-profile-avatar-placeholder" :icon="icons.user"/>
+                                    <v-icon color="primary" size="48" class="user-profile-avatar-placeholder" :icon="mdiAccount"/>
                                 </div>
                             </template>
                         </v-img>
-                        <v-icon size="48" class="user-profile-avatar-placeholder" :icon="icons.user" v-else-if="!currentUserAvatar"/>
+                        <v-icon size="48" class="user-profile-avatar-placeholder" :icon="mdiAccount" v-else-if="!currentUserAvatar"/>
                         <div class="avatar-edit-icon" v-if="avatarProvider === 'internal'">
-                            <v-icon size="48" :icon="icons.pencil"/>
+                            <v-icon size="48" :icon="mdiAccountEditOutline"/>
                         </div>
                         <v-menu activator="parent" width="200" location="bottom" offset="14px" v-if="avatarProvider === 'internal'">
                             <v-list>
@@ -87,6 +87,7 @@
                                                    secondary-title-field="name"
                                                    secondary-icon-field="icon" secondary-icon-type="account" secondary-color-field="color"
                                                    :disabled="loading || saving || !allVisibleAccounts.length"
+                                                   :enable-filter="true" :filter-placeholder="tt('Find account')" :filter-no-items-text="tt('No available account')"
                                                    :label="tt('Default Account')"
                                                    :placeholder="tt('Default Account')"
                                                    :items="allVisibleCategorizedAccounts"
@@ -397,11 +398,6 @@ const {
 const rootStore = useRootStore();
 const userStore = useUserStore();
 const accountsStore = useAccountsStore();
-
-const icons = {
-    user: mdiAccount,
-    pencil: mdiAccountEditOutline,
-};
 
 const confirmDialog = useTemplateRef<ConfirmDialogType>('confirmDialog');
 const snackbar = useTemplateRef<SnackBarType>('snackbar');

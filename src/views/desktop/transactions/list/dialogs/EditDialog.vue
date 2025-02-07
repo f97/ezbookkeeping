@@ -9,26 +9,26 @@
                     </div>
                     <v-btn density="comfortable" color="default" variant="text" class="ml-2" :icon="true"
                            :disabled="loading || submitting" v-if="mode !== TransactionEditPageMode.View">
-                        <v-icon :icon="icons.more" />
+                        <v-icon :icon="mdiDotsVertical" />
                         <v-menu activator="parent">
                             <v-list>
-                                <v-list-item :prepend-icon="icons.swap"
+                                <v-list-item :prepend-icon="mdiSwapHorizontal"
                                              :title="tt('Swap Account')"
                                              v-if="transaction.type === TransactionType.Transfer"
                                              @click="swapTransactionData(true, false)"></v-list-item>
-                                <v-list-item :prepend-icon="icons.swap"
+                                <v-list-item :prepend-icon="mdiSwapHorizontal"
                                              :title="tt('Swap Amount')"
                                              v-if="transaction.type === TransactionType.Transfer"
                                              @click="swapTransactionData(false, true)"></v-list-item>
-                                <v-list-item :prepend-icon="icons.swap"
+                                <v-list-item :prepend-icon="mdiSwapHorizontal"
                                              :title="tt('Swap Account and Amount')"
                                              v-if="transaction.type === TransactionType.Transfer"
                                              @click="swapTransactionData(true, true)"></v-list-item>
                                 <v-divider v-if="transaction.type === TransactionType.Transfer" />
-                                <v-list-item :prepend-icon="icons.show"
+                                <v-list-item :prepend-icon="mdiEyeOutline"
                                              :title="tt('Show Amount')"
                                              v-if="transaction.hideAmount" @click="transaction.hideAmount = false"></v-list-item>
-                                <v-list-item :prepend-icon="icons.hide"
+                                <v-list-item :prepend-icon="mdiEyeOffOutline"
                                              :title="tt('Hide Amount')"
                                              v-if="!transaction.hideAmount" @click="transaction.hideAmount = true"></v-list-item>
                             </v-list>
@@ -108,12 +108,13 @@
                                 <v-col cols="12" md="12" v-if="transaction.type === TransactionType.Expense">
                                     <two-column-select primary-key-field="id" primary-value-field="id" primary-title-field="name"
                                                        primary-icon-field="icon" primary-icon-type="category" primary-color-field="color"
-                                                       primary-hidden-field="hidden" primary-sub-items-field="subCategories"
+                                                       primary-hidden-field="hidden" primary-sub-items-field="secondaryCategories"
                                                        secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
                                                        secondary-icon-field="icon" secondary-icon-type="category" secondary-color-field="color"
                                                        secondary-hidden-field="hidden"
                                                        :readonly="mode === TransactionEditPageMode.View"
                                                        :disabled="loading || submitting || !hasAvailableExpenseCategories"
+                                                       :enable-filter="true" :filter-placeholder="tt('Find category')" :filter-no-items-text="tt('No available category')"
                                                        :show-selection-primary-text="true"
                                                        :custom-selection-primary-text="getTransactionPrimaryCategoryName(transaction.expenseCategoryId, allCategories[CategoryType.Expense])"
                                                        :custom-selection-secondary-text="getTransactionSecondaryCategoryName(transaction.expenseCategoryId, allCategories[CategoryType.Expense])"
@@ -125,12 +126,13 @@
                                 <v-col cols="12" md="12" v-if="transaction.type === TransactionType.Income">
                                     <two-column-select primary-key-field="id" primary-value-field="id" primary-title-field="name"
                                                        primary-icon-field="icon" primary-icon-type="category" primary-color-field="color"
-                                                       primary-hidden-field="hidden" primary-sub-items-field="subCategories"
+                                                       primary-hidden-field="hidden" primary-sub-items-field="secondaryCategories"
                                                        secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
                                                        secondary-icon-field="icon" secondary-icon-type="category" secondary-color-field="color"
                                                        secondary-hidden-field="hidden"
                                                        :readonly="mode === TransactionEditPageMode.View"
                                                        :disabled="loading || submitting || !hasAvailableIncomeCategories"
+                                                       :enable-filter="true" :filter-placeholder="tt('Find category')" :filter-no-items-text="tt('No available category')"
                                                        :show-selection-primary-text="true"
                                                        :custom-selection-primary-text="getTransactionPrimaryCategoryName(transaction.incomeCategoryId, allCategories[CategoryType.Income])"
                                                        :custom-selection-secondary-text="getTransactionSecondaryCategoryName(transaction.incomeCategoryId, allCategories[CategoryType.Income])"
@@ -142,12 +144,13 @@
                                 <v-col cols="12" md="12" v-if="transaction.type === TransactionType.Transfer">
                                     <two-column-select primary-key-field="id" primary-value-field="id" primary-title-field="name"
                                                        primary-icon-field="icon" primary-icon-type="category" primary-color-field="color"
-                                                       primary-hidden-field="hidden" primary-sub-items-field="subCategories"
+                                                       primary-hidden-field="hidden" primary-sub-items-field="secondaryCategories"
                                                        secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
                                                        secondary-icon-field="icon" secondary-icon-type="category" secondary-color-field="color"
                                                        secondary-hidden-field="hidden"
                                                        :readonly="mode === TransactionEditPageMode.View"
                                                        :disabled="loading || submitting || !hasAvailableTransferCategories"
+                                                       :enable-filter="true" :filter-placeholder="tt('Find category')" :filter-no-items-text="tt('No available category')"
                                                        :show-selection-primary-text="true"
                                                        :custom-selection-primary-text="getTransactionPrimaryCategoryName(transaction.transferCategoryId, allCategories[CategoryType.Transfer])"
                                                        :custom-selection-secondary-text="getTransactionSecondaryCategoryName(transaction.transferCategoryId, allCategories[CategoryType.Transfer])"
@@ -167,6 +170,7 @@
                                                        secondary-icon-field="icon" secondary-icon-type="account" secondary-color-field="color"
                                                        :readonly="mode === TransactionEditPageMode.View"
                                                        :disabled="loading || submitting || !allVisibleAccounts.length"
+                                                       :enable-filter="true" :filter-placeholder="tt('Find account')" :filter-no-items-text="tt('No available account')"
                                                        :custom-selection-primary-text="sourceAccountName"
                                                        :label="tt(sourceAccountTitle)"
                                                        :placeholder="tt(sourceAccountTitle)"
@@ -185,6 +189,7 @@
                                                        secondary-icon-field="icon" secondary-icon-type="account" secondary-color-field="color"
                                                        :readonly="mode === TransactionEditPageMode.View"
                                                        :disabled="loading || submitting || !allVisibleAccounts.length"
+                                                       :enable-filter="true" :filter-placeholder="tt('Find account')" :filter-no-items-text="tt('No available account')"
                                                        :custom-selection-primary-text="destinationAccountName"
                                                        :label="tt('Destination Account')"
                                                        :placeholder="tt('Destination Account')"
@@ -270,7 +275,7 @@
                                         v-model:search="tagSearchContent"
                                     >
                                         <template #chip="{ props, item }">
-                                            <v-chip :prepend-icon="icons.tag" :text="item.title" v-bind="props"/>
+                                            <v-chip :prepend-icon="mdiPound" :text="item.title" v-bind="props"/>
                                         </template>
 
                                         <template #item="{ props, item }">
@@ -278,7 +283,18 @@
                                                 <template #title>
                                                     <v-list-item-title>
                                                         <div class="d-flex align-center">
-                                                            <v-icon size="20" start :icon="icons.tag"/>
+                                                            <v-icon size="20" start :icon="mdiPound"/>
+                                                            <span>{{ item.title }}</span>
+                                                        </div>
+                                                    </v-list-item-title>
+                                                </template>
+                                            </v-list-item>
+                                            <v-list-item :disabled="true" v-bind="props"
+                                                         v-if="item.raw.hidden && item.raw.name.toLowerCase().indexOf(tagSearchContent.toLowerCase()) >= 0 && isAllFilteredTagHidden">
+                                                <template #title>
+                                                    <v-list-item-title>
+                                                        <div class="d-flex align-center">
+                                                            <v-icon size="20" start :icon="mdiPound"/>
                                                             <span>{{ item.title }}</span>
                                                         </div>
                                                     </v-list-item-title>
@@ -340,9 +356,9 @@
                                         </template>
                                     </v-img>
                                     <div class="picture-control-icon" :class="{ 'show-control-icon': pictureInfo.pictureId === removingPictureId }">
-                                        <v-icon size="64" :icon="icons.remove" v-if="(mode === TransactionEditPageMode.Add || mode === TransactionEditPageMode.Edit) && pictureInfo.pictureId !== removingPictureId"/>
+                                        <v-icon size="64" :icon="mdiTrashCanOutline" v-if="(mode === TransactionEditPageMode.Add || mode === TransactionEditPageMode.Edit) && pictureInfo.pictureId !== removingPictureId"/>
                                         <v-progress-circular color="grey-500" indeterminate size="48" v-if="(mode === TransactionEditPageMode.Add || mode === TransactionEditPageMode.Edit) && pictureInfo.pictureId === removingPictureId"></v-progress-circular>
-                                        <v-icon size="64" :icon="icons.fullscreen" v-if="mode !== TransactionEditPageMode.Add && mode !== TransactionEditPageMode.Edit"/>
+                                        <v-icon size="64" :icon="mdiFullscreen" v-if="mode !== TransactionEditPageMode.Add && mode !== TransactionEditPageMode.Edit"/>
                                     </div>
                                 </v-avatar>
                             </v-col>
@@ -352,7 +368,7 @@
                                           :class="{ 'enabled': !submitting, 'cursor-pointer': !submitting }"
                                           color="rgba(0,0,0,0)" @click="showOpenPictureDialog">
                                     <v-tooltip activator="parent" v-if="!submitting">{{ tt('Add Picture') }}</v-tooltip>
-                                    <v-icon class="transaction-picture-add-icon" size="56" :icon="icons.add" v-if="!uploadingPicture"/>
+                                    <v-icon class="transaction-picture-add-icon" size="56" :icon="mdiImagePlusOutline" v-if="!uploadingPicture"/>
                                     <v-progress-circular color="grey-500" indeterminate size="48" v-if="uploadingPicture"></v-progress-circular>
                                 </v-avatar>
                             </v-col>
@@ -445,7 +461,6 @@ import {
     mdiEyeOutline,
     mdiSwapHorizontal,
     mdiPound,
-    mdiImageOutline,
     mdiImagePlusOutline,
     mdiTrashCanOutline,
     mdiFullscreen
@@ -529,18 +544,6 @@ const transactionTagsStore = useTransactionTagsStore();
 const transactionsStore = useTransactionsStore();
 const transactionTemplatesStore = useTransactionTemplatesStore();
 
-const icons = {
-    more: mdiDotsVertical,
-    show: mdiEyeOutline,
-    hide: mdiEyeOffOutline,
-    swap: mdiSwapHorizontal,
-    tag: mdiPound,
-    picture: mdiImageOutline ,
-    add: mdiImagePlusOutline,
-    remove: mdiTrashCanOutline,
-    fullscreen : mdiFullscreen
-};
-
 const map = useTemplateRef<MapViewType>('map');
 const confirmDialog = useTemplateRef<ConfirmDialogType>('confirmDialog');
 const snackbar = useTemplateRef<SnackBarType>('snackbar');
@@ -570,6 +573,23 @@ const sourceAmountColor = computed<string | undefined>(() => {
     }
 
     return undefined;
+});
+
+const isAllFilteredTagHidden = computed<boolean>(() => {
+    const lowerCaseTagSearchContent = tagSearchContent.value.toLowerCase();
+    let hiddenCount = 0;
+
+    for (const tag of allTags.value) {
+        if (!lowerCaseTagSearchContent || tag.name.toLowerCase().indexOf(lowerCaseTagSearchContent) >= 0) {
+            if (!tag.hidden) {
+                return false;
+            }
+
+            hiddenCount++;
+        }
+    }
+
+    return hiddenCount > 0;
 });
 
 function setTransaction(newTransaction: Transaction | null, options: SetTransactionOptions, setContextData: boolean, convertContextTime: boolean): void {
