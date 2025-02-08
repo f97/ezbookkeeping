@@ -118,6 +118,7 @@
                                            secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
                                            secondary-icon-field="icon" secondary-icon-type="category" secondary-color-field="color"
                                            secondary-hidden-field="hidden"
+                                           :enable-filter="true" :filter-placeholder="tt('Find category')" :filter-no-items-text="tt('No available category')"
                                            :items="allCategories[CategoryType.Expense]"
                                            v-model:show="showCategorySheet"
                                            v-model="transaction.expenseCategoryId">
@@ -149,6 +150,7 @@
                                            secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
                                            secondary-icon-field="icon" secondary-icon-type="category" secondary-color-field="color"
                                            secondary-hidden-field="hidden"
+                                           :enable-filter="true" :filter-placeholder="tt('Find category')" :filter-no-items-text="tt('No available category')"
                                            :items="allCategories[CategoryType.Income]"
                                            v-model:show="showCategorySheet"
                                            v-model="transaction.incomeCategoryId">
@@ -180,6 +182,7 @@
                                            secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
                                            secondary-icon-field="icon" secondary-icon-type="category" secondary-color-field="color"
                                            secondary-hidden-field="hidden"
+                                           :enable-filter="true" :filter-placeholder="tt('Find category')" :filter-no-items-text="tt('No available category')"
                                            :items="allCategories[CategoryType.Transfer]"
                                            v-model:show="showCategorySheet"
                                            v-model="transaction.transferCategoryId">
@@ -315,7 +318,7 @@
                 :header="tt('Tags')"
                 @click="showTransactionTagSheet = true"
             >
-                <transaction-tag-selection-sheet :allow-add-new-tag="true"
+                <transaction-tag-selection-sheet :allow-add-new-tag="true" :enable-filter="true"
                                                  v-model:show="showTransactionTagSheet"
                                                  v-model="transaction.tagIds">
                 </transaction-tag-selection-sheet>
