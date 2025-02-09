@@ -10,6 +10,9 @@ var DefaultLanguage = en
 // AllLanguages represents all the supported language
 // To add new languages, please refer to https://ezbookkeeping.mayswind.net/translating
 var AllLanguages = map[string]*LocaleInfo{
+	"de": {
+		Content: de,
+	},
 	"en": {
 		Content: en,
 	},

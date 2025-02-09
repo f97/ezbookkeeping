@@ -139,7 +139,7 @@ const categories = computed<TransactionCategory[]>(() => {
             return [];
         }
 
-        return transactionCategoriesStore.allTransactionCategoriesMap[primaryCategoryId.value].secondaryCategories || [];
+        return transactionCategoriesStore.allTransactionCategoriesMap[primaryCategoryId.value].subCategories || [];
     } else {
         return [];
     }
@@ -229,7 +229,7 @@ function init(): void {
     });
 }
 
-function reload(done: (() => void) | null): void {
+function reload(done?: () => void): void {
     if (sortable.value) {
         done?.();
         return;
@@ -373,7 +373,7 @@ function onSort(event: { el: { id: string }; from: number; to: number }): void {
 
 function onPageAfterIn(): void {
     if (transactionCategoriesStore.transactionCategoryListStateInvalid && !loading.value) {
-        reload(null);
+        reload();
     }
 
     routeBackOnError(props.f7router, loadingError);

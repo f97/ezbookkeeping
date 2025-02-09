@@ -120,7 +120,7 @@
                                               :title="subAccount.name" :footer="subAccount.comment" :after="accountBalance(subAccount)"
                                               :link="!sortable ? '/transaction/list?accountIds=' + subAccount.id : null"
                                               :key="subAccount.id"
-                                              v-for="subAccount in account.childrenAccounts"
+                                              v-for="subAccount in account.subAccounts"
                                               v-show="showHidden || !subAccount.hidden"
                                 >
                                     <template #media>
@@ -275,7 +275,7 @@ function init(): void {
     });
 }
 
-function reload(done: (() => void) | null): void {
+function reload(done?: () => void): void {
     if (sortable.value) {
         done?.();
         return;
@@ -418,7 +418,7 @@ function onSort(event: { el: { id: string }; from: number; to: number }): void {
 
 function onPageAfterIn(): void {
     if (accountsStore.accountListStateInvalid && !loading.value) {
-        reload(null);
+        reload();
     }
 
     routeBackOnError(props.f7router, loadingError);
