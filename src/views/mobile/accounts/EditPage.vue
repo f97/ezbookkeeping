@@ -190,13 +190,14 @@
             <f7-list-item
                 link="#" no-chevron
                 class="list-item-with-header-and-title"
-                :header="tt('Account Balance')"
-                :title="formatAmountWithCurrency(account.balance, account.currency)"
+                :header="account.isLiability ? tt('Account Outstanding Balance') : tt('Account Balance')"
+                :title="formatAccountDisplayBalance(account)"
                 @click="accountContext.showBalanceSheet = true"
             >
                 <number-pad-sheet :min-value="TRANSACTION_MIN_AMOUNT"
                                   :max-value="TRANSACTION_MAX_AMOUNT"
                                   :currency="account.currency"
+                                  :flip-negative="account.isLiability"
                                   v-model:show="accountContext.showBalanceSheet"
                                   v-model="account.balance"
                 ></number-pad-sheet>
@@ -213,7 +214,7 @@
                 </template>
                 <template #title>
                     <div class="account-edit-balancetime-title">
-                        <div @click="showDateTimeDialog(accountContext, 'date')">{{ getAccountBalanceDate(account.balanceTime as number) }}</div>&nbsp;<div class="account-edit-balancetime-time" @click="showDateTimeDialog(accountContext, 'time')">{{ getAccountBalanceTime(account.balanceTime as number) }}</div>
+                        <div @click="showDateTimeDialog(accountContext, 'date')">{{ formatAccountBalanceDate(account) }}</div>&nbsp;<div class="account-edit-balancetime-time" @click="showDateTimeDialog(accountContext, 'time')">{{ formatAccountBalanceTime(account) }}</div>
                     </div>
                 </template>
                 <date-time-selection-sheet :init-mode="accountContext.balanceDateTimeSheetMode"
@@ -418,13 +419,14 @@
                     link="#" no-chevron
                     class="list-item-with-header-and-title"
                     :class="{ 'disabled': editAccountId }"
-                    :header="tt('Sub-account Balance')"
-                    :title="formatAmountWithCurrency(subAccount.balance, subAccount.currency)"
+                    :header="account.isLiability ? tt('Sub-account Outstanding Balance') : tt('Sub-account Balance')"
+                    :title="formatAccountDisplayBalance(subAccount)"
                     @click="subAccountContexts[idx].showBalanceSheet = true"
                 >
                     <number-pad-sheet :min-value="TRANSACTION_MIN_AMOUNT"
                                       :max-value="TRANSACTION_MAX_AMOUNT"
                                       :currency="subAccount.currency"
+                                      :flip-negative="account.isLiability"
                                       v-model:show="subAccountContexts[idx].showBalanceSheet"
                                       v-model="subAccount.balance"
                     ></number-pad-sheet>
@@ -441,7 +443,7 @@
                     </template>
                     <template #title>
                         <div class="account-edit-balancetime-title">
-                            <div @click="showDateTimeDialog(subAccountContexts[idx], 'date')">{{ getAccountBalanceDate(subAccount.balanceTime as number) }}</div>&nbsp;<div class="account-edit-balancetime-time" @click="showDateTimeDialog(subAccountContexts[idx], 'time')">{{ getAccountBalanceTime(subAccount.balanceTime as number) }}</div>
+                            <div @click="showDateTimeDialog(subAccountContexts[idx], 'date')">{{ formatAccountBalanceDate(subAccount) }}</div>&nbsp;<div class="account-edit-balancetime-time" @click="showDateTimeDialog(subAccountContexts[idx], 'time')">{{ formatAccountBalanceTime(subAccount) }}</div>
                         </div>
                     </template>
                     <date-time-selection-sheet :init-mode="subAccountContexts[idx].balanceDateTimeSheetMode"
@@ -502,7 +504,7 @@ import { ALL_ACCOUNT_COLORS } from '@/consts/color.ts';
 import { TRANSACTION_MIN_AMOUNT, TRANSACTION_MAX_AMOUNT } from '@/consts/transaction.ts';
 import type { Account } from '@/models/account.ts';
 
-import { findDisplayNameByType } from '@/lib/common.ts';
+import { isDefined, findDisplayNameByType } from '@/lib/common.ts';
 import { generateRandomUUID } from '@/lib/misc.ts';
 import {
     getTimezoneOffsetMinutes,
@@ -566,12 +568,25 @@ const showAccountTypeSheet = ref<boolean>(false);
 const showMoreActionSheet = ref<boolean>(false);
 const showDeleteActionSheet = ref<boolean>(false);
 
-function getAccountBalanceDate(balanceTime: number): string {
-    return formatUnixTimeToLongDate(getActualUnixTimeForStore(balanceTime, getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes()));
+function formatAccountDisplayBalance(selectedAccount: Account): string {
+    const balance = account.value.isLiability ? -selectedAccount.balance : selectedAccount.balance;
+    return formatAmountWithCurrency(balance, selectedAccount.currency);
 }
 
-function getAccountBalanceTime(balanceTime: number): string {
-    return formatUnixTimeToLongTime(getActualUnixTimeForStore(balanceTime, getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes()));
+function formatAccountBalanceDate(account: Account): string {
+    if (!isDefined(account.balanceTime)) {
+        return '';
+    }
+
+    return formatUnixTimeToLongDate(getActualUnixTimeForStore(account.balanceTime, getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes()));
+}
+
+function formatAccountBalanceTime(account: Account): string {
+    if (!isDefined(account.balanceTime)) {
+        return '';
+    }
+
+    return formatUnixTimeToLongTime(getActualUnixTimeForStore(account.balanceTime, getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes()));
 }
 
 function init(): void {
