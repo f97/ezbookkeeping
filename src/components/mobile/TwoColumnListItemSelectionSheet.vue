@@ -1,5 +1,5 @@
 <template>
-    <f7-sheet swipe-to-close swipe-handler=".swipe-handler"
+    <f7-sheet ref="sheet" swipe-to-close swipe-handler=".swipe-handler"
               style="height: auto" :opened="show" @sheet:open="onSheetOpen" @sheet:closed="onSheetClosed">
         <f7-toolbar>
             <div class="swipe-handler"></div>
@@ -13,7 +13,8 @@
                       :placeholder="filterPlaceholder"
                       :disable-button="false"
                       v-if="enableFilter"
-                      @input="filterContent = $event.target.value">
+                      @input="filterContent = $event.target.value"
+                      @focus="onSearchBarFocus">
         </f7-searchbar>
         <f7-page-content class="no-padding-top">
             <div class="grid grid-gap" :class="{ 'grid-cols-2': filteredItems && filteredItems.length }">
@@ -70,12 +71,12 @@
 
 <script setup lang="ts">
 import { ref, computed, useTemplateRef } from 'vue';
-import type { Searchbar } from 'framework7/types';
+import type { Sheet, Searchbar } from 'framework7/types';
 
 import { useI18n } from '@/locales/helpers.ts';
 import { type CommonTwoColumnListItemSelectionProps, useTwoColumnListItemSelectionBase } from '@/components/base/TwoColumnListItemSelectionBase.ts';
 
-import { type Framework7Dom, scrollToSelectedItem } from '@/lib/ui/mobile.ts';
+import { type Framework7Dom, scrollToSelectedItem, scrollSheetToTop } from '@/lib/ui/mobile.ts';
 
 interface MobileTwoColumnListItemSelectionProps extends CommonTwoColumnListItemSelectionProps {
     show: boolean;
@@ -101,6 +102,7 @@ const {
     updateCurrentSecondaryValue
 } = useTwoColumnListItemSelectionBase(props);
 
+const sheet = useTemplateRef<Sheet.Sheet>('sheet');
 const searchbar = useTemplateRef<Searchbar.Searchbar>('searchbar');
 
 const currentPrimaryValue = ref<unknown>(getCurrentPrimaryValueBySecondaryValue(props.modelValue));
@@ -127,6 +129,10 @@ function onSecondaryItemClicked(subItem: unknown): void {
     close();
 }
 
+function onSearchBarFocus(): void {
+    scrollSheetToTop(sheet.value?.$el as HTMLElement, window.innerHeight); // $el is not Framework7 Dom
+}
+
 function onSheetOpen(event: { $el: Framework7Dom }): void {
     currentPrimaryValue.value = getCurrentPrimaryValueBySecondaryValue(props.modelValue);
     currentSecondaryValue.value = props.modelValue;
@@ -145,6 +151,12 @@ function onSheetClosed(): void {
 .primary-list-container, .secondary-list-container {
     height: 260px;
     overflow-y: auto;
+}
+
+@media (max-height: 629px) {
+    .primary-list-container, .secondary-list-container {
+        height: 240px;
+    }
 }
 
 .primary-list.list .item-inner {

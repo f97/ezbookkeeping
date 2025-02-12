@@ -1,5 +1,5 @@
 <template>
-    <f7-sheet swipe-to-close swipe-handler=".swipe-handler"
+    <f7-sheet ref="sheet" swipe-to-close swipe-handler=".swipe-handler"
               style="height: auto" :opened="show"
               @sheet:open="onSheetOpen" @sheet:closed="onSheetClosed">
         <f7-toolbar>
@@ -18,7 +18,8 @@
                       :placeholder="tt('Find tag')"
                       :disable-button="false"
                       v-if="enableFilter"
-                      @input="filterContent = $event.target.value">
+                      @input="filterContent = $event.target.value"
+                      @focus="onSearchBarFocus">
         </f7-searchbar>
         <f7-page-content :class="'no-padding-top ' + heightClass">
             <f7-list class="no-margin-top no-margin-bottom" v-if="(!allTags || !allTags.length || noAvailableTag) && !newTag">
@@ -84,7 +85,7 @@
 
 <script setup lang="ts">
 import { ref, computed, useTemplateRef } from 'vue';
-import type { Searchbar } from 'framework7/types';
+import type { Sheet, Searchbar } from 'framework7/types';
 
 import { useI18n } from '@/locales/helpers.ts';
 import { useI18nUIComponents, showLoading, hideLoading } from '@/lib/ui/mobile.ts';
@@ -93,7 +94,7 @@ import { TransactionTag } from '@/models/transaction_tag.ts';
 import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
 
 import { copyArrayTo } from '@/lib/common.ts';
-import { type Framework7Dom, scrollToSelectedItem } from '@/lib/ui/mobile.ts';
+import { type Framework7Dom, scrollToSelectedItem, scrollSheetToTop } from '@/lib/ui/mobile.ts';
 
 const props = defineProps<{
     modelValue: string[];
@@ -112,6 +113,7 @@ const { showToast } = useI18nUIComponents();
 
 const transactionTagsStore = useTransactionTagsStore();
 
+const sheet = useTemplateRef<Sheet.Sheet>('sheet');
 const searchbar = useTemplateRef<Searchbar.Searchbar>('searchbar');
 
 const filterContent = ref<string>('');
@@ -220,6 +222,10 @@ function cancelSaveNewTag(): void {
     newTag.value = null;
 }
 
+function onSearchBarFocus(): void {
+    scrollSheetToTop(sheet.value?.$el as HTMLElement, window.innerHeight); // $el is not Framework7 Dom
+}
+
 function onSheetOpen(event: { $el: Framework7Dom }): void {
     selectedItemIds.value = copyArrayTo(props.modelValue, []);
     newTag.value = null;
@@ -234,17 +240,24 @@ function onSheetClosed(): void {
 </script>
 
 <style>
-@media (min-height: 630px) {
-    .tag-selection-default-sheet {
-        height: 200px;
-    }
+.tag-selection-default-sheet {
+    height: 200px;
+}
 
+@media (min-height: 630px) {
     .tag-selection-large-sheet {
-        height: 250px;
+        height: 260px;
     }
 
     .tag-selection-huge-sheet {
-        height: 340px;
+        height: 380px;
+    }
+}
+
+@media (max-height: 629px) {
+    .tag-selection-large-sheet,
+    .tag-selection-huge-sheet {
+        height: 240px;
     }
 }
 
