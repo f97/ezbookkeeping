@@ -223,35 +223,6 @@ export function limitText(value: string, maxLength: number): string {
     return value.substring(0, maxLength - 3) + '...';
 }
 
-export function getTextBefore(fullText: string, text: string): string {
-    if (!text) {
-        return fullText;
-    }
-
-    const index = fullText.indexOf(text);
-
-    if (index >= 0) {
-        return fullText.substring(0, index);
-    }
-
-    return '';
-}
-
-export function getTextAfter(fullText: string, text: string): string {
-    if (!text) {
-        return fullText;
-    }
-
-    let index = fullText.indexOf(text);
-
-    if (index >= 0) {
-        index += text.length;
-        return fullText.substring(index);
-    }
-
-    return '';
-}
-
 export function base64encode(arrayBuffer: ArrayBuffer): string {
     return btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(arrayBuffer))));
 }
@@ -400,75 +371,6 @@ export function getNameByKeyValue<V, N>(src: Record<string, N | V>[] | Record<st
     }
 
     return defaultName;
-}
-
-export function copyObjectTo(fromObject: Record<string, unknown> | undefined, toObject: Record<string, unknown> | undefined): Record<string, unknown> {
-    if (!isObject(fromObject)) {
-        return toObject as Record<string, unknown>;
-    }
-
-    if (!isObject(toObject)) {
-        toObject = {};
-    }
-
-    for (const key in fromObject) {
-        if (!Object.prototype.hasOwnProperty.call(fromObject, key)) {
-            continue;
-        }
-
-        const fromValue = fromObject[key];
-        const toValue = toObject[key];
-
-        if (isArray(fromValue)) {
-            toObject[key] = copyArrayTo(fromValue, toValue as unknown[]);
-        } else if (isObject(fromValue)) {
-            toObject[key] = copyObjectTo(fromValue as Record<string, unknown>, toValue as Record<string, unknown>);
-        } else {
-            if (fromValue !== toValue) {
-                toObject[key] = fromValue;
-            }
-        }
-    }
-
-    return toObject;
-}
-
-export function copyArrayTo<T>(fromArray: T[], toArray: T[]): T[] {
-    if (!isArray(fromArray)) {
-        return toArray;
-    }
-
-    if (!isArray(toArray)) {
-        toArray = [];
-    }
-
-    for (let i = 0; i < fromArray.length; i++) {
-        const fromValue = fromArray[i];
-
-        if (toArray.length > i) {
-            const toValue = toArray[i];
-
-            if (isArray(fromValue)) {
-                toArray[i] = copyArrayTo(fromValue as unknown[], toValue as unknown[]) as T;
-            } else if (isObject(fromValue)) {
-                toArray[i] = copyObjectTo(fromValue as Record<string, unknown>, toValue as Record<string, unknown>) as T;
-            } else {
-                if (fromValue !== toValue) {
-                    toArray[i] = fromValue;
-                }
-            }
-        } else {
-            if (isArray(fromValue)) {
-                toArray.push(copyArrayTo(fromValue as unknown[], []) as T);
-            } else if (isObject(fromValue)) {
-                toArray.push(copyObjectTo(fromValue as Record<string, unknown>, {}) as T);
-            } else {
-                toArray.push(fromValue);
-            }
-        }
-    }
-
-    return toArray;
 }
 
 export function arrayContainsFieldValue<T>(array: Record<string, T>[], fieldName: string, value: T): boolean {
