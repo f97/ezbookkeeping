@@ -6,7 +6,7 @@
 [![Latest Release](https://img.shields.io/github/release/mayswind/ezbookkeeping.svg?style=flat)](https://github.com/mayswind/ezbookkeeping/releases)
 
 ## Introduction
-ezBookkeeping is a lightweight personal bookkeeping app hosted by yourself. It can be deployed on almost all platforms, including Windows, macOS and Linux on x86, amd64 and ARM architectures. You can even deploy it on an raspberry device. It also supports many different databases, including sqlite and mysql. With docker, you can just deploy it via one command without complicated configuration.
+ezBookkeeping is a lightweight personal bookkeeping app hosted by yourself. It can be deployed on almost all platforms, including Windows, macOS and Linux on x86, amd64 and ARM architectures. You can even deploy it on an raspberry device. It also supports many different databases, including SQLite, MySQL and PostgreSQL. With docker, you can just deploy it via one command without complicated configuration.
 
 Online Demo: [https://ezbookkeeping-demo.mayswind.net](https://ezbookkeeping-demo.mayswind.net)
 
@@ -31,7 +31,7 @@ Online Demo: [https://ezbookkeeping-demo.mayswind.net](https://ezbookkeeping-dem
 7. Multi-language support
 8. Two-factor authentication
 9. Application lock (PIN code / WebAuthn)
-10. Data import & export (OFX, QFX, QIF, IIF, GnuCash, FireFly III, etc.)
+10. Data import & export (OFX, QFX, QIF, IIF, CSV, GnuCash, FireFly III, etc.)
 
 ## Screenshots
 ### Desktop Version
