@@ -17,6 +17,7 @@ export interface LanguageInfo {
 export interface LanguageOption {
     readonly languageTag: string;
     readonly displayName: string;
+    readonly nativeDisplayName: string;
 }
 
 export const DEFAULT_LANGUAGE: string = 'en';
@@ -43,7 +44,7 @@ export const ALL_LANGUAGES: Record<string, LanguageInfo> = {
     },
     'ja': {
         name: 'Japanese',
-        displayName: 'Japanese',
+        displayName: '日本語',
         alternativeLanguageTag: 'ja-JP',
         content: ja
     },
@@ -60,8 +61,8 @@ export const ALL_LANGUAGES: Record<string, LanguageInfo> = {
         content: vi
     },
     'zh-Hans': {
-        name: 'Simplified Chinese',
-        displayName: '简体中文',
+        name: 'Chinese (Simplified)',
+        displayName: '中文 (简体)',
         alternativeLanguageTag: 'zh-CN',
         aliases: ['zh-CHS', 'zh-CN', 'zh-SG'],
         content: zhHans
