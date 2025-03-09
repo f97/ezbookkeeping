@@ -129,20 +129,29 @@
         <f7-list form strong inset dividers class="margin-vertical" v-if="!loading">
             <f7-list-item
                 class="list-item-with-header-and-title list-item-no-item-after"
+                link="#"
                 :header="languageTitle"
                 :title="currentLanguageName"
-                smart-select :smart-select-params="{ openIn: 'popup', popupPush: true, closeOnSelect: true, scrollToSelectedItem: true, searchbar: true, searchbarPlaceholder: languageTitle, searchbarDisableText: tt('Cancel'), appendSearchbarNotFound: tt('No results'), pageTitle: languageTitle, popupCloseLinkText: tt('Done') }">
-                <select v-model="newProfile.language">
-                    <option :value="language.languageTag"
-                            :key="language.languageTag"
-                            v-for="language in allLanguages">{{ language.nativeDisplayName }}</option>
-                </select>
+                @click="showLanguagePopup = true"
+            >
+                <list-item-selection-popup value-type="item"
+                                           key-field="languageTag" value-field="languageTag"
+                                           title-field="nativeDisplayName" after-field="displayName"
+                                           :title="languageTitle"
+                                           :enable-filter="true"
+                                           :filter-placeholder="tt('Language')"
+                                           :filter-no-items-text="tt('No results')"
+                                           :items="allLanguages"
+                                           v-model:show="showLanguagePopup"
+                                           v-model="newProfile.language">
+                </list-item-selection-popup>
             </f7-list-item>
 
             <f7-list-item
                 class="list-item-with-header-and-title list-item-no-item-after"
+                link="#"
                 :header="tt('Default Currency')"
-                smart-select :smart-select-params="{ openIn: 'popup', popupPush: true, closeOnSelect: true, scrollToSelectedItem: true, searchbar: true, searchbarPlaceholder: tt('Currency Name'), searchbarDisableText: tt('Cancel'), appendSearchbarNotFound: tt('No results'), pageTitle: tt('Default Currency'), popupCloseLinkText: tt('Done') }"
+                @click="showDefaultCurrencyPopup = true"
             >
                 <template #title>
                     <f7-block class="no-padding no-margin">
@@ -150,11 +159,17 @@
                         <small class="smaller">{{ newProfile.defaultCurrency }}</small>
                     </f7-block>
                 </template>
-                <select autocomplete="transaction-currency" v-model="newProfile.defaultCurrency">
-                    <option :value="currency.currencyCode"
-                            :key="currency.currencyCode"
-                            v-for="currency in allCurrencies">{{ currency.displayName }}</option>
-                </select>
+                <list-item-selection-popup value-type="item"
+                                           key-field="currencyCode" value-field="currencyCode"
+                                           title-field="displayName" after-field="currencyCode"
+                                           :title="tt('Default Currency')"
+                                           :enable-filter="true"
+                                           :filter-placeholder="tt('Currency Name')"
+                                           :filter-no-items-text="tt('No results')"
+                                           :items="allCurrencies"
+                                           v-model:show="showDefaultCurrencyPopup"
+                                           v-model="newProfile.defaultCurrency">
+                </list-item-selection-popup>
             </f7-list-item>
 
             <f7-list-item
@@ -336,6 +351,7 @@
 import { ref, computed } from 'vue';
 import type { Router } from 'framework7/types';
 
+import type { LanguageOption } from '@/locales/index.ts';
 import { useI18n } from '@/locales/helpers.ts';
 import { useI18nUIComponents, showLoading, hideLoading } from '@/lib/ui/mobile.ts';
 import { useUserProfilePageBase } from '@/views/base/users/UserProfilePageBase.ts';
@@ -343,6 +359,8 @@ import { useUserProfilePageBase } from '@/views/base/users/UserProfilePageBase.t
 import { useRootStore } from '@/stores/index.ts';
 import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.ts';
+
+import type { LocalizedCurrencyInfo } from '@/core/currency.ts';
 
 import type { UserProfileResponse } from '@/models/user.ts';
 import { Account } from '@/models/account.ts';
@@ -354,7 +372,7 @@ const props = defineProps<{
     f7router: Router.Router;
 }>();
 
-const { tt, getCurrencyName } = useI18n();
+const { tt, getAllLanguageOptions, getAllCurrencies, getCurrencyName } = useI18n();
 const { showAlert, showToast, routeBackOnError } = useI18nUIComponents();
 
 const {
@@ -363,8 +381,6 @@ const {
     loading,
     resending,
     saving,
-    allLanguages,
-    allCurrencies,
     allAccounts,
     allVisibleAccounts,
     allVisibleCategorizedAccounts,
@@ -402,7 +418,12 @@ const currentPassword = ref<string>('');
 const loadingError = ref<unknown | null>(null);
 const showInputPasswordSheet = ref<boolean>(false);
 const showAccountSheet = ref<boolean>(false);
+const showLanguagePopup = ref<boolean>(false);
+const showDefaultCurrencyPopup = ref<boolean>(false);
 const showMoreActionSheet = ref<boolean>(false);
+
+const allLanguages = computed<LanguageOption[]>(() => getAllLanguageOptions(true));
+const allCurrencies = computed<LocalizedCurrencyInfo[]>(() => getAllCurrencies());
 
 const currentLanguageName = computed<string>(() => {
     for (let i = 0; i < allLanguages.value.length; i++) {

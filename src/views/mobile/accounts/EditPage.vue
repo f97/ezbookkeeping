@@ -155,10 +155,11 @@
 
             <f7-list-item
                 class="list-item-with-header-and-title list-item-no-item-after"
+                link="#"
                 :class="{ 'disabled': editAccountId }"
                 :header="tt('Currency')"
                 :no-chevron="!!editAccountId"
-                smart-select :smart-select-params="{ openIn: 'popup', popupPush: true, closeOnSelect: true, scrollToSelectedItem: true, searchbar: true, searchbarPlaceholder: tt('Currency Name'), searchbarDisableText: tt('Cancel'), appendSearchbarNotFound: tt('No results'), pageTitle: tt('Currency Name'), popupCloseLinkText: tt('Done') }"
+                @click="accountContext.showCurrencyPopup = true"
             >
                 <template #title>
                     <div class="no-padding no-margin">
@@ -166,11 +167,17 @@
                         <small class="smaller">{{ account.currency }}</small>
                     </div>
                 </template>
-                <select autocomplete="transaction-currency" v-model="account.currency">
-                    <option :value="currency.currencyCode"
-                            :key="currency.currencyCode"
-                            v-for="currency in allCurrencies">{{ currency.displayName }}</option>
-                </select>
+                <list-item-selection-popup value-type="item"
+                                           key-field="currencyCode" value-field="currencyCode"
+                                           title-field="displayName" after-field="currencyCode"
+                                           :title="tt('Currency Name')"
+                                           :enable-filter="true"
+                                           :filter-placeholder="tt('Currency Name')"
+                                           :filter-no-items-text="tt('No results')"
+                                           :items="allCurrencies"
+                                           v-model:show="accountContext.showCurrencyPopup"
+                                           v-model="account.currency">
+                </list-item-selection-popup>
             </f7-list-item>
 
             <f7-list-item
@@ -397,10 +404,11 @@
 
                 <f7-list-item
                     class="list-item-with-header-and-title list-item-no-item-after"
+                    link="#"
                     :class="{ 'disabled': editAccountId }"
                     :header="tt('Currency')"
                     :no-chevron="!!editAccountId"
-                    smart-select :smart-select-params="{ openIn: 'popup', popupPush: true, closeOnSelect: true, scrollToSelectedItem: true, searchbar: true, searchbarPlaceholder: tt('Currency Name'), searchbarDisableText: tt('Cancel'), appendSearchbarNotFound: tt('No results'), pageTitle: tt('Currency Name'), popupCloseLinkText: tt('Done') }"
+                    @click="subAccountContexts[idx].showCurrencyPopup = true"
                 >
                     <template #title>
                         <div class="no-padding no-margin">
@@ -408,11 +416,17 @@
                             <small class="smaller">{{ subAccount.currency }}</small>
                         </div>
                     </template>
-                    <select autocomplete="transaction-currency" v-model="subAccount.currency">
-                        <option :value="currency.currencyCode"
-                                :key="currency.currencyCode"
-                                v-for="currency in allCurrencies">{{ currency.displayName }}</option>
-                    </select>
+                    <list-item-selection-popup value-type="item"
+                                               key-field="currencyCode" value-field="currencyCode"
+                                               title-field="displayName" after-field="currencyCode"
+                                               :title="tt('Currency Name')"
+                                               :enable-filter="true"
+                                               :filter-placeholder="tt('Currency Name')"
+                                               :filter-no-items-text="tt('No results')"
+                                               :items="allCurrencies"
+                                               v-model:show="subAccountContexts[idx].showCurrencyPopup"
+                                               v-model="subAccount.currency">
+                    </list-item-selection-popup>
                 </f7-list-item>
 
                 <f7-list-item
@@ -489,7 +503,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { Router } from 'framework7/types';
 
 import { useI18n } from '@/locales/helpers.ts';
@@ -498,6 +512,7 @@ import { useAccountEditPageBaseBase } from '@/views/base/accounts/AccountEditPag
 
 import { useAccountsStore } from '@/stores/account.ts';
 
+import type { LocalizedCurrencyInfo } from '@/core/currency.ts';
 import { AccountType } from '@/core/account.ts';
 import { ALL_ACCOUNT_ICONS } from '@/consts/icon.ts';
 import { ALL_ACCOUNT_COLORS } from '@/consts/color.ts';
@@ -515,6 +530,7 @@ import {
 interface AccountContext {
     showIconSelectionSheet: boolean;
     showColorSelectionSheet: boolean;
+    showCurrencyPopup: boolean;
     showBalanceSheet: boolean;
     showBalanceDateTimeSheet: boolean;
     balanceDateTimeSheetMode: string;
@@ -526,7 +542,7 @@ const props = defineProps<{
     f7router: Router.Router;
 }>();
 
-const { tt, getCurrencyName, formatUnixTimeToLongDate, formatUnixTimeToLongTime, formatAmountWithCurrency } = useI18n();
+const { tt, getAllCurrencies, getCurrencyName, formatUnixTimeToLongDate, formatUnixTimeToLongTime, formatAmountWithCurrency } = useI18n();
 const { showAlert, showToast, routeBackOnError } = useI18nUIComponents();
 const {
     editAccountId,
@@ -539,7 +555,6 @@ const {
     saveButtonTitle,
     allAccountCategories,
     allAccountTypes,
-    allCurrencies,
     allAvailableMonthDays,
     isAccountSupportCreditCardStatementDate,
     getAccountCreditCardStatementDate,
@@ -554,6 +569,7 @@ const accountsStore = useAccountsStore();
 const DEFAULT_ACCOUNT_CONTEXT: AccountContext = {
     showIconSelectionSheet: false,
     showColorSelectionSheet: false,
+    showCurrencyPopup: false,
     showBalanceSheet: false,
     showBalanceDateTimeSheet: false,
     balanceDateTimeSheetMode: 'time'
@@ -567,6 +583,8 @@ const showAccountCategorySheet = ref<boolean>(false);
 const showAccountTypeSheet = ref<boolean>(false);
 const showMoreActionSheet = ref<boolean>(false);
 const showDeleteActionSheet = ref<boolean>(false);
+
+const allCurrencies = computed<LocalizedCurrencyInfo[]>(() => getAllCurrencies());
 
 function formatAccountDisplayBalance(selectedAccount: Account): string {
     const balance = account.value.isLiability ? -selectedAccount.balance : selectedAccount.balance;

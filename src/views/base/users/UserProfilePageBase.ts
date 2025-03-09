@@ -1,6 +1,5 @@
 import { ref, computed } from 'vue';
 
-import { type LanguageOption } from '@/locales/index.ts';
 import { useI18n } from '@/locales/helpers.ts';
 
 import { useSettingsStore } from '@/stores/setting.ts';
@@ -10,7 +9,6 @@ import { useOverviewStore } from '@/stores/overview.ts';
 import type { TypeAndDisplayName } from '@/core/base.ts';
 import { WeekDay } from '@/core/datetime.ts';
 import type { LocalizedDigitGroupingType } from '@/core/numeral.ts';
-import type { LocalizedCurrencyInfo } from '@/core/currency.ts';
 
 import { type UserBasicInfo, User } from '@/models/user.ts';
 import { type CategorizedAccount, Account} from '@/models/account.ts';
@@ -23,8 +21,6 @@ export function useUserProfilePageBase() {
         tt,
         getDefaultCurrency,
         getDefaultFirstDayOfWeek,
-        getAllLanguageOptions,
-        getAllCurrencies,
         getAllWeekDays,
         getAllLongDateFormats,
         getAllShortDateFormats,
@@ -55,8 +51,6 @@ export function useUserProfilePageBase() {
     const resending = ref<boolean>(false);
     const saving = ref<boolean>(false);
 
-    const allLanguages = computed<LanguageOption[]>(() => getAllLanguageOptions(true));
-    const allCurrencies = computed<LocalizedCurrencyInfo[]>(() => getAllCurrencies());
     const allAccounts = computed<Account[]>(() => accountsStore.allPlainAccounts);
     const allVisibleAccounts = computed<Account[]>(() => accountsStore.allVisiblePlainAccounts);
     const allVisibleCategorizedAccounts = computed<CategorizedAccount[]>(() => getCategorizedAccounts(allVisibleAccounts.value));
@@ -189,8 +183,6 @@ export function useUserProfilePageBase() {
         resending,
         saving,
         // computed states
-        allLanguages,
-        allCurrencies,
         allAccounts,
         allVisibleAccounts,
         allVisibleCategorizedAccounts,

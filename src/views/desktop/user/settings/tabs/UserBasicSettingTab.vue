@@ -116,50 +116,18 @@
                     <v-card-text>
                         <v-row>
                             <v-col cols="12" md="6">
-                                <v-select
-                                    item-title="nativeDisplayName"
-                                    item-value="languageTag"
-                                    persistent-placeholder
-                                    :disabled="loading || saving"
-                                    :label="languageTitle"
-                                    :placeholder="languageTitle"
-                                    :items="allLanguages"
-                                    v-model="newProfile.language"
-                                >
-                                    <template #item="{ props, item }">
-                                        <v-list-item :value="item.value" v-bind="props">
-                                            <template #title>
-                                                <v-list-item-title>
-                                                    <div class="d-flex align-center">
-                                                        <span>{{ item.title }}</span>
-                                                        <v-spacer />
-                                                        <v-icon :icon="mdiCheck" v-if="newProfile.language == item.raw.languageTag" />
-                                                        <span class="text-field-append-text" v-if="newProfile.language !== item.raw.languageTag">{{ item.raw.displayName }}</span>
-                                                    </div>
-                                                </v-list-item-title>
-                                            </template>
-                                        </v-list-item>
-                                    </template>
-                                </v-select>
+                                <language-select :disabled="loading || saving"
+                                                 :label="languageTitle"
+                                                 :placeholder="languageTitle"
+                                                 :include-system-default="true"
+                                                 :use-model-value="true" v-model="newProfile.language" />
                             </v-col>
 
                             <v-col cols="12" md="6">
-                                <v-autocomplete
-                                    item-title="displayName"
-                                    item-value="currencyCode"
-                                    auto-select-first
-                                    persistent-placeholder
-                                    :disabled="loading || saving"
-                                    :label="tt('Default Currency')"
-                                    :placeholder="tt('Default Currency')"
-                                    :items="allCurrencies"
-                                    :no-data-text="tt('No results')"
-                                    v-model="newProfile.defaultCurrency"
-                                >
-                                    <template #append-inner>
-                                        <small class="text-field-append-text smaller">{{ newProfile.defaultCurrency }}</small>
-                                    </template>
-                                </v-autocomplete>
+                                <currency-select :disabled="loading || saving"
+                                                 :label="tt('Default Currency')"
+                                                 :placeholder="tt('Default Currency')"
+                                                 v-model="newProfile.defaultCurrency" />
                             </v-col>
 
                             <v-col cols="12" md="6">
@@ -366,8 +334,7 @@ import { isUserVerifyEmailEnabled } from '@/lib/server_settings.ts';
 
 import {
     mdiAccount,
-    mdiAccountEditOutline,
-    mdiCheck
+    mdiAccountEditOutline
 } from '@mdi/js';
 
 type ConfirmDialogType = InstanceType<typeof ConfirmDialog>;
@@ -382,8 +349,6 @@ const {
     loading,
     resending,
     saving,
-    allLanguages,
-    allCurrencies,
     allVisibleAccounts,
     allVisibleCategorizedAccounts,
     allWeekDays,
