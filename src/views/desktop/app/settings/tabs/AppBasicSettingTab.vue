@@ -7,16 +7,12 @@
                         <v-row>
                             <v-col cols="12" md="6">
                                 <v-select
-                                    item-title="displayName"
+                                    item-title="name"
                                     item-value="value"
                                     persistent-placeholder
                                     :label="tt('Theme')"
                                     :placeholder="tt('Theme')"
-                                    :items="[
-                                        { value: 'auto', displayName: tt('System Default') },
-                                        { value: 'light', displayName: tt('Light') },
-                                        { value: 'dark', displayName: tt('Dark') }
-                                    ]"
+                                    :items="allThemes"
                                     v-model="currentTheme"
                                 />
                             </v-col>
@@ -56,6 +52,28 @@
                                     :placeholder="tt('Show Account Balance')"
                                     :items="enableDisableOptions"
                                     v-model="showAccountBalance"
+                                />
+                            </v-col>
+                        </v-row>
+                    </v-card-text>
+                </v-form>
+            </v-card>
+        </v-col>
+
+        <v-col cols="12">
+            <v-card :title="tt('Navigation Bar')">
+                <v-form>
+                    <v-card-text>
+                        <v-row>
+                            <v-col cols="12" md="6">
+                                <v-select
+                                    item-title="displayName"
+                                    item-value="value"
+                                    persistent-placeholder
+                                    :label="tt('Show Add Transaction Button')"
+                                    :placeholder="tt('Show Add Transaction Button')"
+                                    :items="enableDisableOptions"
+                                    v-model="showAddTransactionButtonInDesktopNavbar"
                                 />
                             </v-col>
                         </v-row>
@@ -147,16 +165,12 @@
                         <v-row>
                             <v-col cols="12" md="6">
                                 <v-select
-                                    item-title="displayName"
+                                    item-title="name"
                                     item-value="value"
                                     persistent-placeholder
                                     :label="tt('Automatically Save Draft')"
                                     :placeholder="tt('Automatically Save Draft')"
-                                    :items="[
-                                        { value: 'disabled', displayName: tt('Disabled') },
-                                        { value: 'enabled', displayName: tt('Enabled') },
-                                        { value: 'confirmation', displayName: tt('Show Confirmation Every Time') }
-                                    ]"
+                                    :items="allAutoSaveTransactionDraftTypes"
                                     v-model="autoSaveTransactionDraft"
                                 />
                             </v-col>
@@ -219,9 +233,11 @@ const theme = useTheme();
 
 const { tt, getAllEnableDisableOptions } = useI18n();
 const {
+    allThemes,
     allTimezones,
     allTimezoneTypesUsedForStatistics,
     allCurrencySortingTypes,
+    allAutoSaveTransactionDraftTypes,
     timeZone,
     isAutoUpdateExchangeRatesData,
     showAccountBalance,
@@ -252,5 +268,10 @@ const currentTheme = computed<string>({
             }
         }
     }
+});
+
+const showAddTransactionButtonInDesktopNavbar = computed<boolean>({
+    get: () => settingsStore.appSettings.showAddTransactionButtonInDesktopNavbar,
+    set: (value) => settingsStore.setShowAddTransactionButtonInDesktopNavbar(value)
 });
 </script>

@@ -1167,7 +1167,8 @@
         "number invalid": "Số không hợp lệ",
         "no files uploaded": "Không có tệp nào được tải lên",
         "uploaded file is empty": "Tệp đã tải lên trống",
-        "uploaded file size exceeds the maximum allowed size": "Kích thước tệp đã tải lên vượt quá kích thước tối đa cho phép"
+        "uploaded file size exceeds the maximum allowed size": "Kích thước tệp đã tải lên vượt quá kích thước tối đa cho phép",
+        "failure count exceeded maximum limit": "Failure count exceeded maximum limit, please try again after some time"
     },
     "parameter": {
         "id": "ID",
@@ -1789,6 +1790,8 @@
     "Show Account Balance": "Hiển thị số dư tài khoản",
     "Hide Account Balance": "Ẩn số dư tài khoản",
     "Page Settings": "Cài đặt trang",
+    "Navigation Bar": "Navigation Bar",
+    "Show Add Transaction Button": "Show Add Transaction Button",
     "Overview Page": "Trang tổng quan",
     "Timezone Used for Statistics": "Múi giờ được sử dụng cho thống kê",
     "Timezone Type": "Loại múi giờ",

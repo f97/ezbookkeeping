@@ -1167,7 +1167,8 @@
         "number invalid": "Число недействительно",
         "no files uploaded": "Файлы не загружены",
         "uploaded file is empty": "Загруженный файл пуст",
-        "uploaded file size exceeds the maximum allowed size": "Размер загруженного файла превышает максимально допустимый размер"
+        "uploaded file size exceeds the maximum allowed size": "Размер загруженного файла превышает максимально допустимый размер",
+        "failure count exceeded maximum limit": "Failure count exceeded maximum limit, please try again after some time"
     },
     "parameter": {
         "id": "ID",
@@ -1789,6 +1790,8 @@
     "Show Account Balance": "Показать баланс счета",
     "Hide Account Balance": "Скрыть баланс счета",
     "Page Settings": "Настройки страницы",
+    "Navigation Bar": "Navigation Bar",
+    "Show Add Transaction Button": "Show Add Transaction Button",
     "Overview Page": "Страница обзора",
     "Timezone Used for Statistics": "Часовой пояс, используемый для статистики",
     "Timezone Type": "Тип часового пояса",

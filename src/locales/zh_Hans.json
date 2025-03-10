@@ -1167,7 +1167,8 @@
         "number invalid": "数字错误",
         "no files uploaded": "没有上传文件",
         "uploaded file is empty": "上传的文件为空",
-        "uploaded file size exceeds the maximum allowed size": "上传的文件大小超出了允许的最大大小"
+        "uploaded file size exceeds the maximum allowed size": "上传的文件大小超出了允许的最大大小",
+        "failure count exceeded maximum limit": "失败次数超出最大限制，请稍后重试"
     },
     "parameter": {
         "id": "ID",
@@ -1789,6 +1790,8 @@
     "Show Account Balance": "显示账户余额",
     "Hide Account Balance": "隐藏账户余额",
     "Page Settings": "页面设置",
+    "Navigation Bar": "导航栏",
+    "Show Add Transaction Button": "显示添加交易按钮",
     "Overview Page": "总览页面",
     "Timezone Used for Statistics": "统计时使用的时区",
     "Timezone Type": "时区类型",

@@ -1167,7 +1167,8 @@
         "number invalid": "番号が無効です",
         "no files uploaded": "アップロードされたファイルはありません",
         "uploaded file is empty": "アップロードされたファイルは空です",
-        "uploaded file size exceeds the maximum allowed size": "アップロードされたファイルが最大許容サイズを超えています"
+        "uploaded file size exceeds the maximum allowed size": "アップロードされたファイルが最大許容サイズを超えています",
+        "failure count exceeded maximum limit": "Failure count exceeded maximum limit, please try again after some time"
     },
     "parameter": {
         "id": "ID",
@@ -1789,6 +1790,8 @@
     "Show Account Balance": "口座残高を表示",
     "Hide Account Balance": "口座残高を非表示",
     "Page Settings": "ページ設定",
+    "Navigation Bar": "Navigation Bar",
+    "Show Add Transaction Button": "Show Add Transaction Button",
     "Overview Page": "概要ページ",
     "Timezone Used for Statistics": "統計に使用されるタイムゾーン",
     "Timezone Type": "タイムゾーンタイプ",
