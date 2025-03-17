@@ -2,7 +2,8 @@ package converters
 
 import (
 	"github.com/mayswind/ezbookkeeping/pkg/converters/alipay"
-	"github.com/mayswind/ezbookkeeping/pkg/converters/base"
+	"github.com/mayswind/ezbookkeeping/pkg/converters/beancount"
+	"github.com/mayswind/ezbookkeeping/pkg/converters/converter"
 	"github.com/mayswind/ezbookkeeping/pkg/converters/datatable"
 	"github.com/mayswind/ezbookkeeping/pkg/converters/default"
 	"github.com/mayswind/ezbookkeeping/pkg/converters/dsv"
@@ -18,7 +19,7 @@ import (
 )
 
 // GetTransactionDataExporter returns the transaction data exporter according to the file type
-func GetTransactionDataExporter(fileType string) base.TransactionDataExporter {
+func GetTransactionDataExporter(fileType string) converter.TransactionDataExporter {
 	if fileType == "csv" {
 		return _default.DefaultTransactionDataCSVFileConverter
 	} else if fileType == "tsv" {
@@ -29,7 +30,7 @@ func GetTransactionDataExporter(fileType string) base.TransactionDataExporter {
 }
 
 // GetTransactionDataImporter returns the transaction data importer according to the file type
-func GetTransactionDataImporter(fileType string) (base.TransactionDataImporter, error) {
+func GetTransactionDataImporter(fileType string) (converter.TransactionDataImporter, error) {
 	if fileType == "ezbookkeeping_csv" {
 		return _default.DefaultTransactionDataCSVFileConverter, nil
 	} else if fileType == "ezbookkeeping_tsv" {
@@ -50,10 +51,14 @@ func GetTransactionDataImporter(fileType string) (base.TransactionDataImporter, 
 		return gnucash.GnuCashTransactionDataImporter, nil
 	} else if fileType == "firefly_iii_csv" {
 		return fireflyIII.FireflyIIITransactionDataCsvFileImporter, nil
+	} else if fileType == "beancount" {
+		return beancount.BeancountTransactionDataImporter, nil
 	} else if fileType == "feidee_mymoney_csv" {
 		return feidee.FeideeMymoneyAppTransactionDataCsvFileImporter, nil
 	} else if fileType == "feidee_mymoney_xls" {
 		return feidee.FeideeMymoneyWebTransactionDataXlsFileImporter, nil
+	} else if fileType == "feidee_mymoney_elecloud_xlsx" {
+		return feidee.FeideeMymoneyElecloudTransactionDataXlsxFileImporter, nil
 	} else if fileType == "alipay_app_csv" {
 		return alipay.AlipayAppTransactionDataCsvFileImporter, nil
 	} else if fileType == "alipay_web_csv" {
@@ -76,6 +81,6 @@ func CreateNewDelimiterSeparatedValuesDataParser(fileType string, fileEncoding s
 }
 
 // CreateNewDelimiterSeparatedValuesDataImporter returns a new delimiter-separated values data importer according to the file type and encoding
-func CreateNewDelimiterSeparatedValuesDataImporter(fileType string, fileEncoding string, columnIndexMapping map[datatable.TransactionDataTableColumn]int, transactionTypeNameMapping map[string]models.TransactionType, hasHeaderLine bool, timeFormat string, timezoneFormat string, geoLocationSeparator string, transactionTagSeparator string) (base.TransactionDataImporter, error) {
+func CreateNewDelimiterSeparatedValuesDataImporter(fileType string, fileEncoding string, columnIndexMapping map[datatable.TransactionDataTableColumn]int, transactionTypeNameMapping map[string]models.TransactionType, hasHeaderLine bool, timeFormat string, timezoneFormat string, geoLocationSeparator string, transactionTagSeparator string) (converter.TransactionDataImporter, error) {
 	return dsv.CreateNewCustomTransactionDataDsvFileImporter(fileType, fileEncoding, columnIndexMapping, transactionTypeNameMapping, hasHeaderLine, timeFormat, timezoneFormat, geoLocationSeparator, transactionTagSeparator)
 }

@@ -84,40 +84,6 @@ export const SUPPORTED_IMPORT_FILE_TYPES: ImportFileType[] = [
         }
     },
     {
-        type: 'ofx',
-        name: 'Open Financial Exchange (OFX) File',
-        extensions: '.ofx'
-    },
-    {
-        type: 'qfx',
-        name: 'Quicken Financial Exchange (QFX) File',
-        extensions: '.qfx'
-    },
-    {
-        type: 'qif',
-        name: 'Quicken Interchange Format (QIF) File',
-        extensions: '.qif',
-        subTypes: [
-            {
-                type: 'qif_ymd',
-                name: 'Year-month-day format',
-            },
-            {
-                type: 'qif_mdy',
-                name: 'Month-day-year format',
-            },
-            {
-                type: 'qif_dmy',
-                name: 'Day-month-year format',
-            }
-        ]
-    },
-    {
-        type: 'iif',
-        name: 'Intuit Interchange Format (IIF) File',
-        extensions: '.iif'
-    },
-    {
         type: 'dsv',
         name: 'Delimiter-separated Values (DSV) File',
         extensions: '.csv,.tsv',
@@ -154,6 +120,40 @@ export const SUPPORTED_IMPORT_FILE_TYPES: ImportFileType[] = [
         dataFromTextbox: true
     },
     {
+        type: 'ofx',
+        name: 'Open Financial Exchange (OFX) File',
+        extensions: '.ofx'
+    },
+    {
+        type: 'qfx',
+        name: 'Quicken Financial Exchange (QFX) File',
+        extensions: '.qfx'
+    },
+    {
+        type: 'qif',
+        name: 'Quicken Interchange Format (QIF) File',
+        extensions: '.qif',
+        subTypes: [
+            {
+                type: 'qif_ymd',
+                name: 'Year-month-day format',
+            },
+            {
+                type: 'qif_mdy',
+                name: 'Month-day-year format',
+            },
+            {
+                type: 'qif_dmy',
+                name: 'Day-month-year format',
+            }
+        ]
+    },
+    {
+        type: 'iif',
+        name: 'Intuit Interchange Format (IIF) File',
+        extensions: '.iif'
+    },
+    {
         type: 'gnucash',
         name: 'GnuCash XML Database File',
         extensions: '.gnucash',
@@ -172,6 +172,11 @@ export const SUPPORTED_IMPORT_FILE_TYPES: ImportFileType[] = [
         }
     },
     {
+        type: 'beancount',
+        name: 'Beancount Data File',
+        extensions: '.beancount'
+    },
+    {
         type: 'feidee_mymoney_csv',
         name: 'Feidee MyMoney (App) Data Export File',
         extensions: '.csv',
@@ -187,6 +192,15 @@ export const SUPPORTED_IMPORT_FILE_TYPES: ImportFileType[] = [
         document: {
             supportMultiLanguages: 'zh-Hans',
             anchor: '如何获取随手记web版数据导出文件'
+        }
+    },
+    {
+        type: 'feidee_mymoney_elecloud_xlsx',
+        name: 'Feidee MyMoney (Elecloud) Data Export File',
+        extensions: '.xlsx',
+        document: {
+            supportMultiLanguages: 'zh-Hans',
+            anchor: '如何获取随手记神象云账本数据导出文件'
         }
     },
     {
