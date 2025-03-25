@@ -963,7 +963,7 @@ function init(): void {
                 transaction.value = TransactionTemplate.createNewTransactionTemplate(transaction.value);
             }
 
-            (transaction.value as TransactionTemplate).from(template);
+            (transaction.value as TransactionTemplate).fillFrom(template);
         }
 
         loading.value = false;

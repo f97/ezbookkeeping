@@ -143,27 +143,44 @@
                                              :title="tt('Replace Invalid Transaction Tags')"
                                              @click="showReplaceInvalidItemDialog('tag', allInvalidTransactionTagNames)"></v-list-item>
                                 <v-divider class="my-2"/>
-                                <v-list-item :prepend-icon="mdiFindReplace"
+                                <v-list-item :prepend-icon="mdiShapePlusOutline"
+                                             :disabled="!!editingTransaction || !allInvalidExpenseCategoryNames || allInvalidExpenseCategoryNames.length < 1"
+                                             :title="tt('Create Nonexistent Expense Categories')"
+                                             @click="showBatchCreateInvalidItemDialog('expenseCategory', allInvalidExpenseCategoryNames)"></v-list-item>
+                                <v-list-item :prepend-icon="mdiShapePlusOutline"
+                                             :disabled="!!editingTransaction || !allInvalidIncomeCategoryNames || allInvalidIncomeCategoryNames.length < 1"
+                                             :title="tt('Create Nonexistent Income Categories')"
+                                             @click="showBatchCreateInvalidItemDialog('incomeCategory', allInvalidIncomeCategoryNames)"></v-list-item>
+                                <v-list-item :prepend-icon="mdiShapePlusOutline"
+                                             :disabled="!!editingTransaction || !allInvalidTransferCategoryNames || allInvalidTransferCategoryNames.length < 1"
+                                             :title="tt('Create Nonexistent Transfer Categories')"
+                                             @click="showBatchCreateInvalidItemDialog('transferCategory', allInvalidTransferCategoryNames)"></v-list-item>
+<!--                                <v-list-item :prepend-icon="mdiShapePlusOutline"-->
+<!--                                             :disabled="!!editingTransaction || !allInvalidTransactionTagNames || allInvalidTransactionTagNames.length < 1"-->
+<!--                                             :title="tt('Create Nonexistent Transaction Tags')"-->
+<!--                                             @click="showBatchCreateInvalidItemDialog('tag', allInvalidTransactionTagNames)"></v-list-item>-->
+                                <v-divider class="my-2"/>
+                                <v-list-item :prepend-icon="mdiTransfer"
                                              :disabled="!!editingTransaction || selectedExpenseTransactionCount < 1"
                                              :title="tt('Batch Convert Expense Transaction to Income Transaction')"
                                              @click="convertTransactionType(TransactionType.Expense, TransactionType.Income)"></v-list-item>
-                                <v-list-item :prepend-icon="mdiFindReplace"
+                                <v-list-item :prepend-icon="mdiTransfer"
                                              :disabled="!!editingTransaction || selectedExpenseTransactionCount < 1"
                                              :title="tt('Batch Convert Expense Transaction to Transfer Transaction')"
                                              @click="convertTransactionType(TransactionType.Expense, TransactionType.Transfer)"></v-list-item>
-                                <v-list-item :prepend-icon="mdiFindReplace"
+                                <v-list-item :prepend-icon="mdiTransfer"
                                              :disabled="!!editingTransaction || selectedIncomeTransactionCount < 1"
                                              :title="tt('Batch Convert Income Transaction to Expense Transaction')"
                                              @click="convertTransactionType(TransactionType.Income, TransactionType.Expense)"></v-list-item>
-                                <v-list-item :prepend-icon="mdiFindReplace"
+                                <v-list-item :prepend-icon="mdiTransfer"
                                              :disabled="!!editingTransaction || selectedIncomeTransactionCount < 1"
                                              :title="tt('Batch Convert Income Transaction to Transfer Transaction')"
                                              @click="convertTransactionType(TransactionType.Income, TransactionType.Transfer)"></v-list-item>
-                                <v-list-item :prepend-icon="mdiFindReplace"
+                                <v-list-item :prepend-icon="mdiTransfer"
                                              :disabled="!!editingTransaction || selectedTransferTransactionCount < 1"
                                              :title="tt('Batch Convert Transfer Transaction to Expense Transaction')"
                                              @click="convertTransactionType(TransactionType.Transfer, TransactionType.Expense)"></v-list-item>
-                                <v-list-item :prepend-icon="mdiFindReplace"
+                                <v-list-item :prepend-icon="mdiTransfer"
                                              :disabled="!!editingTransaction || selectedTransferTransactionCount < 1"
                                              :title="tt('Batch Convert Transfer Transaction to Income Transaction')"
                                              @click="convertTransactionType(TransactionType.Transfer, TransactionType.Income)"></v-list-item>
@@ -372,6 +389,32 @@
                                                          @click="parsedFileTimezoneFormat = timezoneFormat.value">
                                                 <v-list-item-title class="cursor-pointer">
                                                     {{ timezoneFormat.name }}
+                                                </v-list-item-title>
+                                            </v-list-item>
+                                        </v-list>
+                                    </v-menu>
+                                </v-btn>
+                                <v-btn class="ml-2" color="secondary" density="compact" variant="outlined"
+                                       :disabled="!parsedFileDataColumnMapping || !isNumber(parsedFileDataColumnMapping[ImportTransactionColumnType.Amount.type])">
+                                    <span>{{ tt('Amount Format') }}</span>
+                                    <span class="ml-1" v-if="parsedFileDataColumnMapping && isNumber(parsedFileDataColumnMapping[ImportTransactionColumnType.Amount.type])">({{ KnownAmountFormat.valueOf(parsedFileAmountFormat || parsedFileAutoDetectedAmountFormat || '')?.format || tt('Unknown') }})</span>
+                                    <v-menu eager activator="parent" location="bottom" max-height="500">
+                                        <v-list>
+                                            <v-list-item key="auto"
+                                                         :append-icon="parsedFileAmountFormat === '' ? mdiCheck : undefined"
+                                                         @click="parsedFileAmountFormat = ''">
+                                                <v-list-item-title class="cursor-pointer">
+                                                    <span>{{ tt('Auto detect') }}</span>
+                                                    <span class="ml-1" v-if="parsedFileAutoDetectedAmountFormat && KnownAmountFormat.valueOf(parsedFileAutoDetectedAmountFormat || '')">({{ KnownAmountFormat.valueOf(parsedFileAutoDetectedAmountFormat || '')?.format }})</span>
+                                                    <span class="ml-1" v-if="!parsedFileAutoDetectedAmountFormat || !KnownAmountFormat.valueOf(parsedFileAutoDetectedAmountFormat || '')">({{ tt('Unknown') }})</span>
+                                                </v-list-item-title>
+                                            </v-list-item>
+                                            <v-list-item :key="amountFormat.type"
+                                                         :append-icon="parsedFileAmountFormat === amountFormat.type ? mdiCheck : undefined"
+                                                         v-for="amountFormat in KnownAmountFormat.values()"
+                                                         @click="parsedFileAmountFormat = amountFormat.type">
+                                                <v-list-item-title class="cursor-pointer">
+                                                    {{ amountFormat.format }}
                                                 </v-list-item-title>
                                             </v-list-item>
                                         </v-list>
@@ -786,6 +829,7 @@
                                  @dateRange:change="changeCustomDateFilter"
                                  @error="onShowDateRangeError" />
     <batch-replace-dialog ref="batchReplaceDialog" />
+    <BatchCreateDialog ref="batchCreateDialog" />
     <confirm-dialog ref="confirmDialog"/>
     <snack-bar ref="snackbar" />
     <input ref="fileInput" type="file" style="display: none" :accept="supportedImportFileExtensions" @change="setImportFile($event)" />
@@ -796,7 +840,8 @@ import type { StepBarItem } from '@/components/desktop/StepsBar.vue';
 import PaginationButtons from '@/components/desktop/PaginationButtons.vue';
 import ConfirmDialog from '@/components/desktop/ConfirmDialog.vue';
 import SnackBar from '@/components/desktop/SnackBar.vue';
-import BatchReplaceDialog from './BatchReplaceDialog.vue';
+import BatchReplaceDialog, { type BatchReplaceDialogDataType } from './dialogs/BatchReplaceDialog.vue';
+import BatchCreateDialog, { type BatchCreateDialogDataType } from './dialogs/BatchCreateDialog.vue';
 
 import { ref, computed, useTemplateRef, watch } from 'vue';
 
@@ -812,6 +857,7 @@ import { useOverviewStore } from '@/stores/overview.ts';
 import { useStatisticsStore } from '@/stores/statistics.ts';
 
 import type { NameValue, TypeAndDisplayName } from '@/core/base.ts';
+import { KnownAmountFormat } from '@/core/numeral.ts';
 import { KnownDateTimeFormat } from '@/core/datetime.ts';
 import { KnownDateTimezoneFormat } from '@/core/timezone.ts';
 import { CategoryType } from '@/core/category.ts';
@@ -858,6 +904,8 @@ import {
     mdiDotsVertical,
     mdiHelpCircleOutline,
     mdiFindReplace,
+    mdiShapePlusOutline,
+    mdiTransfer,
     mdiClose,
     mdiArrowRight,
     mdiSelectAll,
@@ -871,6 +919,7 @@ import {
 type ConfirmDialogType = InstanceType<typeof ConfirmDialog>;
 type SnackBarType = InstanceType<typeof SnackBar>;
 type BatchReplaceDialogType = InstanceType<typeof BatchReplaceDialog>;
+type BatchCreateDialogType = InstanceType<typeof BatchCreateDialog>;
 
 type ImportTransactionDialogStep = 'uploadFile' | 'defineColumn' | 'checkData' | 'finalResult';
 
@@ -914,6 +963,7 @@ const statisticsStore = useStatisticsStore();
 const confirmDialog = useTemplateRef<ConfirmDialogType>('confirmDialog');
 const snackbar = useTemplateRef<SnackBarType>('snackbar');
 const batchReplaceDialog = useTemplateRef<BatchReplaceDialogType>('batchReplaceDialog');
+const batchCreateDialog = useTemplateRef<BatchCreateDialogType>('batchCreateDialog');
 const fileInput = useTemplateRef<HTMLInputElement>('fileInput');
 
 const showState = ref<boolean>(false);
@@ -930,6 +980,7 @@ const parsedFileDataColumnMapping = ref<Record<number, number>>({});
 const parsedFileTransactionTypeMapping = ref<Record<string, TransactionType>>({});
 const parsedFileTimeFormat = ref<string>('');
 const parsedFileTimezoneFormat = ref<string>('');
+const parsedFileAmountFormat = ref<string>('');
 const parsedFileGeoLocationSeparator = ref<string>(' ');
 const parsedFileTagSeparator = ref<string>(';');
 const importTransactions = ref<ImportTransaction[] | undefined>(undefined);
@@ -1248,7 +1299,7 @@ const parsedFileAutoDetectedTimeFormat = computed<string | undefined>(() => {
         }
     }
 
-    const detectedFormats = KnownDateTimeFormat.detectMany(allDateTimes);
+    const detectedFormats = KnownDateTimeFormat.detectMulti(allDateTimes);
 
     if (!detectedFormats || !detectedFormats.length || detectedFormats.length > 1) {
         return undefined;
@@ -1279,13 +1330,44 @@ const parsedFileAutoDetectedTimezoneFormat = computed<string | undefined>(() => 
         }
     }
 
-    const detectedFormats = KnownDateTimezoneFormat.detectMany(allTimezones);
+    const detectedFormats = KnownDateTimezoneFormat.detectMulti(allTimezones);
 
     if (!detectedFormats || !detectedFormats.length || detectedFormats.length > 1) {
         return undefined;
     }
 
     return detectedFormats[0].value;
+});
+
+const parsedFileAutoDetectedAmountFormat = computed<string | undefined>(() => {
+    if (!parsedFileData.value || !parsedFileData.value.length || !isNumber(parsedFileDataColumnMapping.value[ImportTransactionColumnType.Amount.type])) {
+        return undefined;
+    }
+
+    const allAmounts: string[] = [];
+    const amountColumnIndex = parsedFileDataColumnMapping.value[ImportTransactionColumnType.Amount.type];
+
+    const startIndex = parsedFileIncludeHeader.value ? 1 : 0;
+
+    for (let i = startIndex; i < parsedFileData.value.length; i++) {
+        if (parsedFileData.value[i].length <= amountColumnIndex) {
+            continue;
+        }
+
+        const amount = parsedFileData.value[i][amountColumnIndex];
+
+        if (amount) {
+            allAmounts.push(amount);
+        }
+    }
+
+    const detectedFormats = KnownAmountFormat.detectMulti(allAmounts);
+
+    if (!detectedFormats || !detectedFormats.length) {
+        return undefined;
+    }
+
+    return detectedFormats[0].type;
 });
 
 const importTransactionsTableHeight = computed<number | undefined>(() => {
@@ -1853,6 +1935,7 @@ function open(): Promise<void> {
     parsedFileTransactionTypeMapping.value = {};
     parsedFileTimeFormat.value = '';
     parsedFileTimezoneFormat.value = '';
+    parsedFileAmountFormat.value = '';
     parsedFileGeoLocationSeparator.value = ' ';
     parsedFileTagSeparator.value = ';';
     importTransactions.value = undefined;
@@ -1995,6 +2078,9 @@ function parseData(): void {
         let hasHeaderLine: boolean | undefined = undefined;
         let timeFormat: string | undefined = undefined;
         let timezoneFormat: string | undefined = undefined;
+        let amountFormat: string | undefined = undefined;
+        let amountDecimalSeparator: string | undefined = undefined;
+        let amountDigitGroupingSymbol: string | undefined = undefined;
         let geoLocationSeparator: string | undefined = undefined;
         let tagSeparator: string | undefined = undefined;
 
@@ -2004,6 +2090,7 @@ function parseData(): void {
             hasHeaderLine = parsedFileIncludeHeader.value;
             timeFormat = parsedFileTimeFormat.value;
             timezoneFormat = parsedFileTimezoneFormat.value;
+            amountFormat = parsedFileAmountFormat.value;
             geoLocationSeparator = parsedFileGeoLocationSeparator.value;
             tagSeparator = parsedFileTagSeparator.value;
 
@@ -2028,8 +2115,26 @@ function parseData(): void {
                 timezoneFormat = parsedFileAutoDetectedTimezoneFormat.value;
             }
 
+            if (!parsedFileAmountFormat.value) {
+                amountFormat = parsedFileAutoDetectedAmountFormat.value;
+            }
+
+            if (amountFormat) {
+                const knownAmountFormat = KnownAmountFormat.valueOf(amountFormat);
+
+                if (knownAmountFormat) {
+                    amountDecimalSeparator = knownAmountFormat.decimalSeparator.symbol;
+                    amountDigitGroupingSymbol = knownAmountFormat.digitGroupingSymbol?.symbol;
+                }
+            }
+
             if (!timeFormat) {
                 snackbar.value?.showError('Transaction time format is not set');
+                return;
+            }
+
+            if (!amountDecimalSeparator) {
+                snackbar.value?.showError('Transaction amount format is not set');
                 return;
             }
         }
@@ -2045,6 +2150,8 @@ function parseData(): void {
             hasHeaderLine: hasHeaderLine,
             timeFormat: timeFormat,
             timezoneFormat: timezoneFormat,
+            amountDecimalSeparator: amountDecimalSeparator,
+            amountDigitGroupingSymbol: amountDigitGroupingSymbol,
             geoSeparator: geoLocationSeparator,
             tagSeparator: tagSeparator
         }).then(response => {
@@ -2274,7 +2381,7 @@ function updateTransactionData(transaction: ImportTransaction): void {
     }
 }
 
-function showBatchReplaceDialog(type: string): void {
+function showBatchReplaceDialog(type: BatchReplaceDialogDataType): void {
     if (editingTransaction.value) {
         return;
     }
@@ -2339,7 +2446,7 @@ function showBatchReplaceDialog(type: string): void {
     });
 }
 
-function showReplaceInvalidItemDialog(type: string, invalidItems: NameValue[]): void {
+function showReplaceInvalidItemDialog(type: BatchReplaceDialogDataType, invalidItems: NameValue[]): void {
     if (editingTransaction.value) {
         return;
     }
@@ -2403,6 +2510,78 @@ function showReplaceInvalidItemDialog(type: string, invalidItems: NameValue[]): 
 
                         if (originalTagName === result.sourceItem && (!tagId || tagId === '0' || !allTagsMap.value[tagId])) {
                             transaction.tagIds[j] = result.targetItem;
+                            updated = true;
+                        }
+                    }
+                }
+
+                if (updated) {
+                    updatedCount++;
+                    updateTransactionData(transaction);
+                }
+            }
+        }
+
+        if (updatedCount > 0) {
+            snackbar.value?.showMessage('format.misc.youHaveUpdatedTransactions', {
+                count: updatedCount
+            });
+        }
+    });
+}
+
+function showBatchCreateInvalidItemDialog(type: BatchCreateDialogDataType, invalidItems: NameValue[]): void {
+    if (editingTransaction.value) {
+        return;
+    }
+
+    batchCreateDialog.value?.open({
+        type: type,
+        invalidItems: invalidItems
+    }).then(result => {
+        if (!result || !result.sourceTargetMap) {
+            return;
+        }
+
+        let updatedCount = 0;
+
+        if (importTransactions.value) {
+            const sourceTargetMap: Record<string, string> = result.sourceTargetMap;
+
+            for (let i = 0; i < importTransactions.value.length; i++) {
+                const transaction: ImportTransaction = importTransactions.value[i];
+
+                if (transaction.valid) {
+                    continue;
+                }
+
+                let updated = false;
+
+                if (type === 'expenseCategory' || type === 'incomeCategory' || type === 'transferCategory') {
+                    const categoryId = transaction.categoryId;
+                    const originalCategoryName = transaction.originalCategoryName;
+                    const targetItem = sourceTargetMap[originalCategoryName];
+
+                    if (transaction.type !== TransactionType.ModifyBalance && targetItem && (!categoryId || categoryId === '0' || !allCategoriesMap.value[categoryId])) {
+                        if (type === 'expenseCategory' && transaction.type === TransactionType.Expense) {
+                            transaction.categoryId = targetItem;
+                            updated = true;
+                        } else if (type === 'incomeCategory' && transaction.type === TransactionType.Income) {
+                            transaction.categoryId = targetItem;
+                            updated = true;
+                        } else if (type === 'transferCategory' && transaction.type === TransactionType.Transfer) {
+                            transaction.categoryId = targetItem;
+                            updated = true;
+                        }
+                    }
+                } else if (type === 'tag' && transaction.tagIds) {
+                    for (let j = 0; j < transaction.tagIds.length; j++) {
+                        const tagId = transaction.tagIds[j];
+                        const originalTagName = transaction.originalTagNames ? transaction.originalTagNames[j] : "";
+                        const targetItem = sourceTargetMap[originalTagName];
+
+                        if (targetItem && (!tagId || tagId === '0' || !allTagsMap.value[tagId])) {
+                            transaction.tagIds[j] = targetItem;
                             updated = true;
                         }
                     }

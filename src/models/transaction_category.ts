@@ -1,5 +1,5 @@
 import type { ColorValue } from '@/core/color.ts';
-import { type LocalizedPresetCategory, CategoryType } from '@/core/category.ts';
+import { CategoryType } from '@/core/category.ts';
 import { DEFAULT_CATEGORY_ICON_ID } from '@/consts/icon.ts';
 import { DEFAULT_CATEGORY_COLOR } from '@/consts/color.ts';
 
@@ -37,7 +37,7 @@ export class TransactionCategory implements TransactionCategoryInfoResponse {
         return !this.visible;
     }
 
-    public from(other: TransactionCategory): void {
+    public fillFrom(other: TransactionCategory): void {
         this.id = other.id;
         this.name = other.name;
         this.parentId = other.parentId;
@@ -83,11 +83,11 @@ export class TransactionCategory implements TransactionCategoryInfoResponse {
             categoryResponse.comment,
             categoryResponse.displayOrder,
             !categoryResponse.hidden,
-            categoryResponse.subCategories ? TransactionCategory.ofMany(categoryResponse.subCategories) : undefined
+            categoryResponse.subCategories ? TransactionCategory.ofMulti(categoryResponse.subCategories) : undefined
         );
     }
 
-    public static ofMany(categoryResponses: TransactionCategoryInfoResponse[]): TransactionCategory[] {
+    public static ofMulti(categoryResponses: TransactionCategoryInfoResponse[]): TransactionCategory[] {
         const categories: TransactionCategory[] = [];
 
         for (const categoryResponse of categoryResponses) {
@@ -105,7 +105,7 @@ export class TransactionCategory implements TransactionCategoryInfoResponse {
                 continue;
             }
 
-            ret[categoryType] = TransactionCategory.ofMany(categoriesByType[categoryType]);
+            ret[categoryType] = TransactionCategory.ofMulti(categoriesByType[categoryType]);
         }
 
         return ret;
@@ -137,7 +137,15 @@ export interface TransactionCategoryCreateRequest {
 }
 
 export interface TransactionCategoryCreateBatchRequest {
-    readonly categories: LocalizedPresetCategory[];
+    readonly categories: TransactionCategoryCreateWithSubCategories[];
+}
+
+export interface TransactionCategoryCreateWithSubCategories {
+    readonly name: string;
+    readonly type: CategoryType;
+    readonly icon: string;
+    readonly color: ColorValue;
+    readonly subCategories: TransactionCategoryCreateRequest[];
 }
 
 export interface TransactionCategoryModifyRequest {
