@@ -1,5 +1,5 @@
 <template>
-    <v-dialog width="600" :persistent="!!persistent" v-model="showState">
+    <v-dialog width="600" :persistent="!!submitting || !!selectedNames.length" v-model="showState">
         <v-card class="pa-2 pa-sm-4 pa-md-4">
             <template #title>
                 <div class="d-flex align-center justify-center">
@@ -72,6 +72,7 @@ import { ref, useTemplateRef } from 'vue';
 import { useI18n } from '@/locales/helpers.ts';
 
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
+import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
 
 import type { NameValue } from '@/core/base.ts';
 import { CategoryType } from '@/core/category.ts';
@@ -79,6 +80,7 @@ import { AUTOMATICALLY_CREATED_CATEGORY_ICON_ID } from '@/consts/icon.ts';
 import { DEFAULT_CATEGORY_COLOR } from '@/consts/color.ts';
 
 import { type TransactionCategoryCreateRequest, type TransactionCategoryCreateWithSubCategories, TransactionCategory } from '@/models/transaction_category.ts';
+import { type TransactionTagCreateRequest, TransactionTag } from '@/models/transaction_tag.ts';
 
 import { isDefined, arrayItemToObjectField } from '@/lib/common.ts';
 
@@ -97,13 +99,10 @@ interface BatchCreateDialogResponse {
     sourceTargetMap: Record<string, string>;
 }
 
-defineProps<{
-    persistent?: boolean;
-}>();
-
 const { tt } = useI18n();
 
 const transactionCategoriesStore = useTransactionCategoriesStore();
+const transactionTagsStore = useTransactionTagsStore();
 
 const snackbar = useTemplateRef<SnackBarType>('snackbar');
 
@@ -142,6 +141,31 @@ function buildBatchCreateCategoryResponse(createdCategories: Record<number, Tran
                 sourceTargetMap[sourceItem] = subCategory.id;
             }
         }
+    }
+
+    const response: BatchCreateDialogResponse = {
+        sourceTargetMap: sourceTargetMap
+    };
+
+    return response;
+}
+
+function buildBatchCreateTagResponse(createdTags: TransactionTag[]): BatchCreateDialogResponse {
+    const displayNameSourceItemMap: Record<string, string> = {};
+    const sourceTargetMap: Record<string, string> = {};
+
+    for (const item of (invalidItems.value || [])) {
+        displayNameSourceItemMap[item.name] = item.value;
+    }
+
+    for (const tag of createdTags) {
+        const sourceItem = displayNameSourceItemMap[tag.name];
+
+        if (!isDefined(sourceItem)) {
+            continue;
+        }
+
+        sourceTargetMap[sourceItem] = tag.id;
     }
 
     const response: BatchCreateDialogResponse = {
@@ -241,7 +265,38 @@ function confirm(): void {
             }
         });
     } else if (type.value === 'tag') {
+        submitting.value = true;
 
+        const submitTags: TransactionTagCreateRequest[] = [];
+
+        for (const item of selectedNames.value) {
+            const tag: TransactionTag = TransactionTag.createNewTag(item);
+            submitTags.push(tag.toCreateRequest());
+        }
+
+        transactionTagsStore.addTags({
+            tags: submitTags,
+            skipExists: true
+        }).then(response => {
+            transactionTagsStore.loadAllTags({ force: false }).then(() => {
+                submitting.value = false;
+                showState.value = false;
+
+                resolveFunc?.(buildBatchCreateTagResponse(response));
+            }).catch(error => {
+                submitting.value = false;
+
+                if (!error.processed) {
+                    snackbar.value?.showError(error);
+                }
+            });
+        }).catch(error => {
+            submitting.value = false;
+
+            if (!error.processed) {
+                snackbar.value?.showError(error);
+            }
+        });
     }
 }
 
