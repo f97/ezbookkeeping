@@ -362,7 +362,7 @@ function confirm(): boolean {
     } else {
         let value: number = parseAmount(currentValue.value);
 
-        if (props.currency === 'VND' && value < 100) {
+        if (value < 100) {
             value *= 1000;
         }
 
