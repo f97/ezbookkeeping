@@ -229,7 +229,7 @@ function onKeyUpDown(e: KeyboardEvent): void {
 
     try {
         let val = parseAmount(str);
-        if (val < 100) {
+        if (props.currency === 'VND' && val < 10000) {
             val *= 1000;
         }
         const finalValue = getValidFormattedValue(val, str, decimalIndex >= 0);
