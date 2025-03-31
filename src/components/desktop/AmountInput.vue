@@ -228,7 +228,10 @@ function onKeyUpDown(e: KeyboardEvent): void {
     }
 
     try {
-        const val = parseAmount(str);
+        let val = parseAmount(str);
+        if (props.currency === 'VND' && val < 100) {
+            val *= 1000;
+        }
         const finalValue = getValidFormattedValue(val, str, decimalIndex >= 0);
 
         if (finalValue !== str) {
@@ -255,7 +258,10 @@ function onPaste(e: ClipboardEvent): void {
         return;
     }
 
-    const value = parseAmount(text);
+    let value = parseAmount(text);
+    if (props.currency === 'VND' && value < 100) {
+        value *= 1000;
+    }
     const textualValue = getFormattedValue(value);
     const decimalSeparator = getCurrentDecimalSeparator();
     const hasDecimalSeparator = text.indexOf(decimalSeparator) >= 0;
