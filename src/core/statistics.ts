@@ -12,7 +12,7 @@ export class CategoricalChartType implements TypeAndName {
     public static readonly Pie = new CategoricalChartType(0, 'Pie Chart');
     public static readonly Bar = new CategoricalChartType(1, 'Bar Chart');
 
-    public static readonly Default = CategoricalChartType.Pie;
+    public static readonly Default = CategoricalChartType.Bar;
 
     public readonly type: number;
     public readonly name: string;
