@@ -156,8 +156,8 @@
                                         <span class="statistics-subtitle statistics-overview-empty-tip">{{ tt('No transaction data') }}</span>
                                     </v-card-text>
 
-                                    <v-card-text :class="{ 'readonly': loading }" v-if="queryAnalysisType === StatisticsAnalysisType.CategoricalAnalysis && query.categoricalChartType === CategoricalChartType.Pie.type">
-                                        <pie-chart
+                                    <v-card-text :class="{ 'readonly': loading }" v-if="queryAnalysisType === StatisticsAnalysisType.CategoricalAnalysis && query.categoricalChartType === CategoricalChartType.Bar.type">
+                                        <bar-chart
                                             :items="[
                                                 {id: '1', name: '---', value: 60, color: '7c7c7f'},
                                                 {id: '2', name: '---', value: 20, color: 'a5a5aa'},
@@ -169,8 +169,8 @@
                                             value-field="value"
                                             color-field="color"
                                             v-if="initing"
-                                        ></pie-chart>
-                                        <pie-chart
+                                        ></bar-chart>
+                                        <bar-chart
                                             :items="categoricalAnalysisData && categoricalAnalysisData.items && categoricalAnalysisData.items.length ? categoricalAnalysisData.items : []"
                                             :min-valid-percent="0.0001"
                                             :show-value="showAmountInChart"
