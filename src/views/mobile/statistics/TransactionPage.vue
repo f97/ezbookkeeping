@@ -44,56 +44,7 @@
             </f7-list>
         </f7-popover>
 
-        <f7-card v-if="analysisType === StatisticsAnalysisType.CategoricalAnalysis && query.categoricalChartType === CategoricalChartType.Pie.type">
-            <f7-card-header class="no-border display-block">
-                <div class="statistics-chart-header full-line text-align-right">
-                    <span style="margin-right: 4px;">{{ tt('Sort by') }}</span>
-                    <f7-link href="#" popover-open=".sorting-type-popover-menu">{{ querySortingTypeName }}</f7-link>
-                </div>
-            </f7-card-header>
-            <f7-card-content class="pie-chart-container" style="margin-top: -6px" :padding="false">
-                <pie-chart
-                    :items="[{value: 60, color: '7c7c7f'}, {value: 20, color: 'a5a5aa'}, {value: 20, color: 'c5c5c9'}]"
-                    :skeleton="true"
-                    :show-center-text="true"
-                    :show-selected-item-info="true"
-                    class="statistics-pie-chart"
-                    name-field="name"
-                    value-field="value"
-                    color-field="color"
-                    center-text-background="#cccccc"
-                    v-if="loading"
-                ></pie-chart>
-                <pie-chart
-                    :items="categoricalAnalysisData.items"
-                    :min-valid-percent="0.0001"
-                    :show-value="showAmountInChart"
-                    :show-center-text="true"
-                    :show-selected-item-info="true"
-                    :enable-click-item="true"
-                    :default-currency="defaultCurrency"
-                    class="statistics-pie-chart"
-                    name-field="name"
-                    value-field="totalAmount"
-                    percent-field="percent"
-                    hidden-field="hidden"
-                    v-else-if="!loading"
-                    @click="onClickPieChartItem"
-                >
-                    <text class="statistics-pie-chart-total-amount-title" v-if="categoricalAnalysisData.items && categoricalAnalysisData.items.length">
-                        {{ totalAmountName }}
-                    </text>
-                    <text class="statistics-pie-chart-total-amount-value" v-if="categoricalAnalysisData.items && categoricalAnalysisData.items.length">
-                        {{ getDisplayAmount(categoricalAnalysisData.totalAmount, defaultCurrency, 16) }}
-                    </text>
-                    <text class="statistics-pie-chart-total-no-data" cy="50%" v-if="!categoricalAnalysisData.items || !categoricalAnalysisData.items.length">
-                        {{ tt('No data') }}
-                    </text>
-                </pie-chart>
-            </f7-card-content>
-        </f7-card>
-
-        <f7-card v-else-if="analysisType === StatisticsAnalysisType.CategoricalAnalysis && query.categoricalChartType === CategoricalChartType.Bar.type">
+        <f7-card v-if="analysisType === StatisticsAnalysisType.CategoricalAnalysis && query.categoricalChartType === CategoricalChartType.Bar.type">
             <f7-card-header class="no-border display-block">
                 <div class="statistics-chart-header display-flex full-line justify-content-space-between">
                     <div>
