@@ -31,12 +31,12 @@
         "longDate": {
             "yyyy_mm_dd": "YYYY MMMM DD",
             "mm_dd_yyyy": "MMMM D, YYYY",
-            "dd_mm_yyyy": "D MMMM, YYYY"
+            "dd_mm_yyyy": "D [de] MMMM [de] YYYY"
         },
         "shortDate": {
-            "yyyy_mm_dd": "YYYY-M-D",
-            "mm_dd_yyyy": "M/D/YYYY",
-            "dd_mm_yyyy": "D/M/YYYY"
+            "yyyy_mm_dd": "YYYY/MM/DD",
+            "mm_dd_yyyy": "MM/DD/YYYY",
+            "dd_mm_yyyy": "DD/MM/YYYY"
         },
         "longYear": {
             "yyyy_mm_dd": "YYYY",
@@ -51,32 +51,32 @@
         "longYearMonth": {
             "yyyy_mm_dd": "YYYY MMMM",
             "mm_dd_yyyy": "MMMM, YYYY",
-            "dd_mm_yyyy": "MMMM, YYYY"
+            "dd_mm_yyyy": "MMMM [de] YYYY"
         },
         "shortYearMonth": {
-            "yyyy_mm_dd": "YYYY-M",
+            "yyyy_mm_dd": "YYYY/MM",
             "mm_dd_yyyy": "MMM, YYYY",
             "dd_mm_yyyy": "MMM, YYYY"
         },
         "longMonthDay": {
             "yyyy_mm_dd": "MMMM DD",
             "mm_dd_yyyy": "MMMM D",
-            "dd_mm_yyyy": "D MMMM"
+            "dd_mm_yyyy": "D [de] MMMM"
         },
         "shortMonthDay": {
-            "yyyy_mm_dd": "M-D",
-            "mm_dd_yyyy": "M/D",
-            "dd_mm_yyyy": "D/M"
+            "yyyy_mm_dd": "MM/DD",
+            "mm_dd_yyyy": "MM/DD",
+            "dd_mm_yyyy": "DD/MM"
         },
         "longTime": {
-            "hh_mm_ss": "HH:mm:ss",
-            "a_hh_mm_ss": "A hh:mm:ss",
-            "hh_mm_ss_a": "hh:mm:ss A"
+            "hh_mm_ss": "H:mm:ss",
+            "a_hh_mm_ss": "A h:mm:ss",
+            "hh_mm_ss_a": "h:mm:ss A"
         },
         "shortTime": {
-            "hh_mm": "HH:mm",
-            "a_hh_mm": "A hh:mm",
-            "hh_mm_a": "hh:mm A"
+            "hh_mm": "H:mm",
+            "a_hh_mm": "A h:mm",
+            "hh_mm_a": "h:mm A"
         },
         "yearQuarter": {
             "q1": "{year}T1",
@@ -295,7 +295,7 @@
         "Coordinated Universal Time-02": "Hora universal coordinada-02",
         "Greenland": "Groenlandia",
         "Azores": "Azores",
-        "Cabo Verde Is.": "Cabo Verde",
+        "Cabo Verde Is": "Cabo Verde",
         "Coordinated Universal Time": "Hora universal coordinada",
         "Dublin, Edinburgh, Lisbon, London": "Dublín, Edimburgo, Lisboa, Londres",
         "Monrovia, Reykjavik": "Monrovia, Reikiavik",
@@ -325,7 +325,7 @@
         "Istanbul": "Estambul",
         "Kuwait, Riyadh": "Kuwait, Riad",
         "Minsk": "Minsk",
-        "Moscow, St. Petersburg": "Moscú, San Petersburgo",
+        "Moscow, St Petersburg": "Moscú, San Petersburgo",
         "Nairobi": "Nairobi",
         "Volgograd": "Volgogrado",
         "Tehran": "Teherán",
@@ -355,7 +355,7 @@
         "Krasnoyarsk": "Krasnoyarsk",
         "Novosibirsk": "Novosibirsk",
         "Tomsk": "Tomsk",
-        "Beijing, Chongqing, Hong Kong SAR, Urumqi": "Beijing, Chongqing, Hong Kong, Urumqi",
+        "Beijing, Chongqing, Hong Kong SAR, Urumqi": "Beijing, Chongqing, Hong Kong SAR, Urumqi",
         "Irkutsk": "Irkutsk",
         "Kuala Lumpur, Singapore": "Kuala Lumpur, Singapur",
         "Perth": "Perth",
@@ -1062,7 +1062,6 @@
         "parent account cannot set balance": "La cuenta principal no puede establecer el saldo",
         "sub-account category not equals to parent": "La categoría de subcuenta no es igual a la principal",
         "sub-account type invalid": "El tipo de subcuenta no es válido",
-        "cannot add or delete sub-accounts when modify account": "No puede agregar ni eliminar subcuentas cuando modifica la cuenta",
         "source account not found": "No se encuentra la cuenta de origen",
         "destination account not found": "No se encuentra la cuenta de destino",
         "account is in use and cannot be deleted": "La cuenta está en uso y no se puede eliminar",
@@ -1072,6 +1071,9 @@
         "cannot set statement date for sub account": "No se puede establecer la fecha del estado de cuenta para la subcuenta",
         "sub-account not found": "Sub-account is not found",
         "sub-account is in use and cannot be deleted": "Sub-account is in use and it cannot be deleted",
+        "not supported to modify account currency": "Not supported to modify account currency",
+        "not supported to modify account balance": "Not supported to modify account balance",
+        "not supported to modify account balance time": "Not supported to modify account balance time",
         "transaction id is invalid": "El ID de transacción no es válido",
         "transaction not found": "La transacción no se encuentra",
         "transaction type is invalid": "El tipo de transacción no es válido",

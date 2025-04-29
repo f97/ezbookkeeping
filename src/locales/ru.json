@@ -8,6 +8,7 @@
         "German": "Немецкий",
         "English": "Английский",
         "Spanish": "Испанский",
+        "Italian": "Итальянский",
         "Japanese": "Японский",
         "Russian": "Русский",
         "Ukrainian": "Украинский",
@@ -18,8 +19,8 @@
     "default": {
         "currency": "RUB",
         "firstDayOfWeek": "Monday",
-        "longDateFormat": "MMDDYYYY",
-        "shortDateFormat": "MMDDYYYY",
+        "longDateFormat": "DDMMYYYY",
+        "shortDateFormat": "DDMMYYYY",
         "longTimeFormat": "HHMMSSA",
         "shortTimeFormat": "HHMMA",
         "decimalSeparator": "Comma",
@@ -31,17 +32,17 @@
         "longDate": {
             "yyyy_mm_dd": "YYYY MMMM DD",
             "mm_dd_yyyy": "MMMM D, YYYY",
-            "dd_mm_yyyy": "D MMMM, YYYY"
+            "dd_mm_yyyy": "D MMMM YYYY г."
         },
         "shortDate": {
-            "yyyy_mm_dd": "YYYY-M-D",
-            "mm_dd_yyyy": "M/D/YYYY",
-            "dd_mm_yyyy": "D/M/YYYY"
+            "yyyy_mm_dd": "YYYY-MM-DD",
+            "mm_dd_yyyy": "MM/DD/YYYY",
+            "dd_mm_yyyy": "DD.MM.YYYY"
         },
         "longYear": {
-            "yyyy_mm_dd": "YYYY",
-            "mm_dd_yyyy": "YYYY",
-            "dd_mm_yyyy": "YYYY"
+            "yyyy_mm_dd": "YYYY г.",
+            "mm_dd_yyyy": "YYYY г.",
+            "dd_mm_yyyy": "YYYY г."
         },
         "shortYear": {
             "yyyy_mm_dd": "YYYY",
@@ -54,7 +55,7 @@
             "dd_mm_yyyy": "MMMM, YYYY"
         },
         "shortYearMonth": {
-            "yyyy_mm_dd": "YYYY-M",
+            "yyyy_mm_dd": "YYYY-MM",
             "mm_dd_yyyy": "MMM, YYYY",
             "dd_mm_yyyy": "MMM, YYYY"
         },
@@ -64,19 +65,19 @@
             "dd_mm_yyyy": "D MMMM"
         },
         "shortMonthDay": {
-            "yyyy_mm_dd": "M-D",
-            "mm_dd_yyyy": "M/D",
-            "dd_mm_yyyy": "D/M"
+            "yyyy_mm_dd": "MM-DD",
+            "mm_dd_yyyy": "MM/DD",
+            "dd_mm_yyyy": "DD.MM"
         },
         "longTime": {
-            "hh_mm_ss": "HH:mm:ss",
-            "a_hh_mm_ss": "A hh:mm:ss",
-            "hh_mm_ss_a": "hh:mm:ss A"
+            "hh_mm_ss": "H:mm:ss",
+            "a_hh_mm_ss": "A h:mm:ss",
+            "hh_mm_ss_a": "h:mm:ss A"
         },
         "shortTime": {
-            "hh_mm": "HH:mm",
-            "a_hh_mm": "A hh:mm",
-            "hh_mm_a": "hh:mm A"
+            "hh_mm": "H:mm",
+            "a_hh_mm": "A h:mm",
+            "hh_mm_a": "h:mm A"
         },
         "yearQuarter": {
             "q1": "{year}Q1",
@@ -295,7 +296,7 @@
         "Coordinated Universal Time-02": "Время в формате UTC -02",
         "Greenland": "Гренландия",
         "Azores": "Азорские о-ва",
-        "Cabo Verde Is.": "Кабо-Верде",
+        "Cabo Verde Is": "Кабо-Верде",
         "Coordinated Universal Time": "Время в формате UTC",
         "Dublin, Edinburgh, Lisbon, London": "Дублин, Эдинбург, Лиссабон, Лондон",
         "Monrovia, Reykjavik": "Монровия, Рейкьявик",
@@ -325,7 +326,7 @@
         "Istanbul": "Стамбул",
         "Kuwait, Riyadh": "Кувейт, Эр-Рияд",
         "Minsk": "Минск",
-        "Moscow, St. Petersburg": "Москва, Санкт-Петербург",
+        "Moscow, St Petersburg": "Москва, Санкт-Петербург",
         "Nairobi": "Найроби",
         "Volgograd": "Волгоград",
         "Tehran": "Тегеран",
@@ -1062,7 +1063,6 @@
         "parent account cannot set balance": "Родительский счет не может устанавливать баланс",
         "sub-account category not equals to parent": "Категория субсчета не совпадает с родительской",
         "sub-account type invalid": "Тип субсчета недействителен",
-        "cannot add or delete sub-accounts when modify account": "Нельзя добавлять или удалять субсчета при изменении счета",
         "source account not found": "Исходный счет не найден",
         "destination account not found": "Счет назначения не найден",
         "account is in use and cannot be deleted": "Счет используется и не может быть удален",
@@ -1072,6 +1072,9 @@
         "cannot set statement date for sub account": "Нельзя установить дату выписки для субсчета",
         "sub-account not found": "Sub-account is not found",
         "sub-account is in use and cannot be deleted": "Sub-account is in use and it cannot be deleted",
+        "not supported to modify account currency": "Not supported to modify account currency",
+        "not supported to modify account balance": "Not supported to modify account balance",
+        "not supported to modify account balance time": "Not supported to modify account balance time",
         "transaction id is invalid": "ID транзакции недействителен",
         "transaction not found": "Транзакция не найдена",
         "transaction type is invalid": "Тип транзакции недействителен",

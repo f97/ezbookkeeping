@@ -8,6 +8,7 @@
         "German": "Німецька",
         "English": "Англійська",
         "Spanish": "Іспанська",
+        "Italian": "Італійська",
         "Japanese": "Японська",
         "Russian": "Російська",
         "Ukrainian": "Українська",
@@ -31,17 +32,17 @@
         "longDate": {
             "yyyy_mm_dd": "YYYY MMMM DD",
             "mm_dd_yyyy": "MMMM D, YYYY",
-            "dd_mm_yyyy": "D MMMM, YYYY"
+            "dd_mm_yyyy": "D MMMM YYYY р."
         },
         "shortDate": {
-            "yyyy_mm_dd": "YYYY-M-D",
-            "mm_dd_yyyy": "M/D/YYYY",
-            "dd_mm_yyyy": "D/M/YYYY"
+            "yyyy_mm_dd": "YYYY-MM-DD",
+            "mm_dd_yyyy": "MM/DD/YYYY",
+            "dd_mm_yyyy": "DD.MM.YYYY"
         },
         "longYear": {
-            "yyyy_mm_dd": "YYYY",
-            "mm_dd_yyyy": "YYYY",
-            "dd_mm_yyyy": "YYYY"
+            "yyyy_mm_dd": "YYYY р.",
+            "mm_dd_yyyy": "YYYY р.",
+            "dd_mm_yyyy": "YYYY р."
         },
         "shortYear": {
             "yyyy_mm_dd": "YYYY",
@@ -54,7 +55,7 @@
             "dd_mm_yyyy": "MMMM, YYYY"
         },
         "shortYearMonth": {
-            "yyyy_mm_dd": "YYYY-M",
+            "yyyy_mm_dd": "YYYY-MM",
             "mm_dd_yyyy": "MMM, YYYY",
             "dd_mm_yyyy": "MMM, YYYY"
         },
@@ -64,9 +65,9 @@
             "dd_mm_yyyy": "D MMMM"
         },
         "shortMonthDay": {
-            "yyyy_mm_dd": "M-D",
-            "mm_dd_yyyy": "M/D",
-            "dd_mm_yyyy": "D/M"
+            "yyyy_mm_dd": "MM-DD",
+            "mm_dd_yyyy": "MM/DD",
+            "dd_mm_yyyy": "DD.MM"
         },
         "longTime": {
             "hh_mm_ss": "HH:mm:ss",
@@ -295,7 +296,7 @@
         "Coordinated Universal Time-02": "всесвітній координований час-02",
         "Greenland": "Гренландія",
         "Azores": "Азорські о-ви",
-        "Cabo Verde Is.": "Кабо-Верде",
+        "Cabo Verde Is": "Кабо-Верде",
         "Coordinated Universal Time": "всесвітній координований час",
         "Dublin, Edinburgh, Lisbon, London": "Дублін, Единбург, Лісабон, Лондон",
         "Monrovia, Reykjavik": "Монровія, Рейк’явік",
@@ -325,7 +326,7 @@
         "Istanbul": "Стамбул",
         "Kuwait, Riyadh": "Кувейт, Ер-Ріяд",
         "Minsk": "Мінськ",
-        "Moscow, St. Petersburg": "Москва, Санкт-Петербург",
+        "Moscow, St Petersburg": "Москва, Санкт-Петербург",
         "Nairobi": "Найробі",
         "Volgograd": "Волгоград",
         "Tehran": "Тегеран",
@@ -1062,7 +1063,6 @@
         "parent account cannot set balance": "Батьківський рахунок не може встановити баланс",
         "sub-account category not equals to parent": "Категорія субрахунку не збігається з батьківською",
         "sub-account type invalid": "Тип субрахунку недійсний",
-        "cannot add or delete sub-accounts when modify account": "Неможливо додати або видалити субрахунки при зміні рахунку",
         "source account not found": "Вихідний рахунок не знайдено",
         "destination account not found": "Рахунок призначення не знайдено",
         "account is in use and cannot be deleted": "Рахунок використовується і не може бути видалений",
@@ -1072,6 +1072,9 @@
         "cannot set statement date for sub account": "Неможливо встановити дату виписки для субрахунку",
         "sub-account not found": "Субрахунок не знайдено",
         "sub-account is in use and cannot be deleted": "Субрахунок використовується і не може бути видалений",
+        "not supported to modify account currency": "Not supported to modify account currency",
+        "not supported to modify account balance": "Not supported to modify account balance",
+        "not supported to modify account balance time": "Not supported to modify account balance time",
         "transaction id is invalid": "ID транзакції недійсний",
         "transaction not found": "Транзакцію не знайдено",
         "transaction type is invalid": "Тип транзакції недійсний",

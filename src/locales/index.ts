@@ -1,6 +1,7 @@
 import de from './de.json';
 import en from './en.json';
 import es from './es.json';
+import it from "./it.json";
 import ja from './ja.json';
 import ru from './ru.json';
 import uk from './uk.json';
@@ -35,14 +36,20 @@ export const ALL_LANGUAGES: Record<string, LanguageInfo> = {
     'en': {
         name: 'English',
         displayName: 'English',
-        alternativeLanguageTag: 'en',
+        alternativeLanguageTag: 'en-US',
         content: en
     },
     'es': {
         name: 'Spanish',
         displayName: 'Español',
-        alternativeLanguageTag: 'es',
+        alternativeLanguageTag: 'es-ES',
         content: es
+    },
+    'it': {
+        name: 'Italian',
+        displayName: 'Italiano',
+        alternativeLanguageTag: 'it-IT',
+        content: it
     },
     'ja': {
         name: 'Japanese',

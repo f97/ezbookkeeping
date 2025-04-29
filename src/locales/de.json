@@ -8,6 +8,7 @@
         "German": "Deutsch",
         "English": "Englisch",
         "Spanish": "Spanisch",
+        "Italian": "Italienisch",
         "Japanese": "Japanisch",
         "Russian": "Russisch",
         "Ukrainian": "Ukrainisch",
@@ -20,8 +21,8 @@
         "firstDayOfWeek": "Monday",
         "longDateFormat": "DDMMYYYY",
         "shortDateFormat": "DDMMYYYY",
-        "longTimeFormat": "HHMMSSA",
-        "shortTimeFormat": "HHMMA",
+        "longTimeFormat": "HHMMSS",
+        "shortTimeFormat": "HHMM",
         "decimalSeparator": "Comma",
         "digitGroupingSymbol": "Dot",
         "digitGrouping": "ThousandsSeparator",
@@ -31,12 +32,12 @@
         "longDate": {
             "yyyy_mm_dd": "YYYY MMMM DD",
             "mm_dd_yyyy": "MMMM D, YYYY",
-            "dd_mm_yyyy": "D MMMM, YYYY"
+            "dd_mm_yyyy": "D. MMMM YYYY"
         },
         "shortDate": {
-            "yyyy_mm_dd": "YYYY-M-D",
-            "mm_dd_yyyy": "M/D/YYYY",
-            "dd_mm_yyyy": "D/M/YYYY"
+            "yyyy_mm_dd": "YYYY-MM-DD",
+            "mm_dd_yyyy": "MM/DD/YYYY",
+            "dd_mm_yyyy": "DD.MM.YYYY"
         },
         "longYear": {
             "yyyy_mm_dd": "YYYY",
@@ -51,22 +52,22 @@
         "longYearMonth": {
             "yyyy_mm_dd": "YYYY MMMM",
             "mm_dd_yyyy": "MMMM, YYYY",
-            "dd_mm_yyyy": "MMMM, YYYY"
+            "dd_mm_yyyy": "MMMM YYYY"
         },
         "shortYearMonth": {
-            "yyyy_mm_dd": "YYYY-M",
+            "yyyy_mm_dd": "YYYY-MM",
             "mm_dd_yyyy": "MMM, YYYY",
-            "dd_mm_yyyy": "MMM, YYYY"
+            "dd_mm_yyyy": "MMM YYYY"
         },
         "longMonthDay": {
             "yyyy_mm_dd": "MMMM DD",
             "mm_dd_yyyy": "MMMM D",
-            "dd_mm_yyyy": "D MMMM"
+            "dd_mm_yyyy": "D. MMMM"
         },
         "shortMonthDay": {
-            "yyyy_mm_dd": "M-D",
-            "mm_dd_yyyy": "M/D",
-            "dd_mm_yyyy": "D/M"
+            "yyyy_mm_dd": "MM-DD",
+            "mm_dd_yyyy": "MM/DD",
+            "dd_mm_yyyy": "DD.MM"
         },
         "longTime": {
             "hh_mm_ss": "HH:mm:ss",
@@ -295,7 +296,7 @@
         "Coordinated Universal Time-02": "Koordinierte Weltzeit-02",
         "Greenland": "Grönland",
         "Azores": "Azoren",
-        "Cabo Verde Is.": "Cabo Verde",
+        "Cabo Verde Is": "Cabo Verde",
         "Coordinated Universal Time": "Koordinierte Weltzeit",
         "Dublin, Edinburgh, Lisbon, London": "Dublin, Edinburgh, Lissabon, London",
         "Monrovia, Reykjavik": "Monrovia, Reykjavik",
@@ -325,7 +326,7 @@
         "Istanbul": "Istanbul",
         "Kuwait, Riyadh": "Kuwait, Riad",
         "Minsk": "Minsk",
-        "Moscow, St. Petersburg": "Moskau, St. Petersburg",
+        "Moscow, St Petersburg": "Moskau, St. Petersburg",
         "Nairobi": "Nairobi",
         "Volgograd": "Wolgograd",
         "Tehran": "Teheran",
@@ -1062,7 +1063,6 @@
         "parent account cannot set balance": "Übergeordnetes Konto kann keinen Saldo festlegen",
         "sub-account category not equals to parent": "Teilkonto-Kategorie entspricht nicht der übergeordneten Kategorie",
         "sub-account type invalid": "Teilkontotyp ist ungültig",
-        "cannot add or delete sub-accounts when modify account": "Unterkonten können beim Ändern des Kontos nicht hinzugefügt oder gelöscht werden",
         "source account not found": "Quellkonto nicht gefunden",
         "destination account not found": "Zielkonto nicht gefunden",
         "account is in use and cannot be deleted": "Konto wird verwendet und kann nicht gelöscht werden",
@@ -1072,6 +1072,9 @@
         "cannot set statement date for sub account": "Abrechnungsdatum kann für Teilkonto nicht festgelegt werden",
         "sub-account not found": "Sub-account is not found",
         "sub-account is in use and cannot be deleted": "Sub-account is in use and it cannot be deleted",
+        "not supported to modify account currency": "Not supported to modify account currency",
+        "not supported to modify account balance": "Not supported to modify account balance",
+        "not supported to modify account balance time": "Not supported to modify account balance time",
         "transaction id is invalid": "Transaktions-ID ist ungültig",
         "transaction not found": "Transaktion nicht gefunden",
         "transaction type is invalid": "Transaktionstyp ist ungültig",

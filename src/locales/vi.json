@@ -8,6 +8,7 @@
         "German": "Tiếng Đức",
         "English": "Tiếng Anh",
         "Spanish": "Tiếng Tây Ban Nha",
+        "Italian": "Tiếng Ý",
         "Japanese": "Tiếng Nhật",
         "Russian": "Tiếng Nga",
         "Ukrainian": "Tiếng Ukraina",
@@ -30,13 +31,13 @@
     "format": {
         "longDate": {
             "yyyy_mm_dd": "YYYY MMMM DD",
-            "mm_dd_yyyy": "MMMM D, YYYY",
-            "dd_mm_yyyy": "D MMMM, YYYY"
+            "mm_dd_yyyy": "MMMM DD YYYY",
+            "dd_mm_yyyy": "DD MMMM YYYY"
         },
         "shortDate": {
-            "yyyy_mm_dd": "YYYY-M-D",
-            "mm_dd_yyyy": "M/D/YYYY",
-            "dd_mm_yyyy": "D/M/YYYY"
+            "yyyy_mm_dd": "YYYY-MM-DD",
+            "mm_dd_yyyy": "MM/DD/YYYY",
+            "dd_mm_yyyy": "DD/MM/YYYY"
         },
         "longYear": {
             "yyyy_mm_dd": "YYYY",
@@ -50,23 +51,23 @@
         },
         "longYearMonth": {
             "yyyy_mm_dd": "YYYY MMMM",
-            "mm_dd_yyyy": "MMMM, YYYY",
-            "dd_mm_yyyy": "MMMM, YYYY"
+            "mm_dd_yyyy": "MMMM YYYY",
+            "dd_mm_yyyy": "MMMM YYYY"
         },
         "shortYearMonth": {
-            "yyyy_mm_dd": "YYYY-M",
-            "mm_dd_yyyy": "MMM, YYYY",
-            "dd_mm_yyyy": "MMM, YYYY"
+            "yyyy_mm_dd": "YYYY-MM",
+            "mm_dd_yyyy": "MMM YYYY",
+            "dd_mm_yyyy": "MMM YYYY"
         },
         "longMonthDay": {
             "yyyy_mm_dd": "MMMM DD",
-            "mm_dd_yyyy": "MMMM D",
-            "dd_mm_yyyy": "D MMMM"
+            "mm_dd_yyyy": "MMMM DD",
+            "dd_mm_yyyy": "DD MMMM"
         },
         "shortMonthDay": {
-            "yyyy_mm_dd": "M-D",
-            "mm_dd_yyyy": "M/D",
-            "dd_mm_yyyy": "D/M"
+            "yyyy_mm_dd": "MM-DD",
+            "mm_dd_yyyy": "MM/DD",
+            "dd_mm_yyyy": "DD/MM"
         },
         "longTime": {
             "hh_mm_ss": "HH:mm:ss",
@@ -295,7 +296,7 @@
         "Coordinated Universal Time-02": "Giờ Quốc tế Phối hợp-02",
         "Greenland": "Greenland",
         "Azores": "Azores",
-        "Cabo Verde Is.": "Đảo Cabo Verde",
+        "Cabo Verde Is": "Đảo Cabo Verde",
         "Coordinated Universal Time": "Giờ Quốc tế Phối hợp",
         "Dublin, Edinburgh, Lisbon, London": "Dublin, Edinburgh, Lisbon, London",
         "Monrovia, Reykjavik": "Monrovia, Reykjavik",
@@ -325,7 +326,7 @@
         "Istanbul": "Istanbul",
         "Kuwait, Riyadh": "Kuwait, Riyadh",
         "Minsk": "Minsk",
-        "Moscow, St. Petersburg": "Moscow, St. Petersburg",
+        "Moscow, St Petersburg": "Moscow, St. Petersburg",
         "Nairobi": "Nairobi",
         "Volgograd": "Volgograd",
         "Tehran": "Tehran",
@@ -1062,7 +1063,6 @@
         "parent account cannot set balance": "Tài khoản cha không thể đặt số dư",
         "sub-account category not equals to parent": "Danh mục tài khoản phụ không bằng tài khoản cha",
         "sub-account type invalid": "Loại tài khoản phụ không hợp lệ",
-        "cannot add or delete sub-accounts when modify account": "Bạn không thể thêm hoặc xóa tài khoản phụ khi sửa đổi tài khoản",
         "source account not found": "Không tìm thấy tài khoản nguồn",
         "destination account not found": "Không tìm thấy tài khoản đích",
         "account is in use and cannot be deleted": "Tài khoản đang được sử dụng và không thể xóa",
@@ -1072,6 +1072,9 @@
         "cannot set statement date for sub account": "Không thể đặt ngày sao kê cho tài khoản phụ",
         "sub-account not found": "Sub-account is not found",
         "sub-account is in use and cannot be deleted": "Sub-account is in use and it cannot be deleted",
+        "not supported to modify account currency": "Not supported to modify account currency",
+        "not supported to modify account balance": "Not supported to modify account balance",
+        "not supported to modify account balance time": "Not supported to modify account balance time",
         "transaction id is invalid": "ID giao dịch không hợp lệ",
         "transaction not found": "Không tìm thấy giao dịch",
         "transaction type is invalid": "Loại giao dịch không hợp lệ",
