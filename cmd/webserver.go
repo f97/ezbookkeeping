@@ -319,6 +319,7 @@ func startWebServer(c *core.CliContext) error {
 				apiV1Route.POST("/transactions/parse_dsv_file.json", bindApi(api.Transactions.TransactionParseImportDsvFileDataHandler))
 				apiV1Route.POST("/transactions/parse_import.json", bindApi(api.Transactions.TransactionParseImportFileHandler))
 				apiV1Route.POST("/transactions/import.json", bindApi(api.Transactions.TransactionImportHandler))
+				apiV1Route.GET("/transactions/import/process.json", bindApi(api.Transactions.TransactionImportProcessHandler))
 			}
 
 			// Transaction Pictures
@@ -416,6 +417,18 @@ func bindApiWithTokenUpdate(fn core.ApiHandlerFunc, config *settings.Config) gin
 			utils.PrintJsonErrorResult(c, err)
 		} else {
 			utils.PrintJsonSuccessResult(c, result)
+		}
+	}
+}
+
+func bindEventStreamApi(fn core.EventStreamApiHandlerFunc) gin.HandlerFunc {
+	return func(ginCtx *gin.Context) {
+		c := core.WrapWebContext(ginCtx)
+		utils.SetEventStreamHeader(c)
+		err := fn(c)
+
+		if err != nil {
+			utils.WriteEventStreamJsonErrorResult(c, err)
 		}
 	}
 }
