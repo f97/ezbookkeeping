@@ -1290,6 +1290,7 @@
         "anchor": {
             "export_and_import": {
                 "export-transactions": "export-transactions",
+                "how-to-import-delimiter-separated-values-dsv-file-or-data": "how-to-import-delimiter-separated-values-dsv-file-or-data",
                 "how-to-get-gnucash-xml-database-file": "how-to-get-gnucash-xml-database-file",
                 "how-to-get-firefly-iii-data-export-file": "how-to-get-firefly-iii-data-export-file"
             }
@@ -1638,6 +1639,9 @@
     "Location on Map": "Ubicación en el mapa",
     "Update Geographic Location": "Actualizar ubicación geográfica",
     "Clear Geographic Location": "Borrar ubicación geográfica",
+    "Click on Map to Set Geographic Location": "Click on Map to Set Geographic Location",
+    "Enable Click to Set Location": "Enable Click to Set Location",
+    "Disable Click to Set Location": "Disable Click to Set Location",
     "Unable to retrieve current position": "No se puede recuperar la posición actual",
     "Cannot Initialize Map": "No se puede inicializar el mapa",
     "Unsupported Map Provider": "Proveedor de mapas no compatible",
@@ -1746,6 +1750,10 @@
     "Transaction Detail": "Detalle de la transacción",
     "No transaction data": "Sin datos de transacción",
     "Are you sure you want to delete this transaction?": "¿Está seguro de que desea eliminar esta transacción?",
+    "Enter formula mode": "Enter formula mode",
+    "Exit formula mode": "Exit formula mode",
+    "Calculate formula result": "Calculate formula result",
+    "Formula is invalid": "Formula is invalid",
     "Amount value is not number": "El valor de la cantidad no es un número",
     "Amount value exceeds limitation": "El valor del importe supera el límite",
     "Unable to delete this transaction": "No se puede eliminar esta transacción",

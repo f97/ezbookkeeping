@@ -1291,6 +1291,7 @@
         "anchor": {
             "export_and_import": {
                 "export-transactions": "export-transactions",
+                "how-to-import-delimiter-separated-values-dsv-file-or-data": "how-to-import-delimiter-separated-values-dsv-file-or-data",
                 "how-to-get-gnucash-xml-database-file": "how-to-get-gnucash-xml-database-file",
                 "how-to-get-firefly-iii-data-export-file": "how-to-get-firefly-iii-data-export-file"
             }
@@ -1639,6 +1640,9 @@
     "Location on Map": "Vị trí trên bản đồ",
     "Update Geographic Location": "Cập nhật vị trí địa lý",
     "Clear Geographic Location": "Xóa vị trí địa lý",
+    "Click on Map to Set Geographic Location": "Click on Map to Set Geographic Location",
+    "Enable Click to Set Location": "Enable Click to Set Location",
+    "Disable Click to Set Location": "Disable Click to Set Location",
     "Unable to retrieve current position": "Không thể lấy vị trí hiện tại",
     "Cannot Initialize Map": "Không thể khởi tạo bản đồ",
     "Unsupported Map Provider": "Nhà cung cấp bản đồ không được hỗ trợ",
@@ -1747,6 +1751,10 @@
     "Transaction Detail": "Chi tiết giao dịch",
     "No transaction data": "Không có dữ liệu giao dịch",
     "Are you sure you want to delete this transaction?": "Bạn có chắc chắn muốn xóa giao dịch này không?",
+    "Enter formula mode": "Enter formula mode",
+    "Exit formula mode": "Exit formula mode",
+    "Calculate formula result": "Calculate formula result",
+    "Formula is invalid": "Formula is invalid",
     "Amount value is not number": "Giá trị số tiền không phải là số",
     "Amount value exceeds limitation": "Giá trị số tiền vượt quá giới hạn",
     "Unable to delete this transaction": "Không thể xóa giao dịch này",

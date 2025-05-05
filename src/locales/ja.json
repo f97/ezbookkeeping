@@ -1291,6 +1291,7 @@
         "anchor": {
             "export_and_import": {
                 "export-transactions": "取引のエクスポート",
+                "how-to-import-delimiter-separated-values-dsv-file-or-data": "how-to-import-delimiter-separated-values-dsv-file-or-data",
                 "how-to-get-gnucash-xml-database-file": "gnucash-xmlデータベースファイルの取得方法",
                 "how-to-get-firefly-iii-data-export-file": "firefly-iiiデータエクスポートファイルを取得する方法"
             }
@@ -1639,6 +1640,9 @@
     "Location on Map": "マップ上の座標",
     "Update Geographic Location": "地理座標の更新",
     "Clear Geographic Location": "地理座標を削除",
+    "Click on Map to Set Geographic Location": "Click on Map to Set Geographic Location",
+    "Enable Click to Set Location": "Enable Click to Set Location",
+    "Disable Click to Set Location": "Disable Click to Set Location",
     "Unable to retrieve current position": "現在位置を取得できません",
     "Cannot Initialize Map": "マップを初期化できません",
     "Unsupported Map Provider": "サポートされていないマッププロバイダーです",
@@ -1747,6 +1751,10 @@
     "Transaction Detail": "取引の詳細",
     "No transaction data": "取引データがありません",
     "Are you sure you want to delete this transaction?": "この取引を削除しますか？",
+    "Enter formula mode": "Enter formula mode",
+    "Exit formula mode": "Exit formula mode",
+    "Calculate formula result": "Calculate formula result",
+    "Formula is invalid": "Formula is invalid",
     "Amount value is not number": "金額の値が数字ではありません",
     "Amount value exceeds limitation": "金額の値が制限を超えています",
     "Unable to delete this transaction": "この取引を削除できません",

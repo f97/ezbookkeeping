@@ -1291,6 +1291,7 @@
         "anchor": {
             "export_and_import": {
                 "export-transactions": "export-transactions",
+                "how-to-import-delimiter-separated-values-dsv-file-or-data": "how-to-import-delimiter-separated-values-dsv-file-or-data",
                 "how-to-get-gnucash-xml-database-file": "how-to-get-gnucash-xml-database-file",
                 "how-to-get-firefly-iii-data-export-file": "how-to-get-firefly-iii-data-export-file"
             }
@@ -1639,6 +1640,9 @@
     "Location on Map": "Розташування на карті",
     "Update Geographic Location": "Оновити геолокацію",
     "Clear Geographic Location": "Очистити геолокацію",
+    "Click on Map to Set Geographic Location": "Click on Map to Set Geographic Location",
+    "Enable Click to Set Location": "Enable Click to Set Location",
+    "Disable Click to Set Location": "Disable Click to Set Location",
     "Unable to retrieve current position": "Не вдалося отримати поточне розташування",
     "Cannot Initialize Map": "Не вдалося ініціалізувати карту",
     "Unsupported Map Provider": "Непідтримуваний провайдер карт",
@@ -1747,6 +1751,10 @@
     "Transaction Detail": "Деталі транзакції",
     "No transaction data": "Немає даних про транзакції",
     "Are you sure you want to delete this transaction?": "Ви впевнені, що хочете видалити цю транзакцію?",
+    "Enter formula mode": "Enter formula mode",
+    "Exit formula mode": "Exit formula mode",
+    "Calculate formula result": "Calculate formula result",
+    "Formula is invalid": "Formula is invalid",
     "Amount value is not number": "Значення суми не є числом",
     "Amount value exceeds limitation": "Значення суми перевищує допустиме обмеження",
     "Unable to delete this transaction": "Не вдалося видалити транзакцію",
