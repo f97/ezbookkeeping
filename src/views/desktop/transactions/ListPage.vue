@@ -39,7 +39,7 @@
                             />
                         </div>
                         <v-tabs show-arrows class="my-4" direction="vertical"
-                                :disabled="loading" v-model="recentDateRangeType">
+                                :disabled="loading" v-model="recentDateRangeIndex">
                             <v-tab class="tab-text-truncate" :key="idx" :value="idx" v-for="(recentDateRange, idx) in recentMonthDateRanges"
                                    @click="changeDateFilter(recentDateRange)">
                                 <span class="text-truncate">{{ recentDateRange.displayName }}</span>
@@ -140,6 +140,7 @@
                                         <vue-date-picker inline auto-apply model-type="yyyy-M-d"
                                                          month-name-format="long"
                                                          class="justify-content-center"
+                                                         :config="{ noSwipe: true }"
                                                          :disable-month-year-select="true"
                                                          :month-change-on-scroll="false"
                                                          :month-change-on-arrows="false"
@@ -148,6 +149,7 @@
                                                          :min-date="getShortDate(parseDateFromUnixTime(query.minTime))"
                                                          :max-date="getShortDate(parseDateFromUnixTime(query.maxTime))"
                                                          :disabled-dates="noTransactionInMonthDay"
+                                                         :prevent-min-max-navigation="true"
                                                          :clearable="false"
                                                          :dark="isDarkMode"
                                                          :week-start="firstDayOfWeek"
@@ -674,7 +676,8 @@ import type { TransactionTemplate } from '@/models/transaction_template.ts';
 import {
     isObject,
     isString,
-    isNumber
+    isNumber,
+    arrangeArrayWithNewStartIndex
 } from '@/lib/common.ts';
 import {
     getCurrentUnixTime,
@@ -692,7 +695,7 @@ import {
     getDateTypeByBillingCycleDateRange,
     getDateRangeByDateType,
     getDateRangeByBillingCycleDateType,
-    getRecentDateRangeType,
+    getRecentDateRangeIndex,
     getFullMonthDateRange,
     getMonthFirstDayOrCurrentDayShortDate,
     isDateRangeMatchOneMonth
@@ -763,6 +766,7 @@ const theme = useTheme();
 
 const {
     tt,
+    getAllLongWeekdayNames,
     getAllRecentMonthDateRanges,
     getAllTransactionTagFilterTypes,
     getMonthShortName,
@@ -777,7 +781,6 @@ const {
     currentCalendarDate,
     currentTimezoneOffsetMinutes,
     firstDayOfWeek,
-    dayNames,
     defaultCurrency,
     showTotalAmountInTransactionListPage,
     showTagInTransactionListPage,
@@ -858,6 +861,7 @@ const showFilterCategoryDialog = ref<boolean>(false);
 const showFilterTagDialog = ref<boolean>(false);
 
 const isDarkMode = computed<boolean>(() => theme.global.name.value === ThemeType.Dark);
+const dayNames = computed<string[]>(() => arrangeArrayWithNewStartIndex(getAllLongWeekdayNames(), firstDayOfWeek.value));
 
 const recentMonthDateRanges = computed<LocalizedRecentMonthDateRange[]>(() => getAllRecentMonthDateRanges(pageType.value === TransactionListPageType.List.type, true));
 
@@ -952,8 +956,8 @@ const currentMonthTransactionData = computed<TransactionMonthList | null>(() => 
     return null;
 });
 
-const recentDateRangeType = computed<number>({
-    get: () => getRecentDateRangeType(recentMonthDateRanges.value, query.value.dateType, query.value.minTime, query.value.maxTime, firstDayOfWeek.value),
+const recentDateRangeIndex = computed<number>({
+    get: () => getRecentDateRangeIndex(recentMonthDateRanges.value, query.value.dateType, query.value.minTime, query.value.maxTime, firstDayOfWeek.value),
     set: (value) => {
         if (value < 0 || value >= recentMonthDateRanges.value.length) {
             value = 0;
@@ -1337,9 +1341,9 @@ function changeCustomDateFilter(minTime: number, maxTime: number): void {
 }
 
 function shiftDateRange(startTime: number, endTime: number, scale: number): void {
-    if (recentDateRangeType.value === DateRange.All.type) {
+    if (pageType.value === TransactionListPageType.List.type && recentDateRangeIndex.value === 0) { // first item is "All"
         return;
-    }
+    } // transaction calendar mode not display "All" item
 
     let newDateRange: TimeRangeAndDateType | null = null;
 
