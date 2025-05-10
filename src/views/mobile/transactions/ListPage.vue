@@ -12,7 +12,7 @@
             <f7-nav-title>
                 <f7-link popover-open=".chart-data-type-popover-menu">
                     <span style="color: var(--f7-text-color)">{{ displayPageTypeName }}</span>
-                    <f7-icon size="16px" color="gray" style="opacity: 0.5" f7="chevron_down_circle_fill"></f7-icon>
+                    <f7-icon class="page-title-bar-icon" color="gray" style="opacity: 0.5" f7="chevron_down_circle_fill"></f7-icon>
                 </f7-link>
             </f7-nav-title>
             <f7-nav-right class="navbar-compact-icons">
@@ -342,6 +342,12 @@
                                     @dateRange:change="changeCustomDateFilter">
         </date-range-selection-sheet>
 
+        <month-selection-sheet :title="tt('Custom Date Range')"
+                               :model-value="queryMonth"
+                               v-model:show="showCustomMonthSheet"
+                               @update:modelValue="changeCustomMonthDateFilter">
+        </month-selection-sheet>
+
         <f7-popover class="category-popover-menu"
                     v-model:opened="showCategoryPopover"
                     @popover:open="onPopoverOpen">
@@ -603,9 +609,13 @@ import {
 import {
     getCurrentUnixTime,
     parseDateFromUnixTime,
-    getSpecifiedDayFirstUnixTime,
     getBrowserTimezoneOffsetMinutes,
     getActualUnixTimeForStore,
+    getYear,
+    getMonth,
+    getSpecifiedDayFirstUnixTime,
+    getYearMonthFirstUnixTime,
+    getYearMonthLastUnixTime,
     getShiftedDateRangeAndDateType,
     getShiftedDateRangeAndDateTypeForBillingCycle,
     getDateTypeByDateRange,
@@ -613,7 +623,7 @@ import {
     getDateRangeByDateType,
     getDateRangeByBillingCycleDateType,
     getFullMonthDateRange,
-    getMonthFirstDayOrCurrentDayShortDate, getYear, getMonth
+    getMonthFirstDayOrCurrentDayShortDate
 } from '@/lib/datetime.ts';
 import {
     categoryTypeToTransactionType,
@@ -660,6 +670,7 @@ const {
     queryMinTime,
     queryMaxTime,
     queryMonthlyData,
+    queryMonth,
     queryAllFilterCategoryIds,
     queryAllFilterAccountIds,
     queryAllFilterTagIds,
@@ -700,6 +711,7 @@ const showCategoryPopover = ref<boolean>(false);
 const showAccountPopover = ref<boolean>(false);
 const showMorePopover = ref<boolean>(false);
 const showCustomDateRangeSheet = ref<boolean>(false);
+const showCustomMonthSheet = ref<boolean>(false);
 const showDeleteActionSheet = ref<boolean>(false);
 
 const allTransactionTagFilterTypes = computed<TypeAndDisplayName[]>(() => getAllTransactionTagFilterTypes());
@@ -941,7 +953,12 @@ function changeDateFilter(dateType: number): void {
             customMinDatetime.value = query.value.minTime;
         }
 
-        showCustomDateRangeSheet.value = true;
+        if (pageType.value === TransactionListPageType.Calendar.type) {
+            showCustomMonthSheet.value = true;
+        } else {
+            showCustomDateRangeSheet.value = true;
+        }
+
         showDatePopover.value = false;
         return;
     } else if (query.value.dateType === dateType) {
@@ -1013,6 +1030,32 @@ function changeCustomDateFilter(minTime: number, maxTime: number): void {
     });
 
     showCustomDateRangeSheet.value = false;
+
+    if (changed) {
+        reload();
+    }
+}
+
+function changeCustomMonthDateFilter(yearMonth: string): void {
+    if (!yearMonth) {
+        return;
+    }
+
+    const minTime = getYearMonthFirstUnixTime(yearMonth);
+    const maxTime = getYearMonthLastUnixTime(yearMonth);
+    const dateType = getDateTypeByDateRange(minTime, maxTime, firstDayOfWeek.value, DateRangeScene.Normal);
+
+    if (pageType.value === TransactionListPageType.Calendar.type) {
+        currentCalendarDate.value = getMonthFirstDayOrCurrentDayShortDate(minTime);
+    }
+
+    const changed = transactionsStore.updateTransactionListFilter({
+        dateType: dateType,
+        maxTime: maxTime,
+        minTime: minTime
+    });
+
+    showCustomMonthSheet.value = false;
 
     if (changed) {
         reload();
@@ -1393,6 +1436,7 @@ init();
 
 .transaction-calendar-container .dp__main .dp__menu {
     --dp-border-radius: var(--f7-list-inset-border-radius);
+    --dp-menu-padding: 4px 6px;
     --dp-menu-border-color: transparent;
 }
 
@@ -1421,12 +1465,24 @@ init();
     border: inherit;
 }
 
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__date_hover_end:hover,
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__date_hover_start:hover,
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__date_hover:hover {
+    background-color: transparent;
+}
+
 .transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__active_date .transaction-calendar-daily-amounts {
     background-color: rgba(var(--ebk-primary-color), 0.16);
 }
 
 .transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__today .transaction-calendar-daily-amounts {
     border: 1px solid var(--dp-primary-color);
+}
+
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__date_hover_end:hover .transaction-calendar-daily-amounts,
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__date_hover_start:hover .transaction-calendar-daily-amounts,
+.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item > .dp__date_hover:hover .transaction-calendar-daily-amounts {
+    background: var(--dp-hover-color);
 }
 
 .transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item {
