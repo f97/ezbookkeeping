@@ -32,7 +32,6 @@ export interface SetTransactionOptions {
 }
 
 export function setTransactionModelByTransaction(transaction: Transaction, transaction2: Transaction | null | undefined, allCategories: Record<number, TransactionCategory[]>, allCategoriesMap: Record<string, TransactionCategory>, allVisibleAccounts: Account[], allAccountsMap: Record<string, Account>, allTagsMap: Record<string, TransactionTag>, defaultAccountId: string, options: SetTransactionOptions, setContextData: boolean, convertContextTime: boolean): void {
-    console.log("🚀 ~ setTransactionModelByTransaction ~ transaction:", transaction)
     if (!options.type && options.categoryId && options.categoryId !== '0' && allCategoriesMap[options.categoryId]) {
         const category = allCategoriesMap[options.categoryId];
         const type = categoryTypeToTransactionType(category.type);
