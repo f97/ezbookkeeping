@@ -25,18 +25,28 @@ FROM alpine:3.21.3
 LABEL maintainer="MaysWind <i@mayswind.net>"
 RUN addgroup -S -g 1000 ezbookkeeping && adduser -S -G ezbookkeeping -u 1000 ezbookkeeping
 RUN apk --no-cache add tzdata
+
 COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-RUN mkdir -p /ezbookkeeping && chown 1000:1000 /ezbookkeeping \
-  && mkdir -p /ezbookkeeping/data && chown 1000:1000 /ezbookkeeping/data \
-  && mkdir -p /ezbookkeeping/log && chown 1000:1000 /ezbookkeeping/log \
-  && mkdir -p /ezbookkeeping/storage && chown 1000:1000 /ezbookkeeping/storage
+RUN chmod +x /docker-entrypoint.sh \
+    && chmod 777 /docker-entrypoint.sh
+
+RUN mkdir -p /ezbookkeeping \
+  && mkdir -p /ezbookkeeping/data \
+  && mkdir -p /ezbookkeeping/log \
+  && mkdir -p /ezbookkeeping/storage \
+  && chmod -R 777 /ezbookkeeping
+
 WORKDIR /ezbookkeeping
-COPY --from=be-builder --chown=1000:1000 /go/src/github.com/mayswind/ezbookkeeping/ezbookkeeping /ezbookkeeping/ezbookkeeping
-COPY --from=fe-builder --chown=1000:1000 /go/src/github.com/mayswind/ezbookkeeping/dist /ezbookkeeping/public
-COPY --chown=1000:1000 conf /ezbookkeeping/conf
-COPY --chown=1000:1000 templates /ezbookkeeping/templates
-COPY --chown=1000:1000 LICENSE /ezbookkeeping/LICENSE
+
+COPY --from=be-builder /go/src/github.com/mayswind/ezbookkeeping/ezbookkeeping /ezbookkeeping/ezbookkeeping
+COPY --from=fe-builder /go/src/github.com/mayswind/ezbookkeeping/dist /ezbookkeeping/public
+COPY conf /ezbookkeeping/conf
+COPY templates /ezbookkeeping/templates
+COPY LICENSE /ezbookkeeping/LICENSE
+
+# Cấp quyền 777 cho toàn bộ thư mục dự án
+RUN chmod -R 777 /ezbookkeeping
+
 USER 1000:1000
 EXPOSE 8080
 ENTRYPOINT ["/docker-entrypoint.sh"]
