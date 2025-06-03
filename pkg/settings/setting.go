@@ -117,6 +117,7 @@ const (
 	NationalBankOfUkraineDataSource     string = "national_bank_of_ukraine"
 	CentralBankOfUzbekistanDataSource   string = "central_bank_of_uzbekistan"
 	InternationalMonetaryFundDataSource string = "international_monetary_fund"
+	UserCustomExchangeRatesDataSource   string = "user_custom"
 )
 
 const (
@@ -349,7 +350,9 @@ type Config struct {
 func LoadConfiguration(configFilePath string) (*Config, error) {
 	var err error
 
-	cfgFile, err := ini.LoadSources(ini.LoadOptions{}, configFilePath)
+	cfgFile, err := ini.LoadSources(ini.LoadOptions{
+		IgnoreInlineComment: true,
+	}, configFilePath)
 
 	if err != nil {
 		return nil, err
@@ -912,7 +915,8 @@ func loadExchangeRatesConfiguration(config *Config, configFile *ini.File, sectio
 		dataSource == SwissNationalBankDataSource ||
 		dataSource == NationalBankOfUkraineDataSource ||
 		dataSource == CentralBankOfUzbekistanDataSource ||
-		dataSource == InternationalMonetaryFundDataSource {
+		dataSource == InternationalMonetaryFundDataSource ||
+		dataSource == UserCustomExchangeRatesDataSource {
 		config.ExchangeRatesDataSource = dataSource
 	} else {
 		return errs.ErrInvalidExchangeRatesDataSource

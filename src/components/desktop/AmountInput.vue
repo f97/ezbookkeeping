@@ -72,9 +72,11 @@ import SnackBar from '@/components/desktop/SnackBar.vue';
 import { ref, computed, useTemplateRef, watch } from 'vue';
 
 import { useI18n } from '@/locales/helpers.ts';
+import { type CommonNumberInputProps, useCommonNumberInputBase } from '@/components/base/CommonNumberInputBase.ts';
 
 import { DecimalSeparator } from '@/core/numeral.ts';
 import type { CurrencyPrependAndAppendText } from '@/core/currency.ts';
+import { DEFAULT_DECIMAL_NUMBER_COUNT } from '@/consts/numeral.ts';
 import { TRANSACTION_MIN_AMOUNT, TRANSACTION_MAX_AMOUNT } from '@/consts/transaction.ts';
 import { isNumber, replaceAll, removeAll } from '@/lib/common.ts';
 import { evaluateExpression } from '@/lib/evaluator.ts';
@@ -89,23 +91,20 @@ import {
 
 type SnackBarType = InstanceType<typeof SnackBar>;
 
-const props = defineProps<{
+interface DesktopAmountInputProps extends CommonNumberInputProps {
     class?: string;
     color?: string;
     density?: ComponentDensity;
     currency: string;
     showCurrency?: boolean;
-    label?: string;
-    placeholder?: string;
     persistentPlaceholder?: boolean;
-    disabled?: boolean;
-    readonly?: boolean;
     hide?: boolean;
     enableRules?: boolean;
     enableFormula?: boolean;
     flipNegative?: boolean;
-    modelValue: number;
-}>();
+}
+
+const props = defineProps<DesktopAmountInputProps>();
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: number): void;
@@ -120,6 +119,12 @@ const {
     formatNumber,
     getAmountPrependAndAppendText
 } = useI18n();
+
+const {
+    currentValue,
+    onKeyUpDown,
+    onPaste
+} = useCommonNumberInputBase(props, DEFAULT_DECIMAL_NUMBER_COUNT, getInitedFormattedValue(props.modelValue, props.flipNegative), parseAmount, getFormattedValue, getValidFormattedValue);
 
 const snackbar = useTemplateRef<SnackBarType>('snackbar');
 
@@ -144,7 +149,6 @@ const rules = [
     }
 ];
 
-const currentValue = ref<string>(getInitedFormattedValue(props.modelValue, props.flipNegative));
 const currentFormula = ref<string>('');
 const formulaMode = ref<boolean>(false);
 

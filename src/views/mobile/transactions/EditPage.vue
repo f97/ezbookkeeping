@@ -338,7 +338,7 @@
             >
                 <template #title>
                     <f7-block class="list-item-custom-title no-padding no-margin">
-                        <span v-if="transaction.geoLocation">{{ `(${transaction.geoLocation.longitude}, ${transaction.geoLocation.latitude})` }}</span>
+                        <span v-if="transaction.geoLocation">{{ `(${formatCoordinate(transaction.geoLocation, coordinateDisplayType)})` }}</span>
                         <span v-else-if="!transaction.geoLocation">{{ geoLocationStatusInfo }}</span>
                     </f7-block>
                 </template>
@@ -515,6 +515,7 @@ import {
     getTimezoneOffset,
     getTimezoneOffsetMinutes
 } from '@/lib/datetime.ts';
+import { formatCoordinate } from '@/lib/coordinate.ts';
 import { generateRandomUUID } from '@/lib/misc.ts';
 import { getTransactionPrimaryCategoryName, getTransactionSecondaryCategoryName } from '@/lib/category.ts';
 import { setTransactionModelByTransaction } from '@/lib/transaction.ts';
@@ -554,8 +555,9 @@ const {
     transaction,
     currentTimezoneOffsetMinutes,
     defaultCurrency,
-    firstDayOfWeek,
     defaultAccountId,
+    firstDayOfWeek,
+    coordinateDisplayType,
     allTimezones,
     allVisibleAccounts,
     allAccountsMap,
@@ -618,7 +620,9 @@ const showScheduledStartDateSheet = ref<boolean>(false);
 const showScheduledEndDateSheet = ref<boolean>(false);
 const showGeoLocationMapSheet = ref<boolean>(false);
 const showTransactionTagSheet = ref<boolean>(false);
-const showTransactionPictures = ref<boolean>(false);
+const showTransactionPictures = ref<boolean>(pageTypeAndMode?.type === TransactionEditPageType.Transaction
+    && (pageTypeAndMode?.mode === TransactionEditPageMode.Add || pageTypeAndMode?.mode === TransactionEditPageMode.Edit)
+    && settingsStore.appSettings.alwaysShowTransactionPicturesInMobileTransactionEditPage);
 
 const isDarkMode = computed<boolean>(() => environmentsStore.framework7DarkMode || false);
 

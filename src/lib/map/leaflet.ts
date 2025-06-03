@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
-import type { MapPosition } from '@/core/map.ts';
+import type { Coordinate } from '@/core/coordinate.ts';
 
 import { type LeafletTileSource, type LeafletTileSourceExtraParam, LEAFLET_TILE_SOURCES } from '@/consts/map.ts';
 
@@ -179,7 +179,7 @@ export class LeafletMapInstance implements MapInstance {
         this.inited = true;
     }
 
-    public setMapCenterTo(center: MapPosition, zoomLevel: number): void {
+    public setMapCenterTo(center: Coordinate, zoomLevel: number): void {
         if (!this.leafletInstance) {
             return;
         }
@@ -187,7 +187,7 @@ export class LeafletMapInstance implements MapInstance {
         this.leafletInstance.setView([ center.latitude, center.longitude ], zoomLevel);
     }
 
-    public setMapCenterMarker(position: MapPosition): void {
+    public setMapCenterMarker(position: Coordinate): void {
         if (!LeafletMapProvider.Leaflet || !this.leafletInstance) {
             return;
         }
