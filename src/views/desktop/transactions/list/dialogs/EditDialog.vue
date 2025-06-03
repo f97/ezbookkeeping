@@ -8,35 +8,38 @@
                         <v-progress-circular indeterminate size="22" class="ml-2" v-if="loading"></v-progress-circular>
                     </div>
                     <v-btn density="comfortable" color="default" variant="text" class="ml-2" :icon="true"
-                        :disabled="loading || submitting"
-                        v-if="mode !== TransactionEditPageMode.View && (activeTab === 'basicInfo' || (activeTab === 'map' && isSupportGetGeoLocationByClick()))">
+                           :disabled="loading || submitting" v-if="mode !== TransactionEditPageMode.View && (activeTab === 'basicInfo' || (activeTab === 'map' && isSupportGetGeoLocationByClick()))">
                         <v-icon :icon="mdiDotsVertical" />
                         <v-menu activator="parent">
                             <v-list v-if="activeTab === 'basicInfo'">
-                                <v-list-item :prepend-icon="mdiSwapHorizontal" :title="tt('Swap Account')"
-                                    v-if="transaction.type === TransactionType.Transfer"
-                                    @click="swapTransactionData(true, false)"></v-list-item>
-                                <v-list-item :prepend-icon="mdiSwapHorizontal" :title="tt('Swap Amount')"
-                                    v-if="transaction.type === TransactionType.Transfer"
-                                    @click="swapTransactionData(false, true)"></v-list-item>
-                                <v-list-item :prepend-icon="mdiSwapHorizontal" :title="tt('Swap Account and Amount')"
-                                    v-if="transaction.type === TransactionType.Transfer"
-                                    @click="swapTransactionData(true, true)"></v-list-item>
+                                <v-list-item :prepend-icon="mdiSwapHorizontal"
+                                             :title="tt('Swap Account')"
+                                             v-if="transaction.type === TransactionType.Transfer"
+                                             @click="swapTransactionData(true, false)"></v-list-item>
+                                <v-list-item :prepend-icon="mdiSwapHorizontal"
+                                             :title="tt('Swap Amount')"
+                                             v-if="transaction.type === TransactionType.Transfer"
+                                             @click="swapTransactionData(false, true)"></v-list-item>
+                                <v-list-item :prepend-icon="mdiSwapHorizontal"
+                                             :title="tt('Swap Account and Amount')"
+                                             v-if="transaction.type === TransactionType.Transfer"
+                                             @click="swapTransactionData(true, true)"></v-list-item>
                                 <v-divider v-if="transaction.type === TransactionType.Transfer" />
-                                <v-list-item :prepend-icon="mdiEyeOutline" :title="tt('Show Amount')"
-                                    v-if="transaction.hideAmount" @click="transaction.hideAmount = false"></v-list-item>
-                                <v-list-item :prepend-icon="mdiEyeOffOutline" :title="tt('Hide Amount')"
-                                    v-if="!transaction.hideAmount" @click="transaction.hideAmount = true"></v-list-item>
+                                <v-list-item :prepend-icon="mdiEyeOutline"
+                                             :title="tt('Show Amount')"
+                                             v-if="transaction.hideAmount" @click="transaction.hideAmount = false"></v-list-item>
+                                <v-list-item :prepend-icon="mdiEyeOffOutline"
+                                             :title="tt('Hide Amount')"
+                                             v-if="!transaction.hideAmount" @click="transaction.hideAmount = true"></v-list-item>
                             </v-list>
                             <v-list v-if="activeTab === 'map'">
                                 <v-list-item key="setGeoLocationByClickMap" value="setGeoLocationByClickMap"
-                                    :prepend-icon="mdiMapMarkerOutline" :disabled="!transaction.geoLocation"
-                                    v-if="isSupportGetGeoLocationByClick()">
-                                    <v-list-item-title class="cursor-pointer"
-                                        @click="setGeoLocationByClickMap = !setGeoLocationByClickMap; geoMenuState = false">
+                                             :prepend-icon="mdiMapMarkerOutline"
+                                             :disabled="!transaction.geoLocation" v-if="isSupportGetGeoLocationByClick()">
+                                    <v-list-item-title class="cursor-pointer" @click="setGeoLocationByClickMap = !setGeoLocationByClickMap; geoMenuState = false">
                                         <div class="d-flex align-center">
                                             <span>{{ tt('Click on Map to Set Geographic Location') }}</span>
-                                            <v-spacer />
+                                            <v-spacer/>
                                             <v-icon :icon="mdiCheck" v-if="setGeoLocationByClickMap" />
                                         </div>
                                     </v-list-item-title>
@@ -48,246 +51,264 @@
             </template>
             <v-card-text class="d-flex flex-column flex-md-row mt-md-4 pt-0">
                 <div class="mb-4">
-                    <v-tabs class="v-tabs-pill" direction="vertical"
-                        :class="{ 'readonly': type === TransactionEditPageType.Transaction && mode !== TransactionEditPageMode.Add }"
-                        :disabled="loading || submitting" v-model="transaction.type">
-                        <v-tab :value="TransactionType.Expense"
-                            :disabled="type === TransactionEditPageType.Transaction && mode !== TransactionEditPageMode.Add && transaction.type !== TransactionType.Expense"
-                            v-if="transaction.type !== TransactionType.ModifyBalance">
+                    <v-tabs class="v-tabs-pill" direction="vertical" :class="{ 'readonly': type === TransactionEditPageType.Transaction && mode !== TransactionEditPageMode.Add }"
+                            :disabled="loading || submitting" v-model="transaction.type">
+                        <v-tab :value="TransactionType.Expense" :disabled="type === TransactionEditPageType.Transaction && mode !== TransactionEditPageMode.Add && transaction.type !== TransactionType.Expense" v-if="transaction.type !== TransactionType.ModifyBalance">
                             <span>{{ tt('Expense') }}</span>
                         </v-tab>
-                        <v-tab :value="TransactionType.Income"
-                            :disabled="type === TransactionEditPageType.Transaction && mode !== TransactionEditPageMode.Add && transaction.type !== TransactionType.Income"
-                            v-if="transaction.type !== TransactionType.ModifyBalance">
+                        <v-tab :value="TransactionType.Income" :disabled="type === TransactionEditPageType.Transaction && mode !== TransactionEditPageMode.Add && transaction.type !== TransactionType.Income" v-if="transaction.type !== TransactionType.ModifyBalance">
                             <span>{{ tt('Income') }}</span>
                         </v-tab>
-                        <v-tab :value="TransactionType.Transfer"
-                            :disabled="type === TransactionEditPageType.Transaction && mode !== TransactionEditPageMode.Add && transaction.type !== TransactionType.Transfer"
-                            v-if="transaction.type !== TransactionType.ModifyBalance">
+                        <v-tab :value="TransactionType.Transfer" :disabled="type === TransactionEditPageType.Transaction && mode !== TransactionEditPageMode.Add && transaction.type !== TransactionType.Transfer" v-if="transaction.type !== TransactionType.ModifyBalance">
                             <span>{{ tt('Transfer') }}</span>
                         </v-tab>
-                        <v-tab :value="TransactionType.ModifyBalance"
-                            v-if="type === TransactionEditPageType.Transaction && transaction.type === TransactionType.ModifyBalance">
+                        <v-tab :value="TransactionType.ModifyBalance" v-if="type === TransactionEditPageType.Transaction && transaction.type === TransactionType.ModifyBalance">
                             <span>{{ tt('Modify Balance') }}</span>
                         </v-tab>
                     </v-tabs>
-                    <v-divider class="my-2" />
+                    <v-divider class="my-2"/>
                     <v-tabs direction="vertical" :disabled="loading || submitting" v-model="activeTab">
                         <v-tab value="basicInfo">
                             <span>{{ tt('Basic Information') }}</span>
                         </v-tab>
-                        <v-tab value="map" :disabled="!transaction.geoLocation"
-                            v-if="type === TransactionEditPageType.Transaction && !!getMapProvider()">
+                        <v-tab value="map" :disabled="!transaction.geoLocation" v-if="type === TransactionEditPageType.Transaction && !!getMapProvider()">
                             <span>{{ tt('Location on Map') }}</span>
                         </v-tab>
-                        <v-tab value="pictures"
-                            :disabled="mode !== TransactionEditPageMode.Add && mode !== TransactionEditPageMode.Edit && (!transaction.pictures || !transaction.pictures.length)"
-                            v-if="type === TransactionEditPageType.Transaction && isTransactionPicturesEnabled()">
+                        <v-tab value="pictures" :disabled="mode !== TransactionEditPageMode.Add && mode !== TransactionEditPageMode.Edit && (!transaction.pictures || !transaction.pictures.length)" v-if="type === TransactionEditPageType.Transaction && isTransactionPicturesEnabled()">
                             <span>{{ tt('Pictures') }}</span>
                         </v-tab>
                     </v-tabs>
                 </div>
 
                 <v-window class="d-flex flex-grow-1 disable-tab-transition w-100-window-container ml-md-5"
-                    v-model="activeTab">
+                          v-model="activeTab">
                     <v-window-item value="basicInfo">
                         <v-form class="mt-2">
                             <v-row>
-                                <v-col cols="12"
-                                    v-if="type === TransactionEditPageType.Template && transaction instanceof TransactionTemplate">
-                                    <v-text-field type="text" persistent-placeholder :disabled="loading || submitting"
-                                        :label="tt('Template Name')" :placeholder="tt('Template Name')"
-                                        v-model="transaction.name" />
+                                <v-col cols="12" v-if="type === TransactionEditPageType.Template && transaction instanceof TransactionTemplate">
+                                    <v-text-field
+                                        type="text"
+                                        persistent-placeholder
+                                        :disabled="loading || submitting"
+                                        :label="tt('Template Name')"
+                                        :placeholder="tt('Template Name')"
+                                        v-model="transaction.name"
+                                    />
                                 </v-col>
                                 <v-col cols="12" :md="transaction.type === TransactionType.Transfer ? 6 : 12">
                                     <amount-input class="transaction-edit-amount font-weight-bold"
-                                        :color="sourceAmountColor" :currency="sourceAccountCurrency"
-                                        :show-currency="true" :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting" :persistent-placeholder="true"
-                                        :hide="transaction.hideAmount" :label="sourceAmountTitle"
-                                        :placeholder="tt(sourceAmountName)"
-                                        :enable-formula="mode !== TransactionEditPageMode.View"
-                                        v-model="transaction.sourceAmount" />
+                                                  :color="sourceAmountColor"
+                                                  :currency="sourceAccountCurrency"
+                                                  :show-currency="true"
+                                                  :readonly="mode === TransactionEditPageMode.View"
+                                                  :disabled="loading || submitting"
+                                                  :persistent-placeholder="true"
+                                                  :hide="transaction.hideAmount"
+                                                  :label="sourceAmountTitle"
+                                                  :placeholder="tt(sourceAmountName)"
+                                                  :enable-formula="mode !== TransactionEditPageMode.View"
+                                                  v-model="transaction.sourceAmount"/>
                                 </v-col>
                                 <v-col cols="12" :md="6" v-if="transaction.type === TransactionType.Transfer">
                                     <amount-input class="transaction-edit-amount font-weight-bold" color="primary"
-                                        :currency="destinationAccountCurrency" :show-currency="true"
-                                        :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting" :persistent-placeholder="true"
-                                        :hide="transaction.hideAmount" :label="transferInAmountTitle"
-                                        :placeholder="tt('Transfer In Amount')"
-                                        :enable-formula="mode !== TransactionEditPageMode.View"
-                                        v-model="transaction.destinationAmount" />
+                                                  :currency="destinationAccountCurrency"
+                                                  :show-currency="true"
+                                                  :readonly="mode === TransactionEditPageMode.View"
+                                                  :disabled="loading || submitting"
+                                                  :persistent-placeholder="true"
+                                                  :hide="transaction.hideAmount"
+                                                  :label="transferInAmountTitle"
+                                                  :placeholder="tt('Transfer In Amount')"
+                                                  :enable-formula="mode !== TransactionEditPageMode.View"
+                                                  v-model="transaction.destinationAmount"/>
                                 </v-col>
                                 <v-col cols="12" md="12" v-if="transaction.type === TransactionType.Expense">
-                                    <two-column-select primary-key-field="id" primary-value-field="id"
-                                        primary-title-field="name" primary-icon-field="icon"
-                                        primary-icon-type="category" primary-color-field="color"
-                                        primary-hidden-field="hidden" primary-sub-items-field="subCategories"
-                                        secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
-                                        secondary-icon-field="icon" secondary-icon-type="category"
-                                        secondary-color-field="color" secondary-hidden-field="hidden"
-                                        :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting || !hasAvailableExpenseCategories"
-                                        :enable-filter="true" :filter-placeholder="tt('Find category')"
-                                        :filter-no-items-text="tt('No available category')"
-                                        :show-selection-primary-text="true"
-                                        :custom-selection-primary-text="getTransactionPrimaryCategoryName(transaction.expenseCategoryId, allCategories[CategoryType.Expense])"
-                                        :custom-selection-secondary-text="getTransactionSecondaryCategoryName(transaction.expenseCategoryId, allCategories[CategoryType.Expense])"
-                                        :label="tt('Category')" :placeholder="tt('Category')"
-                                        :items="allCategories[CategoryType.Expense] || []"
-                                        v-model="transaction.expenseCategoryId">
+                                    <two-column-select primary-key-field="id" primary-value-field="id" primary-title-field="name"
+                                                       primary-icon-field="icon" primary-icon-type="category" primary-color-field="color"
+                                                       primary-hidden-field="hidden" primary-sub-items-field="subCategories"
+                                                       secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
+                                                       secondary-icon-field="icon" secondary-icon-type="category" secondary-color-field="color"
+                                                       secondary-hidden-field="hidden"
+                                                       :readonly="mode === TransactionEditPageMode.View"
+                                                       :disabled="loading || submitting || !hasAvailableExpenseCategories"
+                                                       :enable-filter="true" :filter-placeholder="tt('Find category')" :filter-no-items-text="tt('No available category')"
+                                                       :show-selection-primary-text="true"
+                                                       :custom-selection-primary-text="getTransactionPrimaryCategoryName(transaction.expenseCategoryId, allCategories[CategoryType.Expense])"
+                                                       :custom-selection-secondary-text="getTransactionSecondaryCategoryName(transaction.expenseCategoryId, allCategories[CategoryType.Expense])"
+                                                       :label="tt('Category')" :placeholder="tt('Category')"
+                                                       :items="allCategories[CategoryType.Expense] || []"
+                                                       v-model="transaction.expenseCategoryId">
                                     </two-column-select>
                                 </v-col>
                                 <v-col cols="12" md="12" v-if="transaction.type === TransactionType.Income">
-                                    <two-column-select primary-key-field="id" primary-value-field="id"
-                                        primary-title-field="name" primary-icon-field="icon"
-                                        primary-icon-type="category" primary-color-field="color"
-                                        primary-hidden-field="hidden" primary-sub-items-field="subCategories"
-                                        secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
-                                        secondary-icon-field="icon" secondary-icon-type="category"
-                                        secondary-color-field="color" secondary-hidden-field="hidden"
-                                        :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting || !hasAvailableIncomeCategories"
-                                        :enable-filter="true" :filter-placeholder="tt('Find category')"
-                                        :filter-no-items-text="tt('No available category')"
-                                        :show-selection-primary-text="true"
-                                        :custom-selection-primary-text="getTransactionPrimaryCategoryName(transaction.incomeCategoryId, allCategories[CategoryType.Income])"
-                                        :custom-selection-secondary-text="getTransactionSecondaryCategoryName(transaction.incomeCategoryId, allCategories[CategoryType.Income])"
-                                        :label="tt('Category')" :placeholder="tt('Category')"
-                                        :items="allCategories[CategoryType.Income] || []"
-                                        v-model="transaction.incomeCategoryId">
+                                    <two-column-select primary-key-field="id" primary-value-field="id" primary-title-field="name"
+                                                       primary-icon-field="icon" primary-icon-type="category" primary-color-field="color"
+                                                       primary-hidden-field="hidden" primary-sub-items-field="subCategories"
+                                                       secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
+                                                       secondary-icon-field="icon" secondary-icon-type="category" secondary-color-field="color"
+                                                       secondary-hidden-field="hidden"
+                                                       :readonly="mode === TransactionEditPageMode.View"
+                                                       :disabled="loading || submitting || !hasAvailableIncomeCategories"
+                                                       :enable-filter="true" :filter-placeholder="tt('Find category')" :filter-no-items-text="tt('No available category')"
+                                                       :show-selection-primary-text="true"
+                                                       :custom-selection-primary-text="getTransactionPrimaryCategoryName(transaction.incomeCategoryId, allCategories[CategoryType.Income])"
+                                                       :custom-selection-secondary-text="getTransactionSecondaryCategoryName(transaction.incomeCategoryId, allCategories[CategoryType.Income])"
+                                                       :label="tt('Category')" :placeholder="tt('Category')"
+                                                       :items="allCategories[CategoryType.Income] || []"
+                                                       v-model="transaction.incomeCategoryId">
                                     </two-column-select>
                                 </v-col>
                                 <v-col cols="12" md="12" v-if="transaction.type === TransactionType.Transfer">
-                                    <two-column-select primary-key-field="id" primary-value-field="id"
-                                        primary-title-field="name" primary-icon-field="icon"
-                                        primary-icon-type="category" primary-color-field="color"
-                                        primary-hidden-field="hidden" primary-sub-items-field="subCategories"
-                                        secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
-                                        secondary-icon-field="icon" secondary-icon-type="category"
-                                        secondary-color-field="color" secondary-hidden-field="hidden"
-                                        :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting || !hasAvailableTransferCategories"
-                                        :enable-filter="true" :filter-placeholder="tt('Find category')"
-                                        :filter-no-items-text="tt('No available category')"
-                                        :show-selection-primary-text="true"
-                                        :custom-selection-primary-text="getTransactionPrimaryCategoryName(transaction.transferCategoryId, allCategories[CategoryType.Transfer])"
-                                        :custom-selection-secondary-text="getTransactionSecondaryCategoryName(transaction.transferCategoryId, allCategories[CategoryType.Transfer])"
-                                        :label="tt('Category')" :placeholder="tt('Category')"
-                                        :items="allCategories[CategoryType.Transfer] || []"
-                                        v-model="transaction.transferCategoryId">
+                                    <two-column-select primary-key-field="id" primary-value-field="id" primary-title-field="name"
+                                                       primary-icon-field="icon" primary-icon-type="category" primary-color-field="color"
+                                                       primary-hidden-field="hidden" primary-sub-items-field="subCategories"
+                                                       secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
+                                                       secondary-icon-field="icon" secondary-icon-type="category" secondary-color-field="color"
+                                                       secondary-hidden-field="hidden"
+                                                       :readonly="mode === TransactionEditPageMode.View"
+                                                       :disabled="loading || submitting || !hasAvailableTransferCategories"
+                                                       :enable-filter="true" :filter-placeholder="tt('Find category')" :filter-no-items-text="tt('No available category')"
+                                                       :show-selection-primary-text="true"
+                                                       :custom-selection-primary-text="getTransactionPrimaryCategoryName(transaction.transferCategoryId, allCategories[CategoryType.Transfer])"
+                                                       :custom-selection-secondary-text="getTransactionSecondaryCategoryName(transaction.transferCategoryId, allCategories[CategoryType.Transfer])"
+                                                       :label="tt('Category')" :placeholder="tt('Category')"
+                                                       :items="allCategories[CategoryType.Transfer] || []"
+                                                       v-model="transaction.transferCategoryId">
                                     </two-column-select>
                                 </v-col>
                                 <v-col cols="12" :md="transaction.type === TransactionType.Transfer ? 6 : 12">
                                     <two-column-select primary-key-field="id" primary-value-field="category"
-                                        primary-title-field="name" primary-footer-field="displayBalance"
-                                        primary-icon-field="icon" primary-icon-type="account"
-                                        primary-sub-items-field="accounts" :primary-title-i18n="true"
-                                        secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
-                                        secondary-footer-field="displayBalance" secondary-icon-field="icon"
-                                        secondary-icon-type="account" secondary-color-field="color"
-                                        :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting || !allVisibleAccounts.length"
-                                        :enable-filter="true" :filter-placeholder="tt('Find account')"
-                                        :filter-no-items-text="tt('No available account')"
-                                        :custom-selection-primary-text="sourceAccountName"
-                                        :label="tt(sourceAccountTitle)" :placeholder="tt(sourceAccountTitle)"
-                                        :items="allVisibleCategorizedAccounts" v-model="transaction.sourceAccountId">
+                                                       primary-title-field="name" primary-footer-field="displayBalance"
+                                                       primary-icon-field="icon" primary-icon-type="account"
+                                                       primary-sub-items-field="accounts"
+                                                       :primary-title-i18n="true"
+                                                       secondary-key-field="id" secondary-value-field="id"
+                                                       secondary-title-field="name" secondary-footer-field="displayBalance"
+                                                       secondary-icon-field="icon" secondary-icon-type="account" secondary-color-field="color"
+                                                       :readonly="mode === TransactionEditPageMode.View"
+                                                       :disabled="loading || submitting || !allVisibleAccounts.length"
+                                                       :enable-filter="true" :filter-placeholder="tt('Find account')" :filter-no-items-text="tt('No available account')"
+                                                       :custom-selection-primary-text="sourceAccountName"
+                                                       :label="tt(sourceAccountTitle)"
+                                                       :placeholder="tt(sourceAccountTitle)"
+                                                       :items="allVisibleCategorizedAccounts"
+                                                       v-model="transaction.sourceAccountId">
                                     </two-column-select>
                                 </v-col>
                                 <v-col cols="12" md="6" v-if="transaction.type === TransactionType.Transfer">
                                     <two-column-select primary-key-field="id" primary-value-field="category"
-                                        primary-title-field="name" primary-footer-field="displayBalance"
-                                        primary-icon-field="icon" primary-icon-type="account"
-                                        primary-sub-items-field="accounts" :primary-title-i18n="true"
-                                        secondary-key-field="id" secondary-value-field="id" secondary-title-field="name"
-                                        secondary-footer-field="displayBalance" secondary-icon-field="icon"
-                                        secondary-icon-type="account" secondary-color-field="color"
-                                        :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting || !allVisibleAccounts.length"
-                                        :enable-filter="true" :filter-placeholder="tt('Find account')"
-                                        :filter-no-items-text="tt('No available account')"
-                                        :custom-selection-primary-text="destinationAccountName"
-                                        :label="tt('Destination Account')" :placeholder="tt('Destination Account')"
-                                        :items="allVisibleCategorizedAccounts"
-                                        v-model="transaction.destinationAccountId">
+                                                       primary-title-field="name" primary-footer-field="displayBalance"
+                                                       primary-icon-field="icon" primary-icon-type="account"
+                                                       primary-sub-items-field="accounts"
+                                                       :primary-title-i18n="true"
+                                                       secondary-key-field="id" secondary-value-field="id"
+                                                       secondary-title-field="name" secondary-footer-field="displayBalance"
+                                                       secondary-icon-field="icon" secondary-icon-type="account" secondary-color-field="color"
+                                                       :readonly="mode === TransactionEditPageMode.View"
+                                                       :disabled="loading || submitting || !allVisibleAccounts.length"
+                                                       :enable-filter="true" :filter-placeholder="tt('Find account')" :filter-no-items-text="tt('No available account')"
+                                                       :custom-selection-primary-text="destinationAccountName"
+                                                       :label="tt('Destination Account')"
+                                                       :placeholder="tt('Destination Account')"
+                                                       :items="allVisibleCategorizedAccounts"
+                                                       v-model="transaction.destinationAccountId">
                                     </two-column-select>
                                 </v-col>
                                 <v-col cols="12" md="6" v-if="type === TransactionEditPageType.Transaction">
-                                    <date-time-select :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting" :label="tt('Transaction Time')"
-                                        v-model="transaction.time" @error="onShowDateTimeError" />
+                                    <date-time-select
+                                        :readonly="mode === TransactionEditPageMode.View"
+                                        :disabled="loading || submitting"
+                                        :label="tt('Transaction Time')"
+                                        v-model="transaction.time"
+                                        @error="onShowDateTimeError" />
                                 </v-col>
-                                <v-col cols="12" md="6"
-                                    v-if="type === TransactionEditPageType.Template && transaction instanceof TransactionTemplate && transaction.templateType === TemplateType.Schedule.type">
-                                    <schedule-frequency-select :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting" :label="tt('Scheduled Transaction Frequency')"
+                                <v-col cols="12" md="6" v-if="type === TransactionEditPageType.Template && transaction instanceof TransactionTemplate && transaction.templateType === TemplateType.Schedule.type">
+                                    <schedule-frequency-select
+                                        :readonly="mode === TransactionEditPageMode.View"
+                                        :disabled="loading || submitting"
+                                        :label="tt('Scheduled Transaction Frequency')"
                                         v-model:type="transaction.scheduledFrequencyType"
                                         v-model="transaction.scheduledFrequency" />
                                 </v-col>
-                                <v-col cols="12" md="6"
-                                    v-if="type === TransactionEditPageType.Transaction || (type === TransactionEditPageType.Template && transaction instanceof TransactionTemplate && transaction.templateType === TemplateType.Schedule.type)">
-                                    <v-autocomplete class="transaction-edit-timezone"
-                                        item-title="displayNameWithUtcOffset" item-value="name" auto-select-first
-                                        persistent-placeholder :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting" :label="tt('Transaction Timezone')"
+                                <v-col cols="12" md="6" v-if="type === TransactionEditPageType.Transaction || (type === TransactionEditPageType.Template && transaction instanceof TransactionTemplate && transaction.templateType === TemplateType.Schedule.type)">
+                                    <v-autocomplete
+                                        class="transaction-edit-timezone"
+                                        item-title="displayNameWithUtcOffset"
+                                        item-value="name"
+                                        auto-select-first
+                                        persistent-placeholder
+                                        :readonly="mode === TransactionEditPageMode.View"
+                                        :disabled="loading || submitting"
+                                        :label="tt('Transaction Timezone')"
                                         :placeholder="!transaction.timeZone && transaction.timeZone !== '' ? `(${transactionDisplayTimezone}) ${transactionTimezoneTimeDifference}` : tt('Timezone')"
-                                        :items="allTimezones" :no-data-text="tt('No results')"
-                                        v-model="transaction.timeZone">
+                                        :items="allTimezones"
+                                        :no-data-text="tt('No results')"
+                                        v-model="transaction.timeZone"
+                                    >
                                         <template #selection="{ item }">
-                                            <span class="text-truncate"
-                                                v-if="transaction.timeZone || transaction.timeZone === ''">
+                                            <span class="text-truncate" v-if="transaction.timeZone || transaction.timeZone === ''">
                                                 {{ item.title }}
                                             </span>
                                         </template>
                                     </v-autocomplete>
                                 </v-col>
-                                <v-col cols="12" md="6"
-                                    v-if="type === TransactionEditPageType.Template && transaction instanceof TransactionTemplate && transaction.templateType === TemplateType.Schedule.type">
-                                    <date-select :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting" :clearable="true" :label="tt('Start Date')"
+                                <v-col cols="12" md="6" v-if="type === TransactionEditPageType.Template && transaction instanceof TransactionTemplate && transaction.templateType === TemplateType.Schedule.type">
+                                    <date-select
+                                        :readonly="mode === TransactionEditPageMode.View"
+                                        :disabled="loading || submitting"
+                                        :clearable="true"
+                                        :label="tt('Start Date')"
                                         v-model="transaction.scheduledStartDate" />
                                 </v-col>
-                                <v-col cols="12" md="6"
-                                    v-if="type === TransactionEditPageType.Template && transaction instanceof TransactionTemplate && transaction.templateType === TemplateType.Schedule.type">
-                                    <date-select :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting" :clearable="true" :label="tt('End Date')"
+                                <v-col cols="12" md="6" v-if="type === TransactionEditPageType.Template && transaction instanceof TransactionTemplate && transaction.templateType === TemplateType.Schedule.type">
+                                    <date-select
+                                        :readonly="mode === TransactionEditPageMode.View"
+                                        :disabled="loading || submitting"
+                                        :clearable="true"
+                                        :label="tt('End Date')"
                                         v-model="transaction.scheduledEndDate" />
                                 </v-col>
                                 <v-col cols="12" md="12" v-if="type === TransactionEditPageType.Transaction">
-                                    <v-select persistent-placeholder :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting" :label="tt('Geographic Location')"
-                                        v-model="transaction" v-model:menu="geoMenuState">
+                                    <v-select
+                                        persistent-placeholder
+                                        :readonly="mode === TransactionEditPageMode.View"
+                                        :disabled="loading || submitting"
+                                        :label="tt('Geographic Location')"
+                                        v-model="transaction"
+                                        v-model:menu="geoMenuState"
+                                    >
                                         <template #selection>
-                                            <span class="cursor-pointer" v-if="transaction.geoLocation">{{
-                                                `(${formatCoordinate(transaction.geoLocation, coordinateDisplayType)})`
-                                                }}</span>
-                                            <span class="cursor-pointer" v-else-if="!transaction.geoLocation">{{
-                                                geoLocationStatusInfo }}</span>
+                                            <span class="cursor-pointer" v-if="transaction.geoLocation">{{ `(${formatCoordinate(transaction.geoLocation, coordinateDisplayType)})` }}</span>
+                                            <span class="cursor-pointer" v-else-if="!transaction.geoLocation">{{ geoLocationStatusInfo }}</span>
                                         </template>
 
                                         <template #no-data>
                                             <v-list class="py-0">
-                                                <v-list-item v-if="mode !== TransactionEditPageMode.View"
-                                                    @click="updateGeoLocation(true)">{{ tt('Update Geographic Location')
-                                                    }}</v-list-item>
-                                                <v-list-item v-if="mode !== TransactionEditPageMode.View"
-                                                    @click="clearGeoLocation">{{ tt('Clear Geographic Location')
-                                                    }}</v-list-item>
+                                                <v-list-item v-if="mode !== TransactionEditPageMode.View" @click="updateGeoLocation(true)">{{ tt('Update Geographic Location') }}</v-list-item>
+                                                <v-list-item v-if="mode !== TransactionEditPageMode.View" @click="clearGeoLocation">{{ tt('Clear Geographic Location') }}</v-list-item>
                                             </v-list>
                                         </template>
                                     </v-select>
                                 </v-col>
                                 <v-col cols="12" md="12">
-                                    <v-autocomplete item-title="name" item-value="id" auto-select-first
-                                        persistent-placeholder multiple chips
+                                    <v-autocomplete
+                                        item-title="name"
+                                        item-value="id"
+                                        auto-select-first
+                                        persistent-placeholder
+                                        multiple
+                                        chips
                                         :closable-chips="mode !== TransactionEditPageMode.View"
                                         :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting" :label="tt('Tags')" :placeholder="tt('None')"
-                                        :items="allTags" v-model="transaction.tagIds" v-model:search="tagSearchContent">
+                                        :disabled="loading || submitting"
+                                        :label="tt('Tags')"
+                                        :placeholder="tt('None')"
+                                        :items="allTags"
+                                        v-model="transaction.tagIds"
+                                        v-model:search="tagSearchContent"
+                                    >
                                         <template #chip="{ props, item }">
-                                            <v-chip :prepend-icon="mdiPound" :text="item.title" v-bind="props" />
+                                            <v-chip :prepend-icon="mdiPound" :text="item.title" v-bind="props"/>
                                         </template>
 
                                         <template #item="{ props, item }">
@@ -295,18 +316,18 @@
                                                 <template #title>
                                                     <v-list-item-title>
                                                         <div class="d-flex align-center">
-                                                            <v-icon size="20" start :icon="mdiPound" />
+                                                            <v-icon size="20" start :icon="mdiPound"/>
                                                             <span>{{ item.title }}</span>
                                                         </div>
                                                     </v-list-item-title>
                                                 </template>
                                             </v-list-item>
                                             <v-list-item :disabled="true" v-bind="props"
-                                                v-if="item.raw.hidden && item.raw.name.toLowerCase().indexOf(tagSearchContent.toLowerCase()) >= 0 && isAllFilteredTagHidden">
+                                                         v-if="item.raw.hidden && item.raw.name.toLowerCase().indexOf(tagSearchContent.toLowerCase()) >= 0 && isAllFilteredTagHidden">
                                                 <template #title>
                                                     <v-list-item-title>
                                                         <div class="d-flex align-center">
-                                                            <v-icon size="20" start :icon="mdiPound" />
+                                                            <v-icon size="20" start :icon="mdiPound"/>
                                                             <span>{{ item.title }}</span>
                                                         </div>
                                                     </v-list-item-title>
@@ -316,21 +337,23 @@
 
                                         <template #no-data>
                                             <v-list class="py-0">
-                                                <v-list-item v-if="tagSearchContent"
-                                                    @click="saveNewTag(tagSearchContent)">{{ tt('format.misc.addNewTag',
-                                                    { tag: tagSearchContent }) }}</v-list-item>
-                                                <v-list-item v-else-if="!tagSearchContent">{{ tt('No available tag')
-                                                    }}</v-list-item>
+                                                <v-list-item v-if="tagSearchContent" @click="saveNewTag(tagSearchContent)">{{ tt('format.misc.addNewTag', { tag: tagSearchContent }) }}</v-list-item>
+                                                <v-list-item v-else-if="!tagSearchContent">{{ tt('No available tag') }}</v-list-item>
                                             </v-list>
                                         </template>
                                     </v-autocomplete>
                                 </v-col>
                                 <v-col cols="12" md="12">
-                                    <v-textarea type="text" persistent-placeholder rows="3"
+                                    <v-textarea
+                                        type="text"
+                                        persistent-placeholder
+                                        rows="3"
                                         :readonly="mode === TransactionEditPageMode.View"
-                                        :disabled="loading || submitting" :label="tt('Description')"
+                                        :disabled="loading || submitting"
+                                        :label="tt('Description')"
                                         :placeholder="tt('Your transaction description (optional)')"
-                                        v-model="transaction.comment" />
+                                        v-model="transaction.comment"
+                                    />
                                 </v-col>
                             </v-row>
                         </v-form>
@@ -338,18 +361,14 @@
                     <v-window-item value="map">
                         <v-row>
                             <v-col cols="12" md="12">
-                                <map-view ref="map" map-class="transaction-edit-map-view"
-                                    :geo-location="transaction.geoLocation" @click="updateSpecifiedGeoLocation">
+                                <map-view ref="map" map-class="transaction-edit-map-view" :geo-location="transaction.geoLocation" @click="updateSpecifiedGeoLocation">
                                     <template #error-title="{ mapSupported, mapDependencyLoaded }">
-                                        <span class="text-subtitle-1" v-if="!mapSupported"><b>{{ tt('Unsupported Map
-                                                Provider') }}</b></span>
-                                        <span class="text-subtitle-1" v-else-if="!mapDependencyLoaded"><b>{{ tt('Cannot
-                                                Initialize Map') }}</b></span>
+                                        <span class="text-subtitle-1" v-if="!mapSupported"><b>{{ tt('Unsupported Map Provider') }}</b></span>
+                                        <span class="text-subtitle-1" v-else-if="!mapDependencyLoaded"><b>{{ tt('Cannot Initialize Map') }}</b></span>
                                     </template>
                                     <template #error-content>
                                         <p class="text-body-1">
-                                            {{ tt('Please refresh the page and try again. If the error persists, ensure
-                                            that the server\'s map settings are correctly configured.') }}
+                                            {{ tt('Please refresh the page and try again. If the error persists, ensure that the server\'s map settings are correctly configured.') }}
                                         </p>
                                     </template>
                                 </map-view>
@@ -357,50 +376,38 @@
                         </v-row>
                     </v-window-item>
                     <v-window-item value="pictures">
-                        <v-row class="transaction-pictures align-content-start"
-                            :class="{ 'readonly': submitting || uploadingPicture || removingPictureId }">
+                        <v-row class="transaction-pictures align-content-start" :class="{ 'readonly': submitting || uploadingPicture || removingPictureId }">
                             <v-col :key="picIdx" cols="6" md="3" v-for="(pictureInfo, picIdx) in transaction.pictures">
                                 <v-avatar rounded="lg" variant="tonal" size="160"
-                                    class="cursor-pointer transaction-picture" color="rgba(0,0,0,0)"
-                                    @click="viewOrRemovePicture(pictureInfo)">
+                                          class="cursor-pointer transaction-picture"
+                                          color="rgba(0,0,0,0)" @click="viewOrRemovePicture(pictureInfo)">
                                     <v-img :src="getTransactionPictureUrl(pictureInfo)">
                                         <template #placeholder>
-                                            <div
-                                                class="d-flex align-center justify-center fill-height bg-light-primary">
-                                                <v-progress-circular color="grey-500" indeterminate
-                                                    size="48"></v-progress-circular>
+                                            <div class="d-flex align-center justify-center fill-height bg-light-primary">
+                                                <v-progress-circular color="grey-500" indeterminate size="48"></v-progress-circular>
                                             </div>
                                         </template>
                                         <template #error>
-                                            <div
-                                                class="d-flex align-center justify-center fill-height bg-light-primary">
-                                                <span class="text-body-1">{{ tt('Failed to load image, please check
-                                                    whether the config "domain" and "root_url" are set correctly.')
-                                                    }}</span>
+                                            <div class="d-flex align-center justify-center fill-height bg-light-primary">
+                                                <span class="text-body-1">{{ tt('Failed to load image, please check whether the config "domain" and "root_url" are set correctly.') }}</span>
                                             </div>
                                         </template>
                                     </v-img>
-                                    <div class="picture-control-icon"
-                                        :class="{ 'show-control-icon': pictureInfo.pictureId === removingPictureId }">
-                                        <v-icon size="64" :icon="mdiTrashCanOutline"
-                                            v-if="(mode === TransactionEditPageMode.Add || mode === TransactionEditPageMode.Edit) && pictureInfo.pictureId !== removingPictureId" />
-                                        <v-progress-circular color="grey-500" indeterminate size="48"
-                                            v-if="(mode === TransactionEditPageMode.Add || mode === TransactionEditPageMode.Edit) && pictureInfo.pictureId === removingPictureId"></v-progress-circular>
-                                        <v-icon size="64" :icon="mdiFullscreen"
-                                            v-if="mode !== TransactionEditPageMode.Add && mode !== TransactionEditPageMode.Edit" />
+                                    <div class="picture-control-icon" :class="{ 'show-control-icon': pictureInfo.pictureId === removingPictureId }">
+                                        <v-icon size="64" :icon="mdiTrashCanOutline" v-if="(mode === TransactionEditPageMode.Add || mode === TransactionEditPageMode.Edit) && pictureInfo.pictureId !== removingPictureId"/>
+                                        <v-progress-circular color="grey-500" indeterminate size="48" v-if="(mode === TransactionEditPageMode.Add || mode === TransactionEditPageMode.Edit) && pictureInfo.pictureId === removingPictureId"></v-progress-circular>
+                                        <v-icon size="64" :icon="mdiFullscreen" v-if="mode !== TransactionEditPageMode.Add && mode !== TransactionEditPageMode.Edit"/>
                                     </div>
                                 </v-avatar>
                             </v-col>
                             <v-col cols="6" md="3" v-if="canAddTransactionPicture">
                                 <v-avatar rounded="lg" variant="tonal" size="160"
-                                    class="transaction-picture transaction-picture-add"
-                                    :class="{ 'enabled': !submitting, 'cursor-pointer': !submitting }"
-                                    color="rgba(0,0,0,0)" @click="showOpenPictureDialog">
+                                          class="transaction-picture transaction-picture-add"
+                                          :class="{ 'enabled': !submitting, 'cursor-pointer': !submitting }"
+                                          color="rgba(0,0,0,0)" @click="showOpenPictureDialog">
                                     <v-tooltip activator="parent" v-if="!submitting">{{ tt('Add Picture') }}</v-tooltip>
-                                    <v-icon class="transaction-picture-add-icon" size="56" :icon="mdiImagePlusOutline"
-                                        v-if="!uploadingPicture" />
-                                    <v-progress-circular color="grey-500" indeterminate size="48"
-                                        v-if="uploadingPicture"></v-progress-circular>
+                                    <v-icon class="transaction-picture-add-icon" size="56" :icon="mdiImagePlusOutline" v-if="!uploadingPicture"/>
+                                    <v-progress-circular color="grey-500" indeterminate size="48" v-if="uploadingPicture"></v-progress-circular>
                                 </v-avatar>
                             </v-col>
                         </v-row>
@@ -409,50 +416,48 @@
             </v-card-text>
             <v-card-text class="overflow-y-visible">
                 <div class="w-100 d-flex justify-center flex-wrap mt-2 mt-sm-4 mt-md-6 gap-4">
-                    <v-btn :disabled="inputIsEmpty || loading || submitting"
-                        v-if="mode !== TransactionEditPageMode.View" @click="save">
+                    <v-btn :disabled="inputIsEmpty || loading || submitting" v-if="mode !== TransactionEditPageMode.View" @click="save">
                         {{ tt(saveButtonTitle) }}
-                        <v-progress-circular indeterminate size="22" class="ml-2"
-                            v-if="submitting"></v-progress-circular>
+                        <v-progress-circular indeterminate size="22" class="ml-2" v-if="submitting"></v-progress-circular>
                     </v-btn>
                     <v-btn-group variant="tonal" density="comfortable"
-                        v-if="mode === TransactionEditPageMode.View && transaction.type !== TransactionType.ModifyBalance">
-                        <v-btn :disabled="loading || submitting" @click="duplicate(false, false)">{{ tt('Duplicate')
-                            }}</v-btn>
+                                 v-if="mode === TransactionEditPageMode.View && transaction.type !== TransactionType.ModifyBalance">
+                        <v-btn :disabled="loading || submitting"
+                               @click="duplicate(false, false)">{{ tt('Duplicate') }}</v-btn>
                         <v-btn density="compact" :disabled="loading || submitting" :icon="true">
                             <v-icon :icon="mdiMenuDown" size="24" />
                             <v-menu activator="parent">
                                 <v-list>
                                     <v-list-item :title="tt('Duplicate (With Time)')"
-                                        @click="duplicate(true, false)"></v-list-item>
+                                                 @click="duplicate(true, false)"></v-list-item>
                                     <v-list-item :title="tt('Duplicate (With Geographic Location)')"
-                                        @click="duplicate(false, true)" v-if="transaction.geoLocation"></v-list-item>
+                                                 @click="duplicate(false, true)"
+                                                 v-if="transaction.geoLocation"></v-list-item>
                                     <v-list-item :title="tt('Duplicate (With Time and Geographic Location)')"
-                                        @click="duplicate(true, true)" v-if="transaction.geoLocation"></v-list-item>
+                                                 @click="duplicate(true, true)"
+                                                 v-if="transaction.geoLocation"></v-list-item>
                                 </v-list>
                             </v-menu>
                         </v-btn>
                     </v-btn-group>
                     <v-btn color="warning" variant="tonal" :disabled="loading || submitting"
-                        v-if="mode === TransactionEditPageMode.View && originalTransactionEditable && transaction.type !== TransactionType.ModifyBalance"
-                        @click="edit">{{ tt('Edit') }}</v-btn>
+                           v-if="mode === TransactionEditPageMode.View && originalTransactionEditable && transaction.type !== TransactionType.ModifyBalance"
+                           @click="edit">{{ tt('Edit') }}</v-btn>
                     <v-btn color="error" variant="tonal" :disabled="loading || submitting"
-                        v-if="mode === TransactionEditPageMode.View && originalTransactionEditable" @click="remove">
+                           v-if="mode === TransactionEditPageMode.View && originalTransactionEditable" @click="remove">
                         {{ tt('Delete') }}
-                        <v-progress-circular indeterminate size="22" class="ml-2"
-                            v-if="submitting"></v-progress-circular>
+                        <v-progress-circular indeterminate size="22" class="ml-2" v-if="submitting"></v-progress-circular>
                     </v-btn>
-                    <v-btn color="secondary" variant="tonal" :disabled="loading || submitting" @click="cancel">{{
-                        tt(cancelButtonTitle) }}</v-btn>
+                    <v-btn color="secondary" variant="tonal" :disabled="loading || submitting"
+                           @click="cancel">{{ tt(cancelButtonTitle) }}</v-btn>
                 </div>
             </v-card-text>
         </v-card>
     </v-dialog>
 
-    <confirm-dialog ref="confirmDialog" />
+    <confirm-dialog ref="confirmDialog"/>
     <snack-bar ref="snackbar" />
-    <input ref="pictureInput" type="file" style="display: none" :accept="SUPPORTED_IMAGE_EXTENSIONS"
-        @change="uploadPicture($event)" />
+    <input ref="pictureInput" type="file" style="display: none" :accept="SUPPORTED_IMAGE_EXTENSIONS" @change="uploadPicture($event)" />
 </template>
 
 <script setup lang="ts">
@@ -1193,7 +1198,7 @@ defineExpose({
 <style>
 .transaction-edit-amount .v-field__prepend-inner,
 .transaction-edit-amount .v-field__append-inner,
-.transaction-edit-amount .v-field__field>input {
+.transaction-edit-amount .v-field__field > input {
     font-size: 1.25rem;
 }
 
@@ -1261,7 +1266,7 @@ defineExpose({
     background-color: rgba(0, 0, 0, 0.4);
 }
 
-.transaction-picture .picture-control-icon>i.v-icon {
+.transaction-picture .picture-control-icon > i.v-icon {
     background-color: transparent;
     color: rgba(255, 255, 255, 0.8);
 }
