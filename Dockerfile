@@ -23,29 +23,26 @@ RUN ./build.sh frontend
 # Package docker image
 FROM alpine:3.21.3
 LABEL maintainer="MaysWind <i@mayswind.net>"
+
+# Tạo user không root
 RUN addgroup -S -g 1000 ezbookkeeping && adduser -S -G ezbookkeeping -u 1000 ezbookkeeping
 RUN apk --no-cache add tzdata
 
+# Copy script và set quyền thực thi
 COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh \
-    && chmod 777 /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
-RUN mkdir -p /ezbookkeeping \
-  && mkdir -p /ezbookkeeping/data \
-  && mkdir -p /ezbookkeeping/log \
-  && mkdir -p /ezbookkeeping/storage \
-  && chmod -R 777 /ezbookkeeping
+# Tạo thư mục cần thiết (chỉ để tránh lỗi nếu không mount)
+RUN mkdir -p /ezbookkeeping/{data,log,storage}
 
 WORKDIR /ezbookkeeping
 
+# Copy project files
 COPY --from=be-builder /go/src/github.com/mayswind/ezbookkeeping/ezbookkeeping /ezbookkeeping/ezbookkeeping
 COPY --from=fe-builder /go/src/github.com/mayswind/ezbookkeeping/dist /ezbookkeeping/public
 COPY conf /ezbookkeeping/conf
 COPY templates /ezbookkeeping/templates
 COPY LICENSE /ezbookkeeping/LICENSE
-
-# Cấp quyền 777 cho toàn bộ thư mục dự án
-RUN chmod -R 777 /ezbookkeeping
 
 USER 1000:1000
 EXPOSE 8080
