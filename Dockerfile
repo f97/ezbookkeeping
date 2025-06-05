@@ -24,26 +24,24 @@ RUN ./build.sh frontend
 FROM alpine:3.21.3
 LABEL maintainer="MaysWind <i@mayswind.net>"
 
-# Tạo user không root
+# Tạo user và group
 RUN addgroup -S -g 1000 ezbookkeeping && adduser -S -G ezbookkeeping -u 1000 ezbookkeeping
 RUN apk --no-cache add tzdata
 
-# Copy script và set quyền thực thi
-COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
-# Tạo thư mục cần thiết (chỉ để tránh lỗi nếu không mount)
+# Tạo thư mục và copy file
+WORKDIR /ezbookkeeping
 RUN mkdir -p /ezbookkeeping/{data,log,storage}
 
-WORKDIR /ezbookkeeping
-
-# Copy project files
 COPY --from=be-builder /go/src/github.com/mayswind/ezbookkeeping/ezbookkeeping /ezbookkeeping/ezbookkeeping
 COPY --from=fe-builder /go/src/github.com/mayswind/ezbookkeeping/dist /ezbookkeeping/public
 COPY conf /ezbookkeeping/conf
 COPY templates /ezbookkeeping/templates
 COPY LICENSE /ezbookkeeping/LICENSE
 
-USER 1000:1000
+# Copy entrypoint script
+COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+# Không đặt USER ở đây, sẽ chuyển trong entrypoint
 EXPOSE 8080
 ENTRYPOINT ["/docker-entrypoint.sh"]
