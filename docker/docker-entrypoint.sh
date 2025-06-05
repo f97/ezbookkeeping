@@ -2,30 +2,33 @@
 
 set -e
 
-conf_path_param=""
+APP_USER="ezbookkeeping"
+APP_UID=1000
+APP_GID=1000
+APP_CMD="/ezbookkeeping/ezbookkeeping"
+APP_ARGS="server run"
+CONF_PATH=""
 
-# Gán quyền ghi nếu mount volume từ host mà không ghi được
+# Nếu có biến ENV cấu hình thì thêm vào
+if [ -n "${EBK_CONF_PATH}" ]; then
+  CONF_PATH="--conf-path=${EBK_CONF_PATH}"
+fi
+
+# Kiểm tra quyền ghi và chown nếu cần
 fix_permissions() {
   for dir in /ezbookkeeping/data /ezbookkeeping/log /ezbookkeeping/storage; do
     if [ ! -w "$dir" ]; then
-      echo "[entrypoint] Không có quyền ghi vào $dir, đang cấp quyền 777..."
-      chmod -R 777 "$dir"
+      echo "[entrypoint] Không có quyền ghi vào $dir, đang cấp quyền cho UID $APP_UID..."
+      chown -R $APP_UID:$APP_GID "$dir" || echo "[entrypoint] ⚠️ Không thể chown $dir"
     fi
   done
 }
 
-# Gọi fix
-fix_permissions
-
-# Xử lý tham số cấu hình nếu có
-if [ "${EBK_CONF_PATH}" != "" ]; then
-  conf_path_param="--conf-path=${EBK_CONF_PATH}"
-fi
-
-# Nếu container được gọi kèm CMD cụ thể thì chạy lệnh đó
+# Nếu chạy lệnh shell custom (docker run image ...), thì chạy như root
 if [ $# -gt 0 ]; then
   exec "$@"
 else
-  # Mặc định chạy server backend
-  exec /ezbookkeeping/ezbookkeeping server run ${conf_path_param}
+  fix_permissions
+  echo "[entrypoint] Chạy ứng dụng với user $APP_USER ($APP_UID)"
+  exec su-exec $APP_UID:$APP_GID $APP_CMD $APP_ARGS $CONF_PATH
 fi
