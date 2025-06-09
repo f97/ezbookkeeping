@@ -95,7 +95,7 @@ import { type CommonTrendsChartProps, type TrendsBarChartClickEvent, useTrendsCh
 
 import { useUserStore } from '@/stores/user.ts';
 
-import { type YearMonth, type UnixTimeRange, DateRangeScene } from '@/core/datetime.ts';
+import { type Year1BasedMonth, type UnixTimeRange, DateRangeScene } from '@/core/datetime.ts';
 import { ChartDateAggregationType } from '@/core/statistics.ts';
 import { DEFAULT_CHART_COLORS } from '@/consts/color.ts';
 import type { YearMonthDataItem, SortableTransactionStatisticDataItem } from '@/models/transaction.ts';
@@ -138,7 +138,7 @@ interface TrendsBarChartData {
     readonly legends: TrendsBarChartLegend[];
 }
 
-interface MobileTrendsChartProps<T extends YearMonth> extends CommonTrendsChartProps<T> {
+interface MobileTrendsChartProps<T extends Year1BasedMonth> extends CommonTrendsChartProps<T> {
     loading?: boolean;
 }
 
@@ -148,7 +148,7 @@ const emit = defineEmits<{
     (e: 'click', value: TrendsBarChartClickEvent): void;
 }>();
 
-const { tt, formatUnixTimeToShortYear, formatYearQuarter, formatUnixTimeToShortYearMonth, formatUnixTimeToFiscalYear, formatYearToFiscalYear, formatAmountWithCurrency } = useI18n();
+const { tt, formatUnixTimeToShortYear, formatYearQuarter, formatUnixTimeToShortYearMonth, formatUnixTimeToFiscalYear, formatAmountWithCurrency } = useI18n();
 const { allDateRanges, getItemName, getColor } = useTrendsChartBase(props);
 
 const userStore = useUserStore();
@@ -191,14 +191,14 @@ const allDisplayDataItems = computed<TrendsBarChartData>(() => {
                 dateRangeKey = dataItem.year.toString();
             } else if (props.dateAggregationType === ChartDateAggregationType.FiscalYear.type) {
                 const fiscalYear = getFiscalYearFromUnixTime(
-                    getYearMonthFirstUnixTime({ year: dataItem.year, month: dataItem.month }),
+                    getYearMonthFirstUnixTime({ year: dataItem.year, month1base: dataItem.month1base }),
                     props.fiscalYearStart
                 );
-                dateRangeKey = formatYearToFiscalYear(fiscalYear);
+                dateRangeKey = fiscalYear.toString();
             } else if (props.dateAggregationType === ChartDateAggregationType.Quarter.type) {
-                dateRangeKey = `${dataItem.year}-${Math.floor((dataItem.month - 1) / 3) + 1}`;
+                dateRangeKey = `${dataItem.year}-${Math.floor((dataItem.month1base - 1) / 3) + 1}`;
             } else { // if (props.dateAggregationType === ChartDateAggregationType.Month.type) {
-                dateRangeKey = `${dataItem.year}-${dataItem.month}`;
+                dateRangeKey = `${dataItem.year}-${dataItem.month1base}`;
             }
 
             if (dateRangeItemMap[dateRangeKey]) {
@@ -226,11 +226,11 @@ const allDisplayDataItems = computed<TrendsBarChartData>(() => {
         if (props.dateAggregationType === ChartDateAggregationType.Year.type) {
             dateRangeKey = dateRange.year.toString();
         } else if (props.dateAggregationType === ChartDateAggregationType.FiscalYear.type) {
-            dateRangeKey = formatYearToFiscalYear(dateRange.year);
+            dateRangeKey = dateRange.year.toString();
         } else if (props.dateAggregationType === ChartDateAggregationType.Quarter.type && 'quarter' in dateRange) {
             dateRangeKey = `${dateRange.year}-${dateRange.quarter}`;
-        } else if (props.dateAggregationType === ChartDateAggregationType.Month.type && 'month' in dateRange) {
-            dateRangeKey = `${dateRange.year}-${dateRange.month + 1}`;
+        } else if (props.dateAggregationType === ChartDateAggregationType.Month.type && 'month0base' in dateRange) {
+            dateRangeKey = `${dateRange.year}-${dateRange.month0base + 1}`;
         }
 
         let displayDateRange = '';
