@@ -335,7 +335,7 @@ const {
     isQueryDateRangeChanged,
     canShiftDateRange,
     showCustomDateRange,
-    showAmountInChart,
+    // showAmountInChart,
     totalAmountName,
     translateNameInTrendsChart,
     categoricalAnalysisData,
@@ -656,9 +656,9 @@ function scrollPopoverToSelectedItem(event: { $el: Framework7Dom }): void {
     scrollToSelectedItem(event.$el, '.popover-inner', 'li.list-item-selected');
 }
 
-function onClickPieChartItem(item: Record<string, unknown>): void {
-    props.f7router.navigate(getTransactionItemLinkUrl(item['id'] as string));
-}
+// function onClickPieChartItem(item: Record<string, unknown>): void {
+//     props.f7router.navigate(getTransactionItemLinkUrl(item['id'] as string));
+// }
 
 function onClickTrendChartItem(item: { itemId: string, dateRange: TimeRangeAndDateType }): void {
     props.f7router.navigate(getTransactionItemLinkUrl(item.itemId, item.dateRange));

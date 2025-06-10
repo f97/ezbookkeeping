@@ -284,7 +284,7 @@ export class Transaction implements TransactionInfoResponse {
         };
     }
 
-    public static createNewTransaction(type: number, time: number, timeZone: string, utcOffset: number, amount: string): Transaction {
+    public static createNewTransaction(type: number, time: number, timeZone: string, utcOffset: number, amount: string = "0"): Transaction {
         return new Transaction(
             '', // id
             '', // timeSequenceId

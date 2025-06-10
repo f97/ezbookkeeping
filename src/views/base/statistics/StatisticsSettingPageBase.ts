@@ -6,7 +6,7 @@ import { useSettingsStore } from '@/stores/setting.ts';
 
 import type { TypeAndDisplayName } from '@/core/base.ts';
 import { type LocalizedDateRange, DateRangeScene } from '@/core/datetime.ts';
-import { StatisticsAnalysisType, CategoricalChartType } from '@/core/statistics.ts';
+import { StatisticsAnalysisType } from '@/core/statistics.ts';
 
 export function useStatisticsSettingPageBase() {
     const {

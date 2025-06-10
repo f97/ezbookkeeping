@@ -241,7 +241,7 @@ function inputTripleNum(num: number): void {
     inputNum(num);
 }
 
-async function pasteFromClipboard(): void {
+async function pasteFromClipboard(): Promise<void> {
     try {
         const clipboardText = await navigator.clipboard.readText();
         const sanitizedText = clipboardText.replace(/\D/g, '');
@@ -253,8 +253,8 @@ async function pasteFromClipboard(): void {
         } else {
             showToast('Clipboard does not contain a valid numeric value!');
         }
-    } catch (err) {
-        showToast(err.message);
+    } catch (err: any) {
+        showToast(err?.message);
     }
 }
 
