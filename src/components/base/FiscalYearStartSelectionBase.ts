@@ -1,11 +1,17 @@
 import { ref, computed } from 'vue';
 
-import { FiscalYearStart } from '@/core/fiscalyear.ts';
-import { arrangeArrayWithNewStartIndex } from '@/lib/common.ts';
-
 import { useI18n } from '@/locales/helpers.ts';
 
 import { useUserStore } from '@/stores/user.ts';
+
+import { type WeekDayValue } from '@/core/datetime.ts';
+import { FiscalYearStart } from '@/core/fiscalyear.ts';
+import { arrangeArrayWithNewStartIndex } from '@/lib/common.ts';
+import {
+    getLocalDatetimeFromUnixTime,
+    getThisYearFirstUnixTime,
+    getThisYearLastUnixTime
+} from '@/lib/datetime.ts';
 
 export interface CommonFiscalYearStartSelectionProps {
     modelValue?: number;
@@ -78,7 +84,10 @@ export function useFiscalYearStartSelectionBase(props: CommonFiscalYearStartSele
         return formatMonthDayToLongDay(fiscalYearStart.toMonthDashDayString());
     });
 
-    const firstDayOfWeek = computed<number>(() => userStore.currentUserFirstDayOfWeek);
+    const allowedMinDate = computed<Date>(() => getLocalDatetimeFromUnixTime(getThisYearFirstUnixTime()));
+    const allowedMaxDate = computed<Date>(() => getLocalDatetimeFromUnixTime(getThisYearLastUnixTime()));
+
+    const firstDayOfWeek = computed<WeekDayValue>(() => userStore.currentUserFirstDayOfWeek);
     const dayNames = computed<string[]>(() => arrangeArrayWithNewStartIndex(getAllMinWeekdayNames(), firstDayOfWeek.value));
 
     return {
@@ -89,6 +98,8 @@ export function useFiscalYearStartSelectionBase(props: CommonFiscalYearStartSele
         // computed states
         selectedFiscalYearStartValue,
         displayFiscalYearStartDate,
+        allowedMinDate,
+        allowedMaxDate,
         firstDayOfWeek,
         dayNames
     };
