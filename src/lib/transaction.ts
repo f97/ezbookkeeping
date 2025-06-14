@@ -41,6 +41,9 @@ export function setTransactionModelByTransaction(transaction: Transaction, trans
         }
     }
 
+    transaction.destinationAccountId = defaultAccountId;
+    transaction.sourceAccountId = defaultAccountId;
+
     if (allCategories[CategoryType.Expense] &&
         allCategories[CategoryType.Expense].length) {
         if (options.categoryId && options.categoryId !== '0') {
