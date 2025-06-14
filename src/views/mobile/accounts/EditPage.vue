@@ -34,7 +34,6 @@
             <f7-list-item
                 link="#" no-chevron
                 class="list-item-with-header-and-title"
-                :class="{ 'disabled': editAccountId }"
                 :header="tt('Account Type')"
                 :title="findDisplayNameByType(allAccountTypes, account.type)"
                 @click="showAccountTypeSheet = true"
@@ -156,7 +155,6 @@
             <f7-list-item
                 class="list-item-with-header-and-title list-item-no-item-after"
                 link="#"
-                :class="{ 'disabled': editAccountId }"
                 :header="tt('Currency')"
                 :no-chevron="!!editAccountId"
                 @click="accountContext.showCurrencyPopup = true"
@@ -418,7 +416,6 @@
                 <f7-list-item
                     class="list-item-with-header-and-title list-item-no-item-after"
                     link="#"
-                    :class="{ 'disabled': editAccountId && !isNewAccount(subAccount) }"
                     :header="tt('Currency')"
                     :no-chevron="!!editAccountId && !isNewAccount(subAccount)"
                     @click="subAccountContexts[idx].showCurrencyPopup = true"
@@ -445,7 +442,6 @@
                 <f7-list-item
                     link="#" no-chevron
                     class="list-item-with-header-and-title"
-                    :class="{ 'disabled': editAccountId && !isNewAccount(subAccount) }"
                     :header="account.isLiability ? tt('Sub-account Outstanding Balance') : tt('Sub-account Balance')"
                     :title="formatAccountDisplayBalance(subAccount)"
                     @click="subAccountContexts[idx].showBalanceSheet = true"
@@ -735,6 +731,40 @@ function onPageAfterIn(): void {
 watch(() => account.value.type, () => {
     if (subAccounts.value.length < 1) {
         addSubAccountAndContext();
+    }
+});
+
+watch(() => JSON.stringify(subAccounts.value), (newBalance, oldBalance) => {
+    const newSubAccounts = JSON.parse(newBalance) as Account[];
+    const oldSubAccounts = JSON.parse(oldBalance) as Account[];
+    if (newSubAccounts.length !== oldSubAccounts.length) {
+        return;
+    }
+
+    let newDiffAccount: Account | null = null;
+    let oldDiffAccount: Account | null = null;
+
+    for (let i = 0; i < newSubAccounts.length; i++) {
+        if (newSubAccounts[i].balance !== oldSubAccounts[i].balance) {
+            newDiffAccount = newSubAccounts[i];
+            oldDiffAccount = oldSubAccounts[i];
+            break;
+        }
+    }
+
+    if (!newDiffAccount || !oldDiffAccount) {
+        return;
+    }
+
+    const diff = newDiffAccount.balance - oldDiffAccount.balance;
+    const amountDiff = Math.abs(diff);
+    const router = props.f7router;
+    if(diff < 0) {
+        const url = `/transaction/add?amount=${amountDiff}&type=${TransactionType.Expense.toString()}&accountId=${newDiffAccount.id}`;
+        router.navigate(url);
+    } else if(diff > 0) {
+        const url = `/transaction/add?amount=${amountDiff}&type=${TransactionType.Income.toString()}&accountId=${newDiffAccount.id}`;
+        router.navigate(url);
     }
 });
 
