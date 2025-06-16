@@ -118,7 +118,9 @@
     },
     "dataExport": {
         "defaultExportFilename": "ezBookkeeping_export_data",
-        "exportFilename": "ezBookkeeping_{nickname}_export_data"
+        "exportFilename": "ezBookkeeping_{nickname}_export_data",
+        "defaultExportStatisticsFileName": "ezBookkeeping_statistics_data",
+        "exportStatisticsFileName": "ezBookkeeping_{nickname}_statistics_data"
     },
     "datetime": {
         "AM": {
@@ -1429,7 +1431,11 @@
     "Select All Invalid Items": "Select All Invalid Items",
     "Back": "Back",
     "Load More": "Load More",
+    "Export Results": "Export Results",
     "No data": "No data",
+    "Data copied": "Data copied",
+    "Table": "Table",
+    "Raw Data": "Raw Data",
     "Zoom in": "Zoom in",
     "Zoom out": "Zoom out",
     "Drag to Reorder": "Drag to Reorder",
@@ -1651,6 +1657,8 @@
     "Same time as default timezone": "Same time as default timezone",
     "Transaction Type": "Transaction Type",
     "Geographic Location": "Geographic Location",
+    "Longitude": "Longitude",
+    "Latitude": "Latitude",
     "No Location": "No Location",
     "Getting Location...": "Getting Location...",
     "Show on the map": "Show on the map",
@@ -1814,6 +1822,7 @@
     "Maximum Amount": "Maximum Amount",
     "Display Order": "Display Order",
     "Name": "Name",
+    "Proportion (%)": "Proportion (%)",
     "Sort by Amount": "Sort by Amount",
     "Sort by Display Order": "Sort by Display Order",
     "Sort by Name": "Sort by Name",
@@ -1915,8 +1924,10 @@
     "Data Management": "Data Management",
     "Unable to retrieve user statistics data": "Unable to retrieve user statistics data",
     "Export Data": "Export Data",
+    "File Format": "File Format",
     "CSV (Comma-separated values) File": "CSV (Comma-separated values) File",
     "TSV (Tab-separated values) File": "TSV (Tab-separated values) File",
+    "Markdown File": "Markdown File",
     "Clear User Data": "Clear User Data",
     "Export all transaction data to file.": "Export all transaction data to file.",
     "Are you sure you want to export all transaction data to file?": "Are you sure you want to export all transaction data to file?",
