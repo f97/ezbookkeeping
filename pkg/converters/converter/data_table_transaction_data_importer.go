@@ -13,10 +13,18 @@ import (
 	"github.com/mayswind/ezbookkeeping/pkg/validators"
 )
 
+type TransactionGeoLocationOrder string
+
+const (
+	TRANSACTION_GEO_LOCATION_ORDER_LONGITUDE_LATITUDE TransactionGeoLocationOrder = "lonlat" // longitude first, then latitude
+	TRANSACTION_GEO_LOCATION_ORDER_LATITUDE_LONGITUDE TransactionGeoLocationOrder = "latlon" // latitude first, then longitude
+)
+
 // DataTableTransactionDataImporter defines the structure of plain text data table importer for transaction data
 type DataTableTransactionDataImporter struct {
 	transactionTypeMapping  map[string]models.TransactionType
 	geoLocationSeparator    string
+	geoLocationOrder        TransactionGeoLocationOrder
 	transactionTagSeparator string
 }
 
@@ -88,7 +96,8 @@ func (c *DataTableTransactionDataImporter) ParseImportedData(ctx core.Context, u
 
 		timezoneOffset := defaultTimezoneOffset
 
-		if dataTable.HasColumn(datatable.TRANSACTION_DATA_TABLE_TRANSACTION_TIMEZONE) {
+		if dataTable.HasColumn(datatable.TRANSACTION_DATA_TABLE_TRANSACTION_TIMEZONE) &&
+			dataRow.GetData(datatable.TRANSACTION_DATA_TABLE_TRANSACTION_TIMEZONE) != datatable.TRANSACTION_DATA_TABLE_TIMEZONE_NOT_AVAILABLE {
 			transactionTimezone, err := utils.ParseFromTimezoneOffset(dataRow.GetData(datatable.TRANSACTION_DATA_TABLE_TRANSACTION_TIMEZONE))
 
 			if err != nil {
@@ -268,18 +277,26 @@ func (c *DataTableTransactionDataImporter) ParseImportedData(ctx core.Context, u
 			geoLocationItems := strings.Split(dataRow.GetData(datatable.TRANSACTION_DATA_TABLE_GEOGRAPHIC_LOCATION), c.geoLocationSeparator)
 
 			if len(geoLocationItems) == 2 {
-				geoLongitude, err = utils.StringToFloat64(geoLocationItems[0])
+				geoLocationFirstItem, err := utils.StringToFloat64(geoLocationItems[0])
 
 				if err != nil {
 					log.Errorf(ctx, "[data_table_transaction_data_exporter.ParseImportedData] cannot parse geographic location \"%s\" in data row \"index:%d\" for user \"uid:%d\", because %s", dataRow.GetData(datatable.TRANSACTION_DATA_TABLE_GEOGRAPHIC_LOCATION), dataRowIndex, user.Uid, err.Error())
 					return nil, nil, nil, nil, nil, nil, errs.ErrGeographicLocationInvalid
 				}
 
-				geoLatitude, err = utils.StringToFloat64(geoLocationItems[1])
+				geoLocationSecondItem, err := utils.StringToFloat64(geoLocationItems[1])
 
 				if err != nil {
 					log.Errorf(ctx, "[data_table_transaction_data_exporter.ParseImportedData] cannot parse geographic location \"%s\" in data row \"index:%d\" for user \"uid:%d\", because %s", dataRow.GetData(datatable.TRANSACTION_DATA_TABLE_GEOGRAPHIC_LOCATION), dataRowIndex, user.Uid, err.Error())
 					return nil, nil, nil, nil, nil, nil, errs.ErrGeographicLocationInvalid
+				}
+
+				if c.geoLocationOrder == TRANSACTION_GEO_LOCATION_ORDER_LONGITUDE_LATITUDE {
+					geoLongitude = geoLocationFirstItem
+					geoLatitude = geoLocationSecondItem
+				} else if c.geoLocationOrder == TRANSACTION_GEO_LOCATION_ORDER_LATITUDE_LONGITUDE {
+					geoLatitude = geoLocationFirstItem
+					geoLongitude = geoLocationSecondItem
 				}
 			}
 		}
@@ -466,10 +483,11 @@ func (c *DataTableTransactionDataImporter) createNewTransactionTagModel(uid int6
 }
 
 // CreateNewImporterWithTypeNameMapping returns a new data table transaction data importer according to the specified arguments
-func CreateNewImporterWithTypeNameMapping(transactionTypeMapping map[models.TransactionType]string, geoLocationSeparator string, transactionTagSeparator string) *DataTableTransactionDataImporter {
+func CreateNewImporterWithTypeNameMapping(transactionTypeMapping map[models.TransactionType]string, geoLocationSeparator string, geoLocationOrder TransactionGeoLocationOrder, transactionTagSeparator string) *DataTableTransactionDataImporter {
 	return &DataTableTransactionDataImporter{
 		transactionTypeMapping:  buildTransactionNameTypeMap(transactionTypeMapping),
 		geoLocationSeparator:    geoLocationSeparator,
+		geoLocationOrder:        geoLocationOrder,
 		transactionTagSeparator: transactionTagSeparator,
 	}
 }
