@@ -10,6 +10,7 @@
         "Spanish": "Spanisch",
         "Italian": "Italienisch",
         "Japanese": "Japanisch",
+        "Portuguese (Brazil)": "Portugiesisch (Brasilien)",
         "Russian": "Russisch",
         "Ukrainian": "Ukrainisch",
         "Vietnamese": "Vietnamesisch",
@@ -27,7 +28,7 @@
         "decimalSeparator": "Comma",
         "digitGroupingSymbol": "Dot",
         "digitGrouping": "ThousandsSeparator",
-        "currencyDisplayType": "SymbolBeforeAmount"
+        "currencyDisplayType": "SymbolAfterAmount"
     },
     "format": {
         "longDate": {
@@ -81,17 +82,17 @@
             "hh_mm_a": "hh:mm A"
         },
         "yearQuarter": {
-            "q1": "{year}Q1",
-            "q2": "{year}Q2",
-            "q3": "{year}Q3",
-            "q4": "{year}Q4"
+            "q1": "Q1 {year}",
+            "q2": "Q4 {year}",
+            "q3": "Q4 {year}",
+            "q4": "Q4 {year}"
         },
         "fiscalYear": {
-            "StartYYYY_EndYYYY": "FY {StartYYYY}-{EndYYYY}",
-            "StartYYYY_EndYY": "FY {StartYYYY}-{EndYY}",
-            "StartYY_EndYY": "FY {StartYY}-{EndYY}",
-            "EndYYYY": "FY {EndYYYY}",
-            "EndYY": "FY {EndYY}"
+            "StartYYYY_EndYYYY": "GJ {StartYYYY}-{EndYYYY}",
+            "StartYYYY_EndYY": "GJ {StartYYYY}-{EndYY}",
+            "StartYY_EndYY": "GJ {StartYY}-{EndYY}",
+            "EndYYYY": "GJ {EndYYYY}",
+            "EndYY": "GJ {EndYY}"
         },
         "misc": {
             "multiTextJoinSeparator": ", ",
@@ -1330,6 +1331,7 @@
     "None": "Keine",
     "Unspecified": "Nicht angegeben",
     "Not set": "Nicht festgelegt",
+    "No limit": "No limit",
     "No results": "Keine Ergebnisse",
     "Unknown": "Unbekannt",
     "Auto detect": "Auto detect",

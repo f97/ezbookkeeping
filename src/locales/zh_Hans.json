@@ -10,6 +10,7 @@
         "Spanish": "西班牙语",
         "Italian": "意大利语",
         "Japanese": "日语",
+        "Portuguese (Brazil)": "葡萄牙语 (巴西)",
         "Russian": "俄语",
         "Ukrainian": "乌克兰语",
         "Vietnamese": "越南语",
@@ -87,11 +88,11 @@
             "q4": "{year}Q4"
         },
         "fiscalYear": {
-            "StartYYYY_EndYYYY": "FY {StartYYYY}-{EndYYYY}",
-            "StartYYYY_EndYY": "FY {StartYYYY}-{EndYY}",
-            "StartYY_EndYY": "FY {StartYY}-{EndYY}",
-            "EndYYYY": "FY {EndYYYY}",
-            "EndYY": "FY {EndYY}"
+            "StartYYYY_EndYYYY": "{StartYYYY}-{EndYYYY}财年",
+            "StartYYYY_EndYY": "{StartYYYY}-{EndYY}财年",
+            "StartYY_EndYY": "{StartYY}-{EndYY}财年",
+            "EndYYYY": "{EndYYYY}财年",
+            "EndYY": "{EndYY}财年"
         },
         "misc": {
             "multiTextJoinSeparator": "、",
@@ -1330,6 +1331,7 @@
     "None": "无",
     "Unspecified": "未指定",
     "Not set": "未设置",
+    "No limit": "无限制",
     "No results": "无结果",
     "Unknown": "未知",
     "Auto detect": "自动检测",

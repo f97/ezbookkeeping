@@ -10,6 +10,7 @@
         "Spanish": "スペイン語",
         "Italian": "イタリア語",
         "Japanese": "日本語",
+        "Portuguese (Brazil)": "ポルトガル語 (ブラジル)",
         "Russian": "ロシア語",
         "Ukrainian": "ウクライナ語",
         "Vietnamese": "ベトナム語",
@@ -23,7 +24,7 @@
         "longDateFormat": "YYYYMMDD",
         "shortDateFormat": "YYYYMMDD",
         "longTimeFormat": "HHMMSS",
-        "shortTimeFormat": "HHMMA",
+        "shortTimeFormat": "HHMM",
         "decimalSeparator": "Dot",
         "digitGroupingSymbol": "Comma",
         "digitGrouping": "ThousandsSeparator",
@@ -81,17 +82,17 @@
             "hh_mm_a": "hh:mm A"
         },
         "yearQuarter": {
-            "q1": "{year}Q1",
-            "q2": "{year}Q2",
-            "q3": "{year}Q3",
-            "q4": "{year}Q4"
+            "q1": "{year}年第1四半期",
+            "q2": "{year}年第2四半期",
+            "q3": "{year}年第3四半期",
+            "q4": "{year}年第4四半期"
         },
         "fiscalYear": {
-            "StartYYYY_EndYYYY": "FY {StartYYYY}-{EndYYYY}",
-            "StartYYYY_EndYY": "FY {StartYYYY}-{EndYY}",
-            "StartYY_EndYY": "FY {StartYY}-{EndYY}",
-            "EndYYYY": "FY {EndYYYY}",
-            "EndYY": "FY {EndYY}"
+            "StartYYYY_EndYYYY": "{StartYYYY}-{EndYYYY}年度",
+            "StartYYYY_EndYY": "{StartYYYY}-{EndYY}年度",
+            "StartYY_EndYY": "{StartYY}-{EndYY}年度",
+            "EndYYYY": "{EndYYYY}年度",
+            "EndYY": "{EndYY}年度"
         },
         "misc": {
             "multiTextJoinSeparator": "、",
@@ -1330,6 +1331,7 @@
     "None": "なし",
     "Unspecified": "不特定",
     "Not set": "セットしていない",
+    "No limit": "No limit",
     "No results": "結果はありません",
     "Unknown": "不明",
     "Auto detect": "自動検出",
