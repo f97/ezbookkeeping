@@ -18,8 +18,9 @@ import (
 type TokensApi struct {
 	ApiUsingConfig
 	ApiWithUserInfo
-	tokens *services.TokenService
-	users  *services.UserService
+	tokens               *services.TokenService
+	users                *services.UserService
+	userAppCloudSettings *services.UserApplicationCloudSettingsService
 }
 
 // Initialize a token api singleton instance
@@ -36,8 +37,9 @@ var (
 				container: avatars.Container,
 			},
 		},
-		tokens: services.Tokens,
-		users:  services.Users,
+		tokens:               services.Tokens,
+		users:                services.Users,
+		userAppCloudSettings: services.UserApplicationCloudSettings,
 	}
 )
 
@@ -100,11 +102,11 @@ func (a *TokensApi) TokenRevokeCurrentHandler(c *core.WebContext) (any, *errs.Er
 	err = a.tokens.DeleteToken(c, tokenRecord)
 
 	if err != nil {
-		log.Errorf(c, "[token.TokenRevokeCurrentHandler] failed to revoke token \"id:%s\" for user \"uid:%d\", because %s", tokenId, claims.Uid, err.Error())
+		log.Errorf(c, "[tokens.TokenRevokeCurrentHandler] failed to revoke token \"id:%s\" for user \"uid:%d\", because %s", tokenId, claims.Uid, err.Error())
 		return nil, errs.Or(err, errs.ErrOperationFailed)
 	}
 
-	log.Infof(c, "[token.TokenRevokeCurrentHandler] user \"uid:%d\" has revoked token \"id:%s\"", claims.Uid, tokenId)
+	log.Infof(c, "[tokens.TokenRevokeCurrentHandler] user \"uid:%d\" has revoked token \"id:%s\"", claims.Uid, tokenId)
 	return true, nil
 }
 
@@ -122,7 +124,7 @@ func (a *TokensApi) TokenRevokeHandler(c *core.WebContext) (any, *errs.Error) {
 
 	if err != nil {
 		if !errs.IsCustomError(err) {
-			log.Errorf(c, "[token.TokenRevokeHandler] failed to parse token \"id:%s\", because %s", tokenRevokeReq.TokenId, err.Error())
+			log.Errorf(c, "[tokens.TokenRevokeHandler] failed to parse token \"id:%s\", because %s", tokenRevokeReq.TokenId, err.Error())
 		}
 
 		return nil, errs.Or(err, errs.ErrInvalidTokenId)
@@ -131,7 +133,7 @@ func (a *TokensApi) TokenRevokeHandler(c *core.WebContext) (any, *errs.Error) {
 	uid := c.GetCurrentUid()
 
 	if tokenRecord.Uid != uid {
-		log.Warnf(c, "[token.TokenRevokeHandler] token \"id:%s\" is not owned by user \"uid:%d\"", tokenRevokeReq.TokenId, uid)
+		log.Warnf(c, "[tokens.TokenRevokeHandler] token \"id:%s\" is not owned by user \"uid:%d\"", tokenRevokeReq.TokenId, uid)
 		return nil, errs.ErrInvalidTokenId
 	}
 
@@ -140,7 +142,7 @@ func (a *TokensApi) TokenRevokeHandler(c *core.WebContext) (any, *errs.Error) {
 
 		if err != nil {
 			if !errs.IsCustomError(err) {
-				log.Errorf(c, "[token.TokenRevokeHandler] failed to get user, because %s", err.Error())
+				log.Errorf(c, "[tokens.TokenRevokeHandler] failed to get user, because %s", err.Error())
 			}
 
 			return nil, errs.ErrUserNotFound
@@ -154,11 +156,11 @@ func (a *TokensApi) TokenRevokeHandler(c *core.WebContext) (any, *errs.Error) {
 	err = a.tokens.DeleteToken(c, tokenRecord)
 
 	if err != nil {
-		log.Errorf(c, "[token.TokenRevokeHandler] failed to revoke token \"id:%s\" for user \"uid:%d\", because %s", tokenRevokeReq.TokenId, uid, err.Error())
+		log.Errorf(c, "[tokens.TokenRevokeHandler] failed to revoke token \"id:%s\" for user \"uid:%d\", because %s", tokenRevokeReq.TokenId, uid, err.Error())
 		return nil, errs.Or(err, errs.ErrOperationFailed)
 	}
 
-	log.Infof(c, "[token.TokenRevokeHandler] user \"uid:%d\" has revoked token \"id:%s\"", uid, tokenRevokeReq.TokenId)
+	log.Infof(c, "[tokens.TokenRevokeHandler] user \"uid:%d\" has revoked token \"id:%s\"", uid, tokenRevokeReq.TokenId)
 	return true, nil
 }
 
@@ -194,7 +196,7 @@ func (a *TokensApi) TokenRevokeAllHandler(c *core.WebContext) (any, *errs.Error)
 
 	if err != nil {
 		if !errs.IsCustomError(err) {
-			log.Errorf(c, "[token.TokenRevokeAllHandler] failed to get user, because %s", err.Error())
+			log.Errorf(c, "[tokens.TokenRevokeAllHandler] failed to get user, because %s", err.Error())
 		}
 
 		return nil, errs.ErrUserNotFound
@@ -207,11 +209,11 @@ func (a *TokensApi) TokenRevokeAllHandler(c *core.WebContext) (any, *errs.Error)
 	err = a.tokens.DeleteTokens(c, uid, tokens)
 
 	if err != nil {
-		log.Errorf(c, "[token.TokenRevokeAllHandler] failed to revoke all tokens for user \"uid:%d\", because %s", uid, err.Error())
+		log.Errorf(c, "[tokens.TokenRevokeAllHandler] failed to revoke all tokens for user \"uid:%d\", because %s", uid, err.Error())
 		return nil, errs.Or(err, errs.ErrOperationFailed)
 	}
 
-	log.Infof(c, "[token.TokenRevokeAllHandler] user \"uid:%d\" has revoked all tokens", uid)
+	log.Infof(c, "[tokens.TokenRevokeAllHandler] user \"uid:%d\" has revoked all tokens", uid)
 	return true, nil
 }
 
@@ -221,7 +223,7 @@ func (a *TokensApi) TokenRefreshHandler(c *core.WebContext) (any, *errs.Error) {
 	user, err := a.users.GetUserById(c, uid)
 
 	if err != nil {
-		log.Warnf(c, "[token.TokenRefreshHandler] failed to get user \"uid:%d\" info, because %s", uid, err.Error())
+		log.Warnf(c, "[tokens.TokenRefreshHandler] failed to get user \"uid:%d\" info, because %s", uid, err.Error())
 		return nil, errs.ErrUserNotFound
 	}
 
@@ -229,7 +231,7 @@ func (a *TokensApi) TokenRefreshHandler(c *core.WebContext) (any, *errs.Error) {
 	oldTokenClaims := c.GetTokenClaims()
 
 	if now-oldTokenClaims.IssuedAt < int64(a.CurrentConfig().TokenMinRefreshInterval) {
-		log.Infof(c, "[token.TokenRefreshHandler] token of user \"uid:%d\" does not need to be refreshed", uid)
+		log.Infof(c, "[tokens.TokenRefreshHandler] token of user \"uid:%d\" does not need to be refreshed", uid)
 
 		userTokenId, err := utils.StringToInt64(oldTokenClaims.UserTokenId)
 
@@ -247,13 +249,23 @@ func (a *TokensApi) TokenRefreshHandler(c *core.WebContext) (any, *errs.Error) {
 			err = a.tokens.UpdateTokenLastSeen(c, tokenRecord)
 
 			if err != nil {
-				log.Warnf(c, "[token.TokenRefreshHandler] failed to update last seen of token \"id:%s\" for user \"uid:%d\", because %s", tokenId, uid, err.Error())
+				log.Warnf(c, "[tokens.TokenRefreshHandler] failed to update last seen of token \"id:%s\" for user \"uid:%d\", because %s", tokenId, uid, err.Error())
 			}
 		}
 
+		userApplicationCloudSettings, err := a.userAppCloudSettings.GetUserApplicationCloudSettingsByUid(c, user.Uid)
+		var applicationCloudSettingSlice *models.ApplicationCloudSettingSlice = nil
+
+		if err != nil {
+			log.Warnf(c, "[tokens.TokenRefreshHandler] failed to get latest user application cloud settings for user \"uid:%d\", because %s", user.Uid, err.Error())
+		} else if userApplicationCloudSettings != nil && len(userApplicationCloudSettings.Settings) > 0 {
+			applicationCloudSettingSlice = &userApplicationCloudSettings.Settings
+		}
+
 		refreshResp := &models.TokenRefreshResponse{
-			User:                a.GetUserBasicInfo(user),
-			NotificationContent: a.GetAfterOpenNotificationContent(user.Language, c.GetClientLocale()),
+			User:                     a.GetUserBasicInfo(user),
+			ApplicationCloudSettings: applicationCloudSettingSlice,
+			NotificationContent:      a.GetAfterOpenNotificationContent(user.Language, c.GetClientLocale()),
 		}
 
 		return refreshResp, nil
@@ -262,7 +274,7 @@ func (a *TokensApi) TokenRefreshHandler(c *core.WebContext) (any, *errs.Error) {
 	token, claims, err := a.tokens.CreateToken(c, user)
 
 	if err != nil {
-		log.Errorf(c, "[token.TokenRefreshHandler] failed to create token for user \"uid:%d\", because %s", user.Uid, err.Error())
+		log.Errorf(c, "[tokens.TokenRefreshHandler] failed to create token for user \"uid:%d\", because %s", user.Uid, err.Error())
 		return nil, errs.Or(err, errs.ErrTokenGenerating)
 	}
 
@@ -276,13 +288,23 @@ func (a *TokensApi) TokenRefreshHandler(c *core.WebContext) (any, *errs.Error) {
 	c.SetTextualToken(token)
 	c.SetTokenClaims(claims)
 
-	log.Infof(c, "[token.TokenRefreshHandler] user \"uid:%d\" token refreshed, new token will be expired at %d", user.Uid, claims.ExpiresAt)
+	userApplicationCloudSettings, err := a.userAppCloudSettings.GetUserApplicationCloudSettingsByUid(c, user.Uid)
+	var applicationCloudSettingSlice *models.ApplicationCloudSettingSlice = nil
+
+	if err != nil {
+		log.Warnf(c, "[tokens.TokenRefreshHandler] failed to get latest user application cloud settings for user \"uid:%d\", because %s", user.Uid, err.Error())
+	} else if userApplicationCloudSettings != nil && len(userApplicationCloudSettings.Settings) > 0 {
+		applicationCloudSettingSlice = &userApplicationCloudSettings.Settings
+	}
+
+	log.Infof(c, "[tokens.TokenRefreshHandler] user \"uid:%d\" token refreshed, new token will be expired at %d", user.Uid, claims.ExpiresAt)
 
 	refreshResp := &models.TokenRefreshResponse{
-		NewToken:            token,
-		OldTokenId:          a.tokens.GenerateTokenId(oldTokenRecord),
-		User:                a.GetUserBasicInfo(user),
-		NotificationContent: a.GetAfterOpenNotificationContent(user.Language, c.GetClientLocale()),
+		NewToken:                 token,
+		OldTokenId:               a.tokens.GenerateTokenId(oldTokenRecord),
+		User:                     a.GetUserBasicInfo(user),
+		ApplicationCloudSettings: applicationCloudSettingSlice,
+		NotificationContent:      a.GetAfterOpenNotificationContent(user.Language, c.GetClientLocale()),
 	}
 
 	return refreshResp, nil
