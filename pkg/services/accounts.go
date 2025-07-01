@@ -298,9 +298,9 @@ func (s *AccountService) CreateAccounts(c core.Context, mainAccount *models.Acco
 
 			if err != nil || createdRows < 1 { // maybe another transaction has same time
 				if err != nil {
-					log.Warnf(c, "[accounts.CreateAccounts] cannot create trasaction, because %s, regenerate transaction time value", err.Error())
+					log.Warnf(c, "[accounts.CreateAccounts] cannot create transaction, because %s, regenerate transaction time value", err.Error())
 				} else {
-					log.Warnf(c, "[accounts.CreateAccounts] cannot create trasaction, regenerate transaction time value")
+					log.Warnf(c, "[accounts.CreateAccounts] cannot create transaction, regenerate transaction time value")
 				}
 
 				err = userDataDb.RollbackToSavePoint(sess, insertTransactionSavePointName)
@@ -824,4 +824,57 @@ func (s *AccountService) GetAccountNames(accounts []*models.Account) []string {
 	}
 
 	return accountNames
+}
+
+// GetAccountOrSubAccountIds returns a list of account ids or sub-account ids according to given account ids
+func (s *AccountService) GetAccountOrSubAccountIds(c *core.WebContext, accountIds string, uid int64) ([]int64, error) {
+	if accountIds == "" || accountIds == "0" {
+		return nil, nil
+	}
+
+	requestAccountIds, err := utils.StringArrayToInt64Array(strings.Split(accountIds, ","))
+
+	if err != nil {
+		return nil, errs.Or(err, errs.ErrAccountIdInvalid)
+	}
+
+	var allAccountIds []int64
+
+	if len(requestAccountIds) > 0 {
+		allSubAccounts, err := s.GetSubAccountsByAccountIds(c, uid, requestAccountIds)
+
+		if err != nil {
+			return nil, err
+		}
+
+		accountIdsMap := make(map[int64]int32, len(requestAccountIds))
+
+		for i := 0; i < len(requestAccountIds); i++ {
+			accountIdsMap[requestAccountIds[i]] = 0
+		}
+
+		for i := 0; i < len(allSubAccounts); i++ {
+			subAccount := allSubAccounts[i]
+
+			if refCount, exists := accountIdsMap[subAccount.ParentAccountId]; exists {
+				accountIdsMap[subAccount.ParentAccountId] = refCount + 1
+			} else {
+				accountIdsMap[subAccount.ParentAccountId] = 1
+			}
+
+			if _, exists := accountIdsMap[subAccount.AccountId]; exists {
+				delete(accountIdsMap, subAccount.AccountId)
+			}
+
+			allAccountIds = append(allAccountIds, subAccount.AccountId)
+		}
+
+		for accountId, refCount := range accountIdsMap {
+			if refCount < 1 {
+				allAccountIds = append(allAccountIds, accountId)
+			}
+		}
+	}
+
+	return allAccountIds, nil
 }
