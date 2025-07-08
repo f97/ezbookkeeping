@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"net/http"
 	"path/filepath"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/mayswind/ezbookkeeping/pkg/cron"
 	"github.com/mayswind/ezbookkeeping/pkg/errs"
 	"github.com/mayswind/ezbookkeeping/pkg/log"
+	"github.com/mayswind/ezbookkeeping/pkg/mcp"
 	"github.com/mayswind/ezbookkeeping/pkg/middlewares"
 	"github.com/mayswind/ezbookkeeping/pkg/requestid"
 	"github.com/mayswind/ezbookkeeping/pkg/settings"
@@ -60,6 +62,13 @@ func startWebServer(c *core.CliContext) error {
 
 	if err != nil {
 		log.BootErrorf(c, "[webserver.startWebServer] initializes requestid generator failed, because %s", err.Error())
+		return err
+	}
+
+	err = mcp.InitializeMCPHandlers(config)
+
+	if err != nil {
+		log.BootErrorf(c, "[webserver.startWebServer] initializes mcp handlers failed, because %s", err.Error())
 		return err
 	}
 
@@ -212,6 +221,27 @@ func startWebServer(c *core.CliContext) error {
 		qrCodeRoute.GET("/mobile_url.png", bindCachedImage(api.QrCodes.MobileUrlQrCodeHandler, qrCodeCacheStore))
 	}
 
+	if config.EnableMCPServer {
+		mcpRoute := router.Group("/mcp")
+		mcpRoute.Use(bindMiddleware(middlewares.RequestId(config)))
+		mcpRoute.Use(bindMiddleware(middlewares.RequestLog))
+		mcpRoute.Use(bindMiddleware(middlewares.MCPServerIpLimit(config)))
+		mcpRoute.Use(bindMiddleware(middlewares.JWTMCPAuthorization))
+		{
+			mcpRoute.POST("", bindJSONRPCApi(map[string]core.JSONRPCApiHandlerFunc{
+				"initialize":     api.ModelContextProtocols.InitializeHandler,
+				"resources/list": api.ModelContextProtocols.ListResourcesHandler,
+				"resources/read": api.ModelContextProtocols.ReadResourceHandler,
+				"tools/list":     api.ModelContextProtocols.ListToolsHandler,
+				"tools/call":     api.ModelContextProtocols.CallToolHandler,
+				"ping":           api.ModelContextProtocols.PingHandler,
+			}, map[string]int{
+				"notifications/initialized": http.StatusAccepted,
+			}))
+			mcpRoute.GET("", bindApi(api.Default.MethodNotAllowed))
+		}
+	}
+
 	apiRoute := router.Group("/api")
 
 	apiRoute.Use(bindMiddleware(middlewares.RequestId(config)))
@@ -259,6 +289,7 @@ func startWebServer(c *core.CliContext) error {
 		{
 			// Tokens
 			apiV1Route.GET("/tokens/list.json", bindApi(api.Tokens.TokenListHandler))
+			apiV1Route.POST("/tokens/generate/mcp.json", bindApi(api.Tokens.TokenGenerateMCPHandler))
 			apiV1Route.POST("/tokens/revoke.json", bindApi(api.Tokens.TokenRevokeHandler))
 			apiV1Route.POST("/tokens/revoke_all.json", bindApi(api.Tokens.TokenRevokeAllHandler))
 			apiV1Route.POST("/tokens/refresh.json", bindApiWithTokenUpdate(api.Tokens.TokenRefreshHandler, config))
@@ -428,6 +459,44 @@ func bindApiWithTokenUpdate(fn core.ApiHandlerFunc, config *settings.Config) gin
 			utils.PrintJsonErrorResult(c, err)
 		} else {
 			utils.PrintJsonSuccessResult(c, result)
+		}
+	}
+}
+
+func bindJSONRPCApi(fns map[string]core.JSONRPCApiHandlerFunc, skipMethods map[string]int) gin.HandlerFunc {
+	return func(ginCtx *gin.Context) {
+		c := core.WrapWebContext(ginCtx)
+
+		var jsonRPCRequest core.JSONRPCRequest
+		reqErr := c.ShouldBindBodyWithJSON(&jsonRPCRequest)
+
+		if reqErr != nil {
+			utils.PrintJSONRPCErrorResult(c, nil, errs.NewIncompleteOrIncorrectSubmissionError(reqErr))
+			return
+		}
+
+		if skipMethods != nil {
+			httpStatusCode, exists := skipMethods[jsonRPCRequest.Method]
+
+			if exists {
+				c.AbortWithStatus(httpStatusCode)
+				return
+			}
+		}
+
+		fn, exists := fns[jsonRPCRequest.Method]
+
+		if !exists {
+			utils.PrintJSONRPCErrorResult(c, &jsonRPCRequest, errs.ErrApiNotFound)
+			return
+		}
+
+		result, err := fn(c, &jsonRPCRequest)
+
+		if err != nil {
+			utils.PrintJSONRPCErrorResult(c, &jsonRPCRequest, err)
+		} else {
+			utils.PrintJSONRPCSuccessResult(c, &jsonRPCRequest, result)
 		}
 	}
 }

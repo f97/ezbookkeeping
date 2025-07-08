@@ -9,15 +9,16 @@ import (
 )
 
 const (
-	longDateFormat                  = "2006-01-02"
-	longDateTimeFormat              = "2006-01-02 15:04:05"
-	longDateTimeWithTimezoneFormat  = "2006-01-02 15:04:05Z07:00"
-	longDateTimeWithTimezoneFormat2 = "2006-01-02 15:04:05 Z0700"
-	longDateTimeWithoutSecondFormat = "2006-01-02 15:04"
-	shortDateTimeFormat             = "2006-1-2 15:4:5"
-	yearMonthDateTimeFormat         = "2006-01"
-	westernmostTimezoneUtcOffset    = -720 // Etc/GMT+12 (UTC-12:00)
-	easternmostTimezoneUtcOffset    = 840  // Pacific/Kiritimati (UTC+14:00)
+	longDateFormat                        = "2006-01-02"
+	longDateTimeFormat                    = "2006-01-02 15:04:05"
+	longDateTimeWithTimezoneFormat        = "2006-01-02 15:04:05Z07:00"
+	longDateTimeWithTimezoneFormat2       = "2006-01-02 15:04:05 Z0700"
+	longDateTimeWithTimezoneRFC3339Format = "2006-01-02T15:04:05Z07:00"
+	longDateTimeWithoutSecondFormat       = "2006-01-02 15:04"
+	shortDateTimeFormat                   = "2006-1-2 15:4:5"
+	yearMonthDateTimeFormat               = "2006-01"
+	westernmostTimezoneUtcOffset          = -720 // Etc/GMT+12 (UTC-12:00)
+	easternmostTimezoneUtcOffset          = 840  // Pacific/Kiritimati (UTC+14:00)
 )
 
 // ParseNumericYearMonth returns numeric year and month from textual content
@@ -63,6 +64,28 @@ func FormatUnixTimeToLongDateTime(unixTime int64, timezone *time.Location) strin
 	}
 
 	return t.Format(longDateTimeFormat)
+}
+
+// FormatUnixTimeToLongDateTimeWithTimezone returns a textual representation of the unix time formatted by long date time with timezone format
+func FormatUnixTimeToLongDateTimeWithTimezone(unixTime int64, timezone *time.Location) string {
+	t := parseFromUnixTime(unixTime)
+
+	if timezone != nil {
+		t = t.In(timezone)
+	}
+
+	return t.Format(longDateTimeWithTimezoneFormat)
+}
+
+// FormatUnixTimeToLongDateTimeWithTimezoneRFC3339Format returns a textual representation of the unix time formatted by long date time with timezone RFC 3339 format
+func FormatUnixTimeToLongDateTimeWithTimezoneRFC3339Format(unixTime int64, timezone *time.Location) string {
+	t := parseFromUnixTime(unixTime)
+
+	if timezone != nil {
+		t = t.In(timezone)
+	}
+
+	return t.Format(longDateTimeWithTimezoneRFC3339Format)
 }
 
 func FormatYearMonthDayToLongDateTime(year string, month string, day string) (string, error) {
@@ -204,6 +227,11 @@ func ParseFromLongDateTimeWithTimezone(t string) (time.Time, error) {
 // ParseFromLongDateTimeWithTimezone2 parses a formatted string in long date time format
 func ParseFromLongDateTimeWithTimezone2(t string) (time.Time, error) {
 	return time.Parse(longDateTimeWithTimezoneFormat2, t)
+}
+
+// ParseFromLongDateTimeWithTimezoneRFC3339Format parses a formatted string in long date time RFC 3378 format
+func ParseFromLongDateTimeWithTimezoneRFC3339Format(t string) (time.Time, error) {
+	return time.Parse(longDateTimeWithTimezoneRFC3339Format, t)
 }
 
 // ParseFromLongDateTimeWithoutSecond parses a formatted string in long date time format (no second)

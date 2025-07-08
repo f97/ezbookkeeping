@@ -8,6 +8,9 @@ import (
 	"github.com/mayswind/ezbookkeeping/pkg/utils"
 )
 
+const MaximumTagsCountOfTransaction = 10
+const MaximumPicturesCountOfTransaction = 10
+
 // TransactionType represents transaction type
 type TransactionType byte
 
@@ -225,6 +228,7 @@ type TransactionStatisticRequest struct {
 	EndTime                int64                    `form:"end_time" binding:"min=0"`
 	TagIds                 string                   `form:"tag_ids"`
 	TagFilterType          TransactionTagFilterType `form:"tag_filter_type" binding:"min=0,max=3"`
+	Keyword                string                   `form:"keyword"`
 	UseTransactionTimezone bool                     `form:"use_transaction_timezone"`
 }
 
@@ -233,6 +237,7 @@ type TransactionStatisticTrendsRequest struct {
 	YearMonthRangeRequest
 	TagIds                 string                   `form:"tag_ids"`
 	TagFilterType          TransactionTagFilterType `form:"tag_filter_type" binding:"min=0,max=3"`
+	Keyword                string                   `form:"keyword"`
 	UseTransactionTimezone bool                     `form:"use_transaction_timezone"`
 }
 

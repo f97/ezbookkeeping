@@ -106,6 +106,9 @@ import type {
     TransactionTemplateInfoResponse
 } from '@/models/transaction_template.ts';
 import type {
+    TokenGenerateMCPRequest,
+    TokenRevokeRequest,
+    TokenGenerateMCPResponse,
     TokenRefreshResponse,
     TokenInfoResponse
 } from '@/models/token.ts';
@@ -289,10 +292,15 @@ export default {
     getTokens: (): ApiResponsePromise<TokenInfoResponse[]> => {
         return axios.get<ApiResponse<TokenInfoResponse[]>>('v1/tokens/list.json');
     },
+    generateMCPToken: (req: TokenGenerateMCPRequest): ApiResponsePromise<TokenGenerateMCPResponse> => {
+        return axios.post<ApiResponse<TokenGenerateMCPResponse>>('v1/tokens/generate/mcp.json', req);
+    },
     revokeToken: ({ tokenId, ignoreError }: { tokenId: string, ignoreError?: boolean }): ApiResponsePromise<boolean> => {
-        return axios.post<ApiResponse<boolean>>('v1/tokens/revoke.json', {
+        const req: TokenRevokeRequest = {
             tokenId: tokenId
-        }, {
+        };
+
+        return axios.post<ApiResponse<boolean>>('v1/tokens/revoke.json', req, {
             ignoreError: !!ignoreError
         } as ApiRequestConfig);
     },
@@ -424,6 +432,10 @@ export default {
             queryParams.push(`tag_filter_type=${req.tagFilterType}`);
         }
 
+        if (req.keyword) {
+            queryParams.push(`keyword=${encodeURIComponent(req.keyword)}`);
+        }
+
         return axios.get<ApiResponse<TransactionStatisticResponse>>(`v1/transactions/statistics.json?use_transaction_timezone=${req.useTransactionTimezone}` + (queryParams.length ? '&' + queryParams.join('&') : ''));
     },
     getTransactionStatisticsTrends: (req: TransactionStatisticTrendsRequest): ApiResponsePromise<TransactionStatisticTrendsResponseItem[]> => {
@@ -443,6 +455,10 @@ export default {
 
         if (req.tagFilterType) {
             queryParams.push(`tag_filter_type=${req.tagFilterType}`);
+        }
+
+        if (req.keyword) {
+            queryParams.push(`keyword=${encodeURIComponent(req.keyword)}`);
         }
 
         return axios.get<ApiResponse<TransactionStatisticTrendsResponseItem[]>>(`v1/transactions/statistics/trends.json?use_transaction_timezone=${req.useTransactionTimezone}` + (queryParams.length ? '&' + queryParams.join('&') : ''));
