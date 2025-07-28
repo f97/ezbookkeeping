@@ -115,12 +115,15 @@
                 </template>
                 <template #item.categoryId="{ item }">
                     <div class="d-flex align-center">
-                        <span v-if="item.type === TransactionType.ModifyBalance">-</span>
                         <ItemIcon size="24px" icon-type="category"
                                   :icon-id="allCategoriesMap[item.categoryId].icon"
                                   :color="allCategoriesMap[item.categoryId].color"
-                                  v-if="item.type !== TransactionType.ModifyBalance && allCategoriesMap[item.categoryId]"></ItemIcon>
-                        <span class="ml-2" v-if="item.type !== TransactionType.ModifyBalance && allCategoriesMap[item.categoryId]">
+                                  v-if="allCategoriesMap[item.categoryId] && allCategoriesMap[item.categoryId]?.color"></ItemIcon>
+                        <v-icon size="24" :icon="mdiPencilBoxOutline" v-else-if="!allCategoriesMap[item.categoryId] || !allCategoriesMap[item.categoryId]?.color" />
+                        <span class="ml-2" v-if="item.type === TransactionType.ModifyBalance">
+                            {{ tt('Modify Balance') }}
+                        </span>
+                        <span class="ml-2" v-else-if="item.type !== TransactionType.ModifyBalance && allCategoriesMap[item.categoryId]">
                             {{ allCategoriesMap[item.categoryId].name }}
                         </span>
                     </div>
@@ -217,7 +220,8 @@ import {
     mdiDotsVertical,
     mdiReceiptTextPlusOutline,
     mdiComma,
-    mdiKeyboardTab
+    mdiKeyboardTab,
+    mdiPencilBoxOutline
 } from '@mdi/js';
 
 type SnackBarType = InstanceType<typeof SnackBar>;
@@ -244,6 +248,7 @@ const {
     currentTimezoneOffsetMinutes,
     allAccountsMap,
     allCategoriesMap,
+    isCurrentLiabilityAccount,
     exportFileName,
     displayStartDateTime,
     displayEndDateTime,
@@ -274,7 +279,6 @@ const countPerPage = ref<number>(10);
 
 let rejectFunc: ((reason?: unknown) => void) | null = null;
 
-const account = computed(() => allAccountsMap.value[accountId.value]);
 const reconciliationStatementsTablePageOptions = computed<ReconciliationStatementDialogTablePageOption[]>(() => getTablePageOptions(reconciliationStatements.value?.length));
 
 const totalPageCount = computed<number>(() => {
@@ -293,7 +297,7 @@ const totalPageCount = computed<number>(() => {
 
 const dataTableHeaders = computed<object[]>(() => {
     const headers: object[] = [];
-    const accountBalanceName = account.value?.isLiability ? 'Account Outstanding Balance' : 'Account Balance';
+    const accountBalanceName = isCurrentLiabilityAccount.value ? 'Account Outstanding Balance' : 'Account Balance';
 
     headers.push({ key: 'time', value: 'time', title: tt('Transaction Time'), sortable: true, nowrap: true });
     headers.push({ key: 'type', value: 'type', title: tt('Type'), sortable: true, nowrap: true });
