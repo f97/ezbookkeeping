@@ -12,6 +12,9 @@
         </f7-navbar>
 
         <f7-list form strong inset dividers class="margin-vertical" v-if="!finishQuery">
+            <f7-list-item group-title>
+                <small>{{ tt('Date Range') }}</small>
+            </f7-list-item>
             <f7-list-item :key="dateRange.type"
                           :title="dateRange.displayName"
                           :disabled="!validQuery"
@@ -36,13 +39,8 @@
         </f7-list>
 
         <f7-list strong inset dividers class="margin-vertical" v-if="finishQuery && (startTime || endTime)">
-            <f7-list-item :title="tt('Start Date')" :after="displayStartDateTime"></f7-list-item>
-            <f7-list-item :title="tt('End Date')" :after="displayEndDateTime"></f7-list-item>
-        </f7-list>
-
-        <f7-list strong inset dividers class="margin-vertical skeleton-text" v-if="finishQuery && loading">
-            <f7-list-item :title="tt('Opening Balance')" after="Count"></f7-list-item>
-            <f7-list-item :title="tt('Closing Balance')" after="Count"></f7-list-item>
+            <f7-list-item :title="tt('Start Time')" :after="displayStartDateTime"></f7-list-item>
+            <f7-list-item :title="tt('End Time')" :after="displayEndDateTime"></f7-list-item>
         </f7-list>
 
         <f7-list strong inset dividers class="margin-vertical skeleton-text" v-if="finishQuery && loading">
@@ -53,22 +51,29 @@
         </f7-list>
 
         <f7-list strong inset dividers class="margin-vertical" v-if="finishQuery && !loading">
-            <f7-list-item :title="tt('Opening Balance')" :after="displayOpeningBalance"></f7-list-item>
-            <f7-list-item :title="tt('Closing Balance')" :after="displayClosingBalance"></f7-list-item>
-        </f7-list>
-
-        <f7-list strong inset dividers class="margin-vertical" v-if="finishQuery && !loading">
-            <f7-list-item :title="tt('Total Transactions')" :after="reconciliationStatements.length || '0'"></f7-list-item>
+            <f7-list-item :title="tt('Total Transactions')"
+                          :after="reconciliationStatements?.transactions.length"
+                          v-if="reconciliationStatements?.transactions.length"></f7-list-item>
             <f7-list-item :title="tt('Total Inflows')" :after="displayTotalInflows"></f7-list-item>
             <f7-list-item :title="tt('Total Outflows')" :after="displayTotalOutflows"></f7-list-item>
             <f7-list-item :title="tt('Net Cash Flow')" :after="displayTotalBalance"></f7-list-item>
+        </f7-list>
+
+        <f7-list strong inset dividers class="margin-vertical skeleton-text" v-if="finishQuery && loading">
+            <f7-list-item :title="tt('Opening Balance')" after="Count"></f7-list-item>
+            <f7-list-item :title="tt('Closing Balance')" after="Count"></f7-list-item>
+        </f7-list>
+
+        <f7-list strong inset dividers class="margin-vertical" v-if="finishQuery && !loading">
+            <f7-list-item :title="tt('Opening Balance')" :after="displayOpeningBalance"></f7-list-item>
+            <f7-list-item :title="tt('Closing Balance')" :after="displayClosingBalance"></f7-list-item>
         </f7-list>
 
         <f7-list strong inset dividers media-list
                  class="skeleton-text margin-vertical transaction-info-list reconciliation-statement-list"
                  v-if="finishQuery && loading">
             <ul>
-                <f7-list-item chevron-center media-item
+                <f7-list-item chevron-center
                     :key="index"
                     :class="{ 'transaction-info': type === 't', 'last-transaction-of-day': index === 2, 'reconciliation-statement-transaction-date': type === 'd' }"
                     :link="type === 't' ? '#' : null"
@@ -134,76 +139,94 @@
                  :virtual-list-params="{ items: allReconciliationStatementVirtualListItems, renderExternal, height: 'auto' }"
                  v-if="finishQuery && !loading && allReconciliationStatementVirtualListItems && allReconciliationStatementVirtualListItems.length">
             <ul>
-                <f7-list-item
-                    chevron-center
-                    media-item
-                    :key="item.index"
-                    :class="{ 'transaction-info': item.type == 'transaction', 'last-transaction-of-day': allReconciliationStatementVirtualListItems[item.index + 1] && allReconciliationStatementVirtualListItems[item.index + 1].type === 'date', 'reconciliation-statement-transaction-date': item.type == 'date' }"
-                    :style="`top: ${virtualDataItems.topPosition}px`"
-                    :virtual-list-index="item.index"
-                    :link="item.type == 'transaction' && item.transaction && item.transaction.type !== TransactionType.ModifyBalance ? `/transaction/detail?id=${item.transaction?.id}&type=${item.transaction.type}` : null"
-                    v-for="item in virtualDataItems.items"
+                <f7-list-item chevron-center
+                              :key="item.index"
+                              :id="item.transaction ? getTransactionDomId(item.transaction) : undefined"
+                              :class="{ 'transaction-info': item.type == 'transaction', 'last-transaction-of-day': allReconciliationStatementVirtualListItems[item.index + 1] && allReconciliationStatementVirtualListItems[item.index + 1].type === 'date', 'reconciliation-statement-transaction-date': item.type == 'date' }"
+                              :style="`top: ${virtualDataItems.topPosition}px`"
+                              :virtual-list-index="item.index"
+                              :swipeout="item.type == 'transaction' && item.transaction"
+                              :accordion-item="item.type == 'transaction' && item.transaction"
+                              :link="item.type == 'transaction' && item.transaction && item.transaction.type !== TransactionType.ModifyBalance ? `/transaction/detail?id=${item.transaction?.id}&type=${item.transaction.type}` : null"
+                              v-for="item in virtualDataItems.items"
                 >
-                    <div class="display-flex no-padding-horizontal" v-if="item.type == 'date' && item.displayDate">
-                        <div class="actual-item-inner">
-                            <div class="item-title-row">
-                                <div class="item-title">
-                                    <small>{{ item.displayDate }}</small>
+                    <template #inner>
+                        <div class="display-flex no-padding-horizontal" v-if="item.type == 'date' && item.displayDate">
+                            <div class="actual-item-inner">
+                                <div class="item-title-row">
+                                    <div class="item-title">
+                                        <small>{{ item.displayDate }}</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="display-flex no-padding-horizontal" v-if="item.type == 'transaction' && item.transaction">
-                        <div class="item-media">
-                            <div class="transaction-icon display-flex align-items-center">
-                                <ItemIcon icon-type="category"
-                                          :icon-id="allCategoriesMap[item.transaction.categoryId]?.icon"
-                                          :color="allCategoriesMap[item.transaction.categoryId]?.color"
-                                          v-if="allCategoriesMap[item.transaction.categoryId] && allCategoriesMap[item.transaction.categoryId]?.color"></ItemIcon>
-                                <f7-icon v-else-if="!allCategoriesMap[item.transaction.categoryId] || !allCategoriesMap[item.transaction.categoryId]?.color"
-                                         f7="pencil_ellipsis_rectangle">
-                                </f7-icon>
+                        <div class="display-flex no-padding-horizontal" v-if="item.type == 'transaction' && item.transaction">
+                            <div class="item-media">
+                                <div class="transaction-icon display-flex align-items-center">
+                                    <ItemIcon icon-type="category"
+                                              :icon-id="allCategoriesMap[item.transaction.categoryId]?.icon"
+                                              :color="allCategoriesMap[item.transaction.categoryId]?.color"
+                                              v-if="allCategoriesMap[item.transaction.categoryId] && allCategoriesMap[item.transaction.categoryId]?.color"></ItemIcon>
+                                    <f7-icon v-else-if="!allCategoriesMap[item.transaction.categoryId] || !allCategoriesMap[item.transaction.categoryId]?.color"
+                                             f7="pencil_ellipsis_rectangle">
+                                    </f7-icon>
+                                </div>
                             </div>
-                        </div>
-                        <div class="actual-item-inner">
-                            <div class="item-title-row">
-                                <div class="item-title">
-                                    <div class="transaction-category-name no-padding">
+                            <div class="actual-item-inner">
+                                <div class="item-title-row">
+                                    <div class="item-title">
+                                        <div class="transaction-category-name no-padding">
                                         <span v-if="item.transaction.type === TransactionType.ModifyBalance">
                                             {{ tt('Modify Balance') }}
                                         </span>
-                                        <span v-else-if="item.transaction.type !== TransactionType.ModifyBalance && allCategoriesMap[item.transaction.categoryId]">
+                                            <span v-else-if="item.transaction.type !== TransactionType.ModifyBalance && allCategoriesMap[item.transaction.categoryId]">
                                             {{ allCategoriesMap[item.transaction.categoryId].name }}
                                         </span>
+                                        </div>
+                                    </div>
+                                    <div class="item-after">
+                                        <div class="transaction-amount"
+                                             :class="{ 'text-expense': item.transaction.type === TransactionType.Expense, 'text-income': item.transaction.type === TransactionType.Income }">
+                                            <span v-if="item.transaction.type === TransactionType.Transfer && item.transaction.destinationAccountId === accountId">{{ getDisplayDestinationAmount(item.transaction) }}</span>
+                                            <span v-else-if="item.transaction.type !== TransactionType.Transfer || item.transaction.destinationAccountId !== accountId">{{ getDisplaySourceAmount(item.transaction) }}</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="item-after">
-                                    <div class="transaction-amount"
-                                         :class="{ 'text-expense': item.transaction.type === TransactionType.Expense, 'text-income': item.transaction.type === TransactionType.Income }">
-                                        <span v-if="item.transaction.type === TransactionType.Transfer && item.transaction.destinationAccountId === accountId">{{ getDisplayDestinationAmount(item.transaction) }}</span>
-                                        <span v-else-if="item.transaction.type !== TransactionType.Transfer || item.transaction.destinationAccountId !== accountId">{{ getDisplaySourceAmount(item.transaction) }}</span>
+                                <div class="item-text">
+                                    <div class="transaction-description" v-if="item.transaction.comment">
+                                        <span>{{ item.transaction.comment }}</span>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="item-text">
-                                <div class="transaction-description" v-if="item.transaction.comment">
-                                    <span>{{ item.transaction.comment }}</span>
-                                </div>
-                            </div>
-                            <div class="item-footer">
-                                <div class="transaction-footer display-flex justify-content-space-between">
-                                    <div class="flex-shrink-0">
-                                        <span>{{ getDisplayTime(item.transaction) }}</span>
-                                        <span v-if="item.transaction.utcOffset !== currentTimezoneOffsetMinutes">{{ `(${getDisplayTimezone(item.transaction)})` }}</span>
-                                    </div>
-                                    <div class="account-balance flex-shrink-1">
-                                        <span>{{ isCurrentLiabilityAccount ? tt('Outstanding Balance') : tt('Balance') }}</span>
-                                        <span style="margin-left: 4px">{{ getDisplayAccountBalance(item.transaction) }}</span>
+                                <div class="item-footer">
+                                    <div class="transaction-footer display-flex justify-content-space-between">
+                                        <div class="flex-shrink-0">
+                                            <span>{{ getDisplayTime(item.transaction) }}</span>
+                                            <span v-if="item.transaction.utcOffset !== currentTimezoneOffsetMinutes">{{ `(${getDisplayTimezone(item.transaction)})` }}</span>
+                                        </div>
+                                        <div class="account-balance flex-shrink-1">
+                                            <span>{{ isCurrentLiabilityAccount ? tt('Outstanding Balance') : tt('Balance') }}</span>
+                                            <span style="margin-left: 4px">{{ getDisplayAccountBalance(item.transaction) }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </template>
+                    <f7-swipeout-actions right v-if="item.type == 'transaction' && item.transaction">
+                        <f7-swipeout-button color="primary" close
+                                            :text="tt('Duplicate')"
+                                            v-if="item.transaction.type !== TransactionType.ModifyBalance"
+                                            @click="duplicateTransaction(item.transaction)"></f7-swipeout-button>
+                        <f7-swipeout-button color="orange" close
+                                            :text="tt('Edit')"
+                                            v-if="item.transaction.editable && item.transaction.type !== TransactionType.ModifyBalance"
+                                            @click="editTransaction(item.transaction)"></f7-swipeout-button>
+                        <f7-swipeout-button color="red" class="padding-left padding-right"
+                                            v-if="item.transaction.editable"
+                                            @click="removeTransaction(item.transaction, false)">
+                            <f7-icon f7="trash"></f7-icon>
+                        </f7-swipeout-button>
+                    </f7-swipeout-actions>
                 </f7-list-item>
             </ul>
         </f7-list>
@@ -226,6 +249,16 @@
                 <f7-actions-button bold close>{{ tt('Cancel') }}</f7-actions-button>
             </f7-actions-group>
         </f7-actions>
+
+        <f7-actions close-by-outside-click close-on-escape :opened="showDeleteActionSheet" @actions:closed="showDeleteActionSheet = false">
+            <f7-actions-group>
+                <f7-actions-label>{{ tt('Are you sure you want to delete this transaction?') }}</f7-actions-label>
+                <f7-actions-button color="red" @click="removeTransaction(transactionToDelete, true)">{{ tt('Delete') }}</f7-actions-button>
+            </f7-actions-group>
+            <f7-actions-group>
+                <f7-actions-button bold close>{{ tt('Cancel') }}</f7-actions-button>
+            </f7-actions-group>
+        </f7-actions>
     </f7-page>
 </template>
 
@@ -234,8 +267,8 @@ import { ref, computed } from 'vue';
 import type { Router } from 'framework7/types';
 
 import { useI18n } from '@/locales/helpers.ts';
-import { useI18nUIComponents } from '@/lib/ui/mobile.ts';
-import { useReconciliationStatementPageBase } from '@/views/base/transactions/ReconciliationStatementPageBase.ts';
+import { useI18nUIComponents, showLoading, hideLoading, onSwipeoutDeleted } from '@/lib/ui/mobile.ts';
+import { useReconciliationStatementPageBase } from '@/views/base/accounts/ReconciliationStatementPageBase.ts';
 
 import { useAccountsStore } from '@/stores/account.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
@@ -273,25 +306,24 @@ const props = defineProps<{
 }>();
 
 const { tt, getAllDateRanges, formatUnixTimeToLongDateTime } = useI18n();
-const { showToast, routeBackOnError } = useI18nUIComponents();
+const { showAlert, showToast, routeBackOnError } = useI18nUIComponents();
 
 const {
     accountId,
     startTime,
     endTime,
     reconciliationStatements,
-    openingBalance,
-    closingBalance,
     firstDayOfWeek,
     fiscalYearStart,
     currentTimezoneOffsetMinutes,
     isCurrentLiabilityAccount,
     allCategoriesMap,
     currentAccount,
+    currentAccountCurrency,
     displayStartDateTime,
     displayEndDateTime,
-    displayTotalOutflows,
     displayTotalInflows,
+    displayTotalOutflows,
     displayTotalBalance,
     displayOpeningBalance,
     displayClosingBalance,
@@ -311,8 +343,10 @@ const finishQuery = ref<boolean>(false);
 const loading = ref<boolean>(false);
 const loadingError = ref<unknown | null>(null);
 const queryDateRangeType = ref<number>(DateRange.ThisMonth.type);
+const transactionToDelete = ref<TransactionReconciliationStatementResponseItem | null>(null);
 const showCustomDateRangeSheet = ref<boolean>(false);
 const showMoreActionSheet = ref<boolean>(false);
+const showDeleteActionSheet = ref<boolean>(false);
 const virtualDataItems = ref<ReconciliationStatementVirtualListData>({
     items: [],
     topPosition: 0
@@ -326,15 +360,15 @@ const displayEndTime = computed<string>(() => formatUnixTimeToLongDateTime(endTi
 const allReconciliationStatementVirtualListItems = computed<ReconciliationStatementVirtualListItem[]>(() => {
     const ret: ReconciliationStatementVirtualListItem[] = [];
 
-    if (!reconciliationStatements.value || reconciliationStatements.value.length < 1) {
+    if (!reconciliationStatements.value || !reconciliationStatements.value.transactions || reconciliationStatements.value.transactions.length < 1) {
         return ret;
     }
 
     let index = 0;
     let lastDisplayDate: string | null = null;
 
-    for (let i = 0; i < reconciliationStatements.value.length; i++) {
-        const transaction = reconciliationStatements.value[i];
+    for (let i = 0; i < reconciliationStatements.value.transactions.length; i++) {
+        const transaction = reconciliationStatements.value.transactions[i];
         const displayDate = getDisplayDate(transaction);
 
         if (lastDisplayDate !== displayDate) {
@@ -356,6 +390,10 @@ const allReconciliationStatementVirtualListItems = computed<ReconciliationStatem
     return ret;
 });
 
+function getTransactionDomId(transaction: TransactionReconciliationStatementResponseItem): string {
+    return 'transaction_' + transaction.id;
+}
+
 function init(): void {
     const query = props.f7route.query;
     const defaultDateRange = getDateRangeByDateType(queryDateRangeType.value, firstDayOfWeek.value, fiscalYearStart.value);
@@ -365,7 +403,7 @@ function init(): void {
     accountId.value = query['accountId'] || '';
     startTime.value = defaultDateRange?.minTime || 0;
     endTime.value = defaultDateRange?.maxTime || 0;
-    reconciliationStatements.value = [];
+    reconciliationStatements.value = undefined;
 
     Promise.all([
         accountsStore.loadAllAccounts({ force: false }),
@@ -430,9 +468,7 @@ function reload(force: boolean): void {
         }
 
         loading.value = false;
-        reconciliationStatements.value = result.transactions;
-        openingBalance.value = result.openingBalance;
-        closingBalance.value = result.closingBalance;
+        reconciliationStatements.value = result;
     }).catch(error => {
         loading.value = false;
 
@@ -446,11 +482,57 @@ function addTransaction(): void {
     props.f7router.navigate(`/transaction/add?accountId=${accountId.value}`);
 }
 
+function duplicateTransaction(transaction: TransactionReconciliationStatementResponseItem): void {
+    props.f7router.navigate(`/transaction/add?id=${transaction.id}&type=${transaction.type}`);
+}
+
+function editTransaction(transaction: TransactionReconciliationStatementResponseItem): void {
+    props.f7router.navigate(`/transaction/edit?id=${transaction.id}&type=${transaction.type}`);
+}
+
+function removeTransaction(transaction: TransactionReconciliationStatementResponseItem | null, confirm: boolean): void {
+    if (!transaction) {
+        showAlert('An error occurred');
+        return;
+    }
+
+    if (!confirm) {
+        transactionToDelete.value = transaction;
+        showDeleteActionSheet.value = true;
+        return;
+    }
+
+    showDeleteActionSheet.value = false;
+    transactionToDelete.value = null;
+    showLoading();
+
+    transactionsStore.deleteTransaction({
+        transaction: transaction,
+        defaultCurrency: currentAccountCurrency.value,
+        beforeResolve: (done) => {
+            onSwipeoutDeleted(getTransactionDomId(transaction), done);
+        }
+    }).then(() => {
+        hideLoading();
+        reload(false);
+    }).catch(error => {
+        hideLoading();
+
+        if (!error.processed) {
+            showToast(error.message || error);
+        }
+    });
+}
+
 function renderExternal(vl: unknown, vlData: ReconciliationStatementVirtualListData): void {
     virtualDataItems.value = vlData;
 }
 
 function onPageAfterIn(): void {
+    if (finishQuery.value && transactionsStore.transactionReconciliationStatementStateInvalid) {
+        reload(false);
+    }
+
     routeBackOnError(props.f7router, loadingError);
 }
 
@@ -463,6 +545,13 @@ init();
 }
 
 .list.reconciliation-statement-list li.reconciliation-statement-transaction-date {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    padding-top: 0;
+    padding-bottom: 0;
+    height: var(--f7-list-group-title-height);
+    line-height: var(--f7-list-group-title-height);
     background-color: var(--f7-list-group-title-bg-color);
 }
 
@@ -478,7 +567,8 @@ init();
     background-color: inherit;
 }
 
-.list.reconciliation-statement-list li.transaction-info.last-transaction-of-day > .item-link > .item-content > .item-inner:after {
+.list.reconciliation-statement-list li.transaction-info.last-transaction-of-day > .item-link > .item-content > .item-inner:after,
+.list.reconciliation-statement-list li.transaction-info.last-transaction-of-day > .swipeout-content > .item-link > .item-content > .item-inner:after {
     background-color: inherit;
 }
 

@@ -12,17 +12,21 @@
                         <v-icon :icon="mdiDotsVertical" />
                         <v-menu activator="parent">
                             <v-list>
-                                <v-list-item :prepend-icon="mdiReceiptTextPlusOutline"
+                                <v-list-item :prepend-icon="mdiInvoiceTextPlusOutline"
                                              :title="tt('Add Transaction')"
                                              @click="addTransaction()"></v-list-item>
                                 <v-divider class="my-2"/>
+                                <v-list-item :prepend-icon="mdiInvoiceTextEditOutline"
+                                             :title="tt('Update Closing Balance')"
+                                             @click="updateClosingBalance()"></v-list-item>
+                                <v-divider class="my-2"/>
                                 <v-list-item :prepend-icon="mdiComma"
-                                             :disabled="!reconciliationStatements || reconciliationStatements.length < 1"
+                                             :disabled="!reconciliationStatements || !reconciliationStatements.transactions || reconciliationStatements.transactions.length < 1"
                                              @click="exportReconciliationStatements(KnownFileType.CSV)">
                                     <v-list-item-title>{{ tt('Export to CSV (Comma-separated values) File') }}</v-list-item-title>
                                 </v-list-item>
                                 <v-list-item :prepend-icon="mdiKeyboardTab"
-                                             :disabled="!reconciliationStatements || reconciliationStatements.length < 1"
+                                             :disabled="!reconciliationStatements || !reconciliationStatements.transactions || reconciliationStatements.transactions.length < 1"
                                              @click="exportReconciliationStatements(KnownFileType.TSV)">
                                     <v-list-item-title>{{ tt('Export to TSV (Tab-separated values) File') }}</v-list-item-title>
                                 </v-list-item>
@@ -43,18 +47,18 @@
                 </div>
             </template>
 
-            <div class="d-flex align-center" :class="{'mb-4': !loading}">
+            <div class="d-flex align-center mb-4">
                 <div class="d-flex align-center text-body-1">
                     <span class="ml-2">{{ tt('Opening Balance') }}</span>
                     <span class="text-primary" v-if="loading">
-                        <v-skeleton-loader type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
+                        <v-skeleton-loader class="skeleton-no-margin ml-3" type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
                     </span>
                     <span class="text-primary ml-2" v-else-if="!loading">
                         {{ displayOpeningBalance }}
                     </span>
                     <span class="ml-3">{{ tt('Closing Balance') }}</span>
                     <span class="text-primary" v-if="loading">
-                        <v-skeleton-loader type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
+                        <v-skeleton-loader class="skeleton-no-margin ml-3" type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
                     </span>
                     <span class="text-primary ml-2" v-else-if="!loading">
                         {{ displayClosingBalance }}
@@ -64,21 +68,21 @@
                 <div class="d-flex align-center text-body-1">
                     <span class="ml-2">{{ tt('Total Inflows') }}</span>
                     <span class="text-income" v-if="loading">
-                        <v-skeleton-loader type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
+                        <v-skeleton-loader class="skeleton-no-margin ml-3" type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
                     </span>
                     <span class="text-income ml-2" v-else-if="!loading">
                         {{ displayTotalInflows }}
                     </span>
                     <span class="ml-3">{{ tt('Total Outflows') }}</span>
                     <span class="text-expense" v-if="loading">
-                        <v-skeleton-loader type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
+                        <v-skeleton-loader class="skeleton-no-margin ml-3" type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
                     </span>
                     <span class="text-expense ml-2" v-else-if="!loading">
                         {{ displayTotalOutflows }}
                     </span>
                     <span class="ml-3">{{ tt('Net Cash Flow') }}</span>
                     <span class="text-primary" v-if="loading">
-                        <v-skeleton-loader type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
+                        <v-skeleton-loader class="skeleton-no-margin ml-3" type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
                     </span>
                     <span class="text-primary ml-2" v-else-if="!loading">
                         {{ displayTotalBalance }}
@@ -94,7 +98,7 @@
                 item-value="index"
                 :class="{ 'disabled': loading }"
                 :headers="dataTableHeaders"
-                :items="reconciliationStatements"
+                :items="reconciliationStatements?.transactions ?? []"
                 :no-data-text="loading ? '' : tt('No transaction data')"
                 v-model:items-per-page="countPerPage"
                 v-model:page="currentPage"
@@ -144,22 +148,22 @@
                     <span>{{ getDisplayAccountBalance(item) }}</span>
                 </template>
                 <template #item.operation="{ item }">
-                    <v-btn density="compact" variant="text" color="default" :disabled="loading"
+                    <v-btn density="compact" variant="text" color="default" :disabled="loading || item.type === TransactionType.ModifyBalance"
                            @click="showTransaction(item)">
                         {{ tt('View') }}
                     </v-btn>
                 </template>
                 <template #bottom>
-                    <div class="title-and-toolbar d-flex align-center text-no-wrap mt-2" v-if="loading || reconciliationStatements.length">
+                    <div class="title-and-toolbar d-flex align-center text-no-wrap mt-2" v-if="loading || (reconciliationStatements && reconciliationStatements.transactions && reconciliationStatements.transactions.length)">
                         <span class="ml-2">{{ tt('Total Transactions') }}</span>
                         <span v-if="loading">
-                            <v-skeleton-loader type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
+                            <v-skeleton-loader class="skeleton-no-margin ml-3" type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
                         </span>
                         <span class="ml-2" v-else-if="!loading">
-                            {{ reconciliationStatements.length }}
+                            {{ reconciliationStatements?.transactions.length ?? 0 }}
                         </span>
                         <v-spacer/>
-                        <span v-if="reconciliationStatements && reconciliationStatements.length > 10">
+                        <span v-if="reconciliationStatements && reconciliationStatements.transactions && reconciliationStatements.transactions.length > 10">
                             {{ tt('Transactions Per Page') }}
                         </span>
                         <v-select class="ml-2" density="compact" max-width="100"
@@ -168,13 +172,13 @@
                                   :disabled="loading"
                                   :items="reconciliationStatementsTablePageOptions"
                                   v-model="countPerPage"
-                                  v-if="reconciliationStatements && reconciliationStatements.length > 10"
+                                  v-if="reconciliationStatements && reconciliationStatements.transactions && reconciliationStatements.transactions.length > 10"
                         />
                         <pagination-buttons density="compact"
                                             :disabled="loading"
                                             :totalPageCount="totalPageCount"
                                             v-model="currentPage"
-                                            v-if="reconciliationStatements && reconciliationStatements.length > 10">
+                                            v-if="reconciliationStatements && reconciliationStatements.transactions && reconciliationStatements.transactions.length > 10">
                         </pagination-buttons>
                     </div>
                 </template>
@@ -189,6 +193,7 @@
         </v-card>
     </v-dialog>
 
+    <amount-input-dialog ref="amountInputDialog" />
     <edit-dialog ref="editDialog" :type="TransactionEditPageType.Transaction" />
 
     <snack-bar ref="snackbar" />
@@ -197,13 +202,14 @@
 <script setup lang="ts">
 import PaginationButtons from '@/components/desktop/PaginationButtons.vue';
 import SnackBar from '@/components/desktop/SnackBar.vue';
+import AmountInputDialog from '@/components/desktop/AmountInputDialog.vue';
 import EditDialog from '@/views/desktop/transactions/list/dialogs/EditDialog.vue';
 import { TransactionEditPageType } from '@/views/base/transactions/TransactionEditPageBase.ts';
 
 import { ref, computed, useTemplateRef } from 'vue';
 
 import { useI18n } from '@/locales/helpers.ts';
-import { useReconciliationStatementPageBase } from '@/views/base/transactions/ReconciliationStatementPageBase.ts';
+import { useReconciliationStatementPageBase } from '@/views/base/accounts/ReconciliationStatementPageBase.ts';
 
 import { useAccountsStore } from '@/stores/account.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
@@ -213,18 +219,21 @@ import { TransactionType } from '@/core/transaction.ts';
 import { KnownFileType } from '@/core/file.ts';
 import { Transaction, type TransactionReconciliationStatementResponseItem } from '@/models/transaction.ts';
 
+import { getCurrentUnixTime } from '@/lib/datetime.ts';
 import { startDownloadFile } from '@/lib/ui/common.ts';
 
 import {
     mdiArrowRight,
     mdiDotsVertical,
-    mdiReceiptTextPlusOutline,
+    mdiInvoiceTextPlusOutline,
+    mdiInvoiceTextEditOutline,
     mdiComma,
     mdiKeyboardTab,
     mdiPencilBoxOutline
 } from '@mdi/js';
 
 type SnackBarType = InstanceType<typeof SnackBar>;
+type AmountInputDialogType = InstanceType<typeof AmountInputDialog>;
 type EditDialogType = InstanceType<typeof EditDialog>;
 
 interface ReconciliationStatementDialogTablePageOption {
@@ -243,17 +252,16 @@ const {
     startTime,
     endTime,
     reconciliationStatements,
-    openingBalance,
-    closingBalance,
     currentTimezoneOffsetMinutes,
     allAccountsMap,
     allCategoriesMap,
+    currentAccountCurrency,
     isCurrentLiabilityAccount,
     exportFileName,
     displayStartDateTime,
     displayEndDateTime,
-    displayTotalOutflows,
     displayTotalInflows,
+    displayTotalOutflows,
     displayTotalBalance,
     displayOpeningBalance,
     displayClosingBalance,
@@ -269,6 +277,7 @@ const accountsStore = useAccountsStore();
 const transactionCategoriesStore = useTransactionCategoriesStore();
 const transactionsStore = useTransactionsStore();
 
+const amountInputDialog = useTemplateRef<AmountInputDialogType>('amountInputDialog');
 const snackbar = useTemplateRef<SnackBarType>('snackbar');
 const editDialog = useTemplateRef<EditDialogType>('editDialog');
 
@@ -279,16 +288,16 @@ const countPerPage = ref<number>(10);
 
 let rejectFunc: ((reason?: unknown) => void) | null = null;
 
-const reconciliationStatementsTablePageOptions = computed<ReconciliationStatementDialogTablePageOption[]>(() => getTablePageOptions(reconciliationStatements.value?.length));
+const reconciliationStatementsTablePageOptions = computed<ReconciliationStatementDialogTablePageOption[]>(() => getTablePageOptions(reconciliationStatements.value?.transactions.length));
 
 const totalPageCount = computed<number>(() => {
-    if (!reconciliationStatements.value || reconciliationStatements.value.length < 1) {
+    if (!reconciliationStatements.value || !reconciliationStatements.value.transactions || reconciliationStatements.value.transactions.length < 1) {
         return 1;
     }
 
     let count = 0;
 
-    for (let i = 0; i < reconciliationStatements.value.length; i++) {
+    for (let i = 0; i < reconciliationStatements.value.transactions.length; i++) {
         count++;
     }
 
@@ -339,7 +348,7 @@ function open(options: { accountId: string, startTime: number, endTime: number }
     accountId.value = options.accountId;
     startTime.value = options.startTime;
     endTime.value = options.endTime;
-    reconciliationStatements.value = [];
+    reconciliationStatements.value = undefined;
     currentPage.value = 1;
     countPerPage.value = 10;
     showState.value = true;
@@ -355,9 +364,7 @@ function open(options: { accountId: string, startTime: number, endTime: number }
             endTime: options.endTime
         });
     }).then(result => {
-        reconciliationStatements.value = result.transactions;
-        openingBalance.value = result.openingBalance;
-        closingBalance.value = result.closingBalance;
+        reconciliationStatements.value = result;
         loading.value = false;
     }).catch(error => {
         loading.value = false;
@@ -381,9 +388,7 @@ function reload(): void {
         startTime: startTime.value,
         endTime: endTime.value
     }).then(result => {
-        reconciliationStatements.value = result.transactions;
-        openingBalance.value = result.openingBalance;
-        closingBalance.value = result.closingBalance;
+        reconciliationStatements.value = result;
         loading.value = false;
     }).catch(error => {
         loading.value = false;
@@ -410,8 +415,67 @@ function addTransaction(): void {
     });
 }
 
+function updateClosingBalance(): void {
+    let currentClosingBalance = reconciliationStatements.value?.closingBalance ?? 0;
+
+    if (isCurrentLiabilityAccount.value) {
+        currentClosingBalance = -currentClosingBalance;
+    }
+
+    amountInputDialog.value?.open({
+        text: tt('Please enter the new closing balance for the account'),
+        inputLabel: tt('Closing Balance'),
+        inputPlaceholder: tt('Closing Balance'),
+        currency: currentAccountCurrency.value,
+        initAmount: currentClosingBalance
+    }).then(newClosingBalance => {
+        if (!newClosingBalance) {
+            return;
+        }
+
+        const currentUnixTime = getCurrentUnixTime();
+        let setTransactionTime = false;
+        let newTransactionTime: number | undefined = undefined;
+
+        if (endTime.value < currentUnixTime) {
+            setTransactionTime = true;
+            newTransactionTime = endTime.value;
+        } else if (currentUnixTime < startTime.value) {
+            setTransactionTime = true;
+            newTransactionTime = startTime.value;
+        }
+
+        let newTransactionType: TransactionType = isCurrentLiabilityAccount.value ? TransactionType.Expense : TransactionType.Income;
+        let newTransactionAmount: number = newClosingBalance - currentClosingBalance;
+
+        if (newTransactionAmount < 0) {
+            newTransactionType = isCurrentLiabilityAccount.value ? TransactionType.Income : TransactionType.Expense;
+            newTransactionAmount = -newTransactionAmount;
+        }
+
+        editDialog.value?.open({
+            time: newTransactionTime,
+            type: newTransactionType,
+            amount: newTransactionAmount,
+            accountId: accountId.value,
+            setAmount: true,
+            setTransactionTime: setTransactionTime
+        }).then(result => {
+            if (result && result.message) {
+                snackbar.value?.showMessage(result.message);
+            }
+
+            reload();
+        }).catch(error => {
+            if (error) {
+                snackbar.value?.showError(error);
+            }
+        });
+    });
+}
+
 function exportReconciliationStatements(fileType: KnownFileType): void {
-    if (!reconciliationStatements.value || reconciliationStatements.value.length < 1) {
+    if (!reconciliationStatements.value || !reconciliationStatements.value.transactions || reconciliationStatements.value.transactions.length < 1) {
         return;
     }
 

@@ -1634,6 +1634,8 @@
     "Unable to delete this account": "Không thể xóa tài khoản này",
     "Unable to delete this sub-account": "Không thể xóa tài khoản phụ này",
     "Reconciliation Statement": "Báo cáo đối chiếu",
+    "Update Closing Balance": "Cập nhật số dư cuối kỳ",
+    "Please enter the new closing balance for the account": "Vui lòng nhập số dư cuối kỳ mới cho tài khoản",
     "Transaction": "Giao dịch",
     "Transactions": "Giao dịch",
     "Transaction Pictures": "Ảnh giao dịch",
