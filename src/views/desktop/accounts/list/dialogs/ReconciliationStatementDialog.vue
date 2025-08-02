@@ -5,7 +5,14 @@
                 <div class="d-flex align-center justify-center">
                     <div class="d-flex w-100 align-center justify-center">
                         <h4 class="text-h4">{{ tt('Reconciliation Statement') }}</h4>
-                        <v-progress-circular indeterminate size="22" class="ml-2" v-if="loading"></v-progress-circular>
+                        <v-btn density="compact" color="default" variant="text" size="24"
+                               class="ml-2" :icon="true" :loading="loading" @click="reload(true)">
+                            <template #loader>
+                                <v-progress-circular indeterminate size="20"/>
+                            </template>
+                            <v-icon :icon="mdiRefresh" size="24" />
+                            <v-tooltip activator="parent">{{ tt('Refresh') }}</v-tooltip>
+                        </v-btn>
                     </div>
                     <v-btn density="comfortable" color="default" variant="text" class="ml-2"
                            :icon="true" :disabled="loading">
@@ -219,10 +226,12 @@ import { TransactionType } from '@/core/transaction.ts';
 import { KnownFileType } from '@/core/file.ts';
 import { Transaction, type TransactionReconciliationStatementResponseItem } from '@/models/transaction.ts';
 
+import { isEquals } from '@/lib/common.ts';
 import { getCurrentUnixTime } from '@/lib/datetime.ts';
 import { startDownloadFile } from '@/lib/ui/common.ts';
 
 import {
+    mdiRefresh,
     mdiArrowRight,
     mdiDotsVertical,
     mdiInvoiceTextPlusOutline,
@@ -380,7 +389,7 @@ function open(options: { accountId: string, startTime: number, endTime: number }
     });
 }
 
-function reload(): void {
+function reload(force: boolean): void {
     loading.value = true;
 
     transactionsStore.getReconciliationStatements({
@@ -388,6 +397,14 @@ function reload(): void {
         startTime: startTime.value,
         endTime: endTime.value
     }).then(result => {
+        if (force) {
+            if (isEquals(reconciliationStatements.value, result)) {
+                snackbar.value?.showMessage('Data is up to date');
+            } else {
+                snackbar.value?.showMessage('Data has been updated');
+            }
+        }
+
         reconciliationStatements.value = result;
         loading.value = false;
     }).catch(error => {
@@ -407,7 +424,7 @@ function addTransaction(): void {
             snackbar.value?.showMessage(result.message);
         }
 
-        reload();
+        reload(false);
     }).catch(error => {
         if (error) {
             snackbar.value?.showError(error);
@@ -434,14 +451,11 @@ function updateClosingBalance(): void {
         }
 
         const currentUnixTime = getCurrentUnixTime();
-        let setTransactionTime = false;
         let newTransactionTime: number | undefined = undefined;
 
         if (endTime.value < currentUnixTime) {
-            setTransactionTime = true;
             newTransactionTime = endTime.value;
         } else if (currentUnixTime < startTime.value) {
-            setTransactionTime = true;
             newTransactionTime = startTime.value;
         }
 
@@ -458,14 +472,13 @@ function updateClosingBalance(): void {
             type: newTransactionType,
             amount: newTransactionAmount,
             accountId: accountId.value,
-            setAmount: true,
-            setTransactionTime: setTransactionTime
+            noTransactionDraft: true
         }).then(result => {
             if (result && result.message) {
                 snackbar.value?.showMessage(result.message);
             }
 
-            reload();
+            reload(false);
         }).catch(error => {
             if (error) {
                 snackbar.value?.showError(error);
@@ -496,7 +509,7 @@ function showTransaction(transaction: TransactionReconciliationStatementResponse
             snackbar.value?.showMessage(result.message);
         }
 
-        reload();
+        reload(false);
     }).catch(error => {
         if (error) {
             snackbar.value?.showError(error);

@@ -1578,7 +1578,20 @@ function changeAmountFilter(filterType: string): void {
 }
 
 function add(template?: TransactionTemplate): void {
+    const currentUnixTime = getCurrentUnixTime();
+
+    let newTransactionTime: number | undefined = undefined;
+
+    if (query.value.maxTime && query.value.minTime) {
+        if (query.value.maxTime < currentUnixTime) {
+            newTransactionTime = query.value.maxTime;
+        } else if (currentUnixTime < query.value.minTime) {
+            newTransactionTime = query.value.minTime;
+        }
+    }
+
     editDialog.value?.open({
+        time: newTransactionTime,
         type: query.value.type,
         categoryId: queryAllFilterCategoryIdsCount.value === 1 ? query.value.categoryIds : '',
         accountId: queryAllFilterAccountIdsCount.value === 1 ? query.value.accountIds : '',
