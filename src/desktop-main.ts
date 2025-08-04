@@ -1,6 +1,6 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import { createI18n } from 'vue-i18n';
+import { type I18n, type Composer, createI18n } from 'vue-i18n';
 
 import { createVuetify } from 'vuetify';
 import { VAlert } from 'vuetify/components/VAlert';
@@ -45,6 +45,7 @@ import { VTextField } from 'vuetify/components/VTextField';
 import { VToolbar } from 'vuetify/components/VToolbar';
 import { VTooltip } from 'vuetify/components/VTooltip';
 import { VWindow, VWindowItem } from 'vuetify/components/VWindow';
+import type { LocaleInstance } from 'vuetify/lib/framework.d.ts';
 
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
 import 'vuetify/styles';
@@ -94,10 +95,11 @@ import StepsBar from '@/components/desktop/StepsBar.vue';
 import ConfirmDialog from '@/components/desktop/ConfirmDialog.vue';
 import SnackBar from '@/components/desktop/SnackBar.vue';
 import PieChartComponent from '@/components/desktop/PieChart.vue';
-import TrendsChartComponent from '@/components/desktop/TrendsChart.vue';
+import MonthlyTrendsChart from '@/components/desktop/MonthlyTrendsChart.vue';
 import DateRangeSelectionDialog from '@/components/desktop/DateRangeSelectionDialog.vue';
 import MonthSelectionDialog from '@/components/desktop/MonthSelectionDialog.vue';
 import MonthRangeSelectionDialog from '@/components/desktop/MonthRangeSelectionDialog.vue';
+import AccountBalanceTrendsChart from '@/components/desktop/AccountBalanceTrendsChart.vue';
 import SwitchToMobileDialog from '@/components/desktop/SwitchToMobileDialog.vue';
 
 import '@/styles/desktop/template/vuetify/index.scss';
@@ -113,7 +115,7 @@ import App from './DesktopApp.vue';
 
 const app = createApp(App);
 const pinia = createPinia();
-const i18n = createI18n(getI18nOptions());
+const i18n = createI18n(getI18nOptions()) as I18n<Record<string, unknown>, Record<string, unknown>, Record<string, unknown>, string, false>;
 const vuetify = createVuetify({
     components: {
         VAlert,
@@ -428,8 +430,55 @@ const vuetify = createVuetify({
                 }
             }
         }
+    },
+    locale: {
+        adapter: ((i18nGlobal: Composer) => {
+            const instance: LocaleInstance = {
+                name: 'ezBookkeeping i18n',
+                messages: i18nGlobal.messages,
+                current: i18nGlobal.locale,
+                fallback: i18nGlobal.locale, // no need to let vuetify know what fallback locale is
+                t: (key: string, ...params: unknown[]): string => {
+                    if (!key) {
+                        return '';
+                    }
+
+                    if (!key.startsWith('$vuetify.')) {
+                        return key;
+                    }
+
+                    key = key.substring(9); // remove '$vuetify.' prefix
+                    const mappedTextKey = vuetifyI18nTextKeyMap[key];
+
+                    if (!mappedTextKey) {
+                        return key;
+                    }
+
+                    if (params && params.length > 0) {
+                        // @ts-expect-error the arguments passed in are compatible with vue-i18n method arguments
+                        return i18nGlobal.t(mappedTextKey, ...params);
+                    } else {
+                        return i18nGlobal.t(mappedTextKey);
+                    }
+                },
+                n: (value: number): string => {
+                    return i18nGlobal.n(value);
+                },
+                provide: (): LocaleInstance => {
+                    return instance;
+                }
+            };
+
+            return instance;
+        })(i18n.global) as LocaleInstance,
     }
 });
+
+// key is in the original i18n text of vuetify (in vuetify/lib/locale/en.js), value is the text in the ezBookkeeping i18n files
+const vuetifyI18nTextKeyMap: Record<string, string> = {
+    'open': 'Open',
+    'close': 'Close'
+}
 
 echarts.use([
     CanvasRenderer,
@@ -473,10 +522,11 @@ app.component('StepsBar', StepsBar);
 app.component('ConfirmDialog', ConfirmDialog);
 app.component('SnackBar', SnackBar);
 app.component('PieChart', PieChartComponent);
-app.component('TrendsChart', TrendsChartComponent);
+app.component('MonthlyTrendsChart', MonthlyTrendsChart);
 app.component('DateRangeSelectionDialog', DateRangeSelectionDialog);
 app.component('MonthSelectionDialog', MonthSelectionDialog);
 app.component('MonthRangeSelectionDialog', MonthRangeSelectionDialog);
+app.component('AccountBalanceTrendsChart', AccountBalanceTrendsChart);
 app.component('SwitchToMobileDialog', SwitchToMobileDialog);
 
 app.mount('#app');

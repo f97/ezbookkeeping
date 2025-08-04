@@ -87,7 +87,7 @@ import MapView from '@/components/common/MapView.vue';
 import ItemIcon from '@/components/mobile/ItemIcon.vue';
 import LanguageSelectButton from '@/components/mobile/LanguageSelectButton.vue';
 import PieChart from '@/components/mobile/PieChart.vue';
-import TrendsBarChart from '@/components/mobile/TrendsBarChart.vue';
+import MonthlyTrendsBarChart from '@/components/mobile/MonthlyTrendsBarChart.vue';
 import PinCodeInputSheet from '@/components/mobile/PinCodeInputSheet.vue';
 import PasswordInputSheet from '@/components/mobile/PasswordInputSheet.vue';
 import PasscodeInputSheet from '@/components/mobile/PasscodeInputSheet.vue';
@@ -109,6 +109,7 @@ import NumberPadSheet from '@/components/mobile/NumberPadSheet.vue';
 import MapSheet from '@/components/mobile/MapSheet.vue';
 import TransactionTagSelectionSheet from '@/components/mobile/TransactionTagSelectionSheet.vue';
 import ScheduleFrequencySheet from '@/components/mobile/ScheduleFrequencySheet.vue';
+import AccountBalanceTrendsBarChart from '@/components/mobile/AccountBalanceTrendsBarChart.vue';
 
 import TextareaAutoSize from '@/directives/mobile/textareaAutoSize.ts';
 
@@ -176,7 +177,7 @@ app.component('MapView', MapView);
 app.component('ItemIcon', ItemIcon);
 app.component('LanguageSelectButton', LanguageSelectButton);
 app.component('PieChart', PieChart);
-app.component('TrendsBarChart', TrendsBarChart);
+app.component('MonthlyTrendsBarChart', MonthlyTrendsBarChart);
 app.component('PinCodeInputSheet', PinCodeInputSheet);
 app.component('PasswordInputSheet', PasswordInputSheet);
 app.component('PasscodeInputSheet', PasscodeInputSheet);
@@ -197,6 +198,7 @@ app.component('InformationSheet', InformationSheet);
 app.component('NumberPadSheet', NumberPadSheet);
 app.component('MapSheet', MapSheet);
 app.component('TransactionTagSelectionSheet', TransactionTagSelectionSheet);
+app.component('AccountBalanceTrendsBarChart', AccountBalanceTrendsBarChart);
 app.component('ScheduleFrequencySheet', ScheduleFrequencySheet);
 
 app.directive('TextareaAutoSize', TextareaAutoSize);

@@ -7,6 +7,7 @@ import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 
+import type { TypeAndDisplayName } from '@/core/base.ts';
 import { type WeekDayValue, KnownDateTimeFormat } from '@/core/datetime.ts';
 import { TransactionType } from '@/core/transaction.ts';
 import { KnownFileType } from '@/core/file.ts';
@@ -33,6 +34,8 @@ import {
 export function useReconciliationStatementPageBase() {
     const {
         tt,
+        getAllTrendChartTypes,
+        getAllStatisticsDateAggregationTypesWithShortName,
         getCurrentDigitGroupingSymbol,
         formatUnixTimeToLongDateTime,
         formatUnixTimeToLongDate,
@@ -55,6 +58,9 @@ export function useReconciliationStatementPageBase() {
     const fiscalYearStart = computed<number>(() => userStore.currentUserFiscalYearStart);
     const currentTimezoneOffsetMinutes = computed<number>(() => getTimezoneOffsetMinutes(settingsStore.appSettings.timeZone));
     const defaultCurrency = computed<string>(() => userStore.currentUserDefaultCurrency);
+
+    const allChartTypes = computed<TypeAndDisplayName[]>(() => getAllTrendChartTypes());
+    const allDateAggregationTypes = computed<TypeAndDisplayName[]>(() => getAllStatisticsDateAggregationTypesWithShortName());
 
     const currentAccount = computed(() => allAccountsMap.value[accountId.value]);
     const currentAccountCurrency = computed<string>(() => currentAccount.value?.currency ?? defaultCurrency.value);
@@ -110,6 +116,24 @@ export function useReconciliationStatementPageBase() {
             return formatAmountWithCurrency(reconciliationStatements?.value?.closingBalance ?? 0, currentAccountCurrency.value);
         }
     });
+
+    function getDisplayTransactionType(transaction: TransactionReconciliationStatementResponseItem): string {
+        if (transaction.type === TransactionType.ModifyBalance) {
+            return tt('Modify Balance');
+        } else if (transaction.type === TransactionType.Income) {
+            return tt('Income');
+        } else if (transaction.type === TransactionType.Expense) {
+            return tt('Expense');
+        } else if (transaction.type === TransactionType.Transfer && transaction.destinationAccountId === accountId.value) {
+            return tt('Transfer In');
+        } else if (transaction.type === TransactionType.Transfer && transaction.sourceAccountId === accountId.value) {
+            return tt('Transfer Out');
+        } else if (transaction.type === TransactionType.Transfer) {
+            return tt('Transfer');
+        } else {
+            return tt('Unknown');
+        }
+    }
 
     function getDisplayDateTime(transaction: TransactionReconciliationStatementResponseItem): string {
         const transactionTime = getUnixTime(parseDateFromUnixTime(transaction.time, transaction.utcOffset, currentTimezoneOffsetMinutes.value));
@@ -192,27 +216,15 @@ export function useReconciliationStatementPageBase() {
         const transactions = reconciliationStatements.value?.transactions ?? [];
         const rows = transactions.map(transaction => {
             const transactionTime = getUnixTime(parseDateFromUnixTime(transaction.time, transaction.utcOffset, currentTimezoneOffsetMinutes.value));
-            let type = '';
+            const type = getDisplayTransactionType(transaction);
             let categoryName = allCategoriesMap.value[transaction.categoryId]?.name || '';
             let displayAmount = removeAll(formatAmount(transaction.sourceAmount), digitGroupingSymbol);
             let displayAccountName = allAccountsMap.value[transaction.sourceAccountId]?.name || '';
 
             if (transaction.type === TransactionType.ModifyBalance) {
-                type = tt('Modify Balance');
                 categoryName = tt('Modify Balance');
-            } else if (transaction.type === TransactionType.Income) {
-                type = tt('Income');
-            } else if (transaction.type === TransactionType.Expense) {
-                type = tt('Expense');
             } else if (transaction.type === TransactionType.Transfer && transaction.destinationAccountId === accountId.value) {
-                type = tt('Transfer In');
                 displayAmount = removeAll(formatAmount(transaction.destinationAmount), digitGroupingSymbol);
-            } else if (transaction.type === TransactionType.Transfer && transaction.sourceAccountId === accountId.value) {
-                type = tt('Transfer Out');
-            } else if (transaction.type === TransactionType.Transfer) {
-                type = tt('Transfer');
-            } else {
-                type = tt('Unknown');
             }
 
             if (transaction.type === TransactionType.Transfer && allAccountsMap.value[transaction.destinationAccountId]) {
@@ -260,6 +272,8 @@ export function useReconciliationStatementPageBase() {
         fiscalYearStart,
         currentTimezoneOffsetMinutes,
         defaultCurrency,
+        allChartTypes,
+        allDateAggregationTypes,
         currentAccount,
         currentAccountCurrency,
         isCurrentLiabilityAccount,
@@ -274,6 +288,7 @@ export function useReconciliationStatementPageBase() {
         displayOpeningBalance,
         displayClosingBalance,
         // functions
+        getDisplayTransactionType,
         getDisplayDateTime,
         getDisplayDate,
         getDisplayTime,
