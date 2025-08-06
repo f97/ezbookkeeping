@@ -50,19 +50,9 @@
                                 <v-list-item :prepend-icon="mdiInvoiceTextPlusOutline"
                                              :title="tt('Add Transaction')"
                                              @click="addTransaction()"></v-list-item>
-                                <v-divider class="my-2"/>
                                 <v-list-item :prepend-icon="mdiInvoiceTextEditOutline"
                                              :title="tt('Update Closing Balance')"
                                              @click="updateClosingBalance()"></v-list-item>
-                                <v-divider class="my-2"/>
-                                <v-list-item :prepend-icon="mdiChartBoxOutline"
-                                             :title="tt('Show Account Balance Trends')"
-                                             @click="showAccountBalanceTrendsCharts = true"
-                                             v-if="!showAccountBalanceTrendsCharts"></v-list-item>
-                                <v-list-item :prepend-icon="mdiListBoxOutline"
-                                             :title="tt('Show Transaction List')"
-                                             @click="showAccountBalanceTrendsCharts = false"
-                                             v-if="showAccountBalanceTrendsCharts"></v-list-item>
                                 <v-divider class="my-2"/>
                                 <v-list-item :prepend-icon="mdiComma"
                                              :disabled="!reconciliationStatements || !reconciliationStatements.transactions || reconciliationStatements.transactions.length < 1"
@@ -90,6 +80,17 @@
                     <span>{{ displayEndDateTime }}</span>
                 </div>
             </template>
+
+            <v-card-text class="py-0 w-100 d-flex justify-center mt-n4">
+                <v-switch class="bidirectional-switch" color="secondary"
+                          :label="tt('Account Balance Trends')"
+                          v-model="showAccountBalanceTrendsCharts"
+                          @click="showAccountBalanceTrendsCharts = !showAccountBalanceTrendsCharts">
+                    <template #prepend>
+                        <span>{{ tt('Transaction List') }}</span>
+                    </template>
+                </v-switch>
+            </v-card-text>
 
             <div class="d-flex align-center mb-4">
                 <div class="d-flex align-center text-body-1">
@@ -231,7 +232,7 @@
                 :fiscal-year-start="fiscalYearStart"
                 :items="[]"
                 :legend-name="isCurrentLiabilityAccount ? tt('Account Outstanding Balance') : tt('Account Balance')"
-                :account-currency="currentAccountCurrency"
+                :account="currentAccount"
                 :skeleton="true"
                 v-if="showAccountBalanceTrendsCharts && loading"
             />
@@ -242,7 +243,7 @@
                 :fiscal-year-start="fiscalYearStart"
                 :items="reconciliationStatements?.transactions"
                 :legend-name="isCurrentLiabilityAccount ? tt('Account Outstanding Balance') : tt('Account Balance')"
-                :account-currency="currentAccountCurrency"
+                :account="currentAccount"
                 v-if="showAccountBalanceTrendsCharts && !loading"
             />
 
@@ -278,7 +279,7 @@ import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useTransactionsStore } from '@/stores/transaction.ts';
 
 import { TransactionType } from '@/core/transaction.ts';
-import { TrendChartType, ChartDateAggregationType } from '@/core/statistics.ts';
+import { AccountBalanceTrendChartType, ChartDateAggregationType } from '@/core/statistics.ts';
 import { KnownFileType } from '@/core/file.ts';
 import { Transaction, type TransactionReconciliationStatementResponseItem } from '@/models/transaction.ts';
 
@@ -292,10 +293,9 @@ import {
     mdiTuneVertical,
     mdiDotsVertical,
     mdiCheck,
-    mdiChartBoxOutline,
-    mdiListBoxOutline,
     mdiChartBar,
     mdiChartAreasplineVariant,
+    mdiChartWaterfall,
     mdiCalendarTodayOutline,
     mdiCalendarMonthOutline,
     mdiLayersTripleOutline,
@@ -330,6 +330,7 @@ const {
     fiscalYearStart,
     allChartTypes,
     allDateAggregationTypes,
+    currentAccount,
     currentAccountCurrency,
     isCurrentLiabilityAccount,
     allAccountsMap,
@@ -356,8 +357,9 @@ const transactionCategoriesStore = useTransactionCategoriesStore();
 const transactionsStore = useTransactionsStore();
 
 const chartTypeIconMap = {
-    [TrendChartType.Column.type]: mdiChartBar,
-    [TrendChartType.Area.type]: mdiChartAreasplineVariant,
+    [AccountBalanceTrendChartType.Column.type]: mdiChartBar,
+    [AccountBalanceTrendChartType.Area.type]: mdiChartAreasplineVariant,
+    [AccountBalanceTrendChartType.Candlestick.type]: mdiChartWaterfall,
 };
 
 const chartDataDateAggregationTypeIconMap = {
@@ -376,7 +378,7 @@ const loading = ref<boolean>(false);
 const currentPage = ref<number>(1);
 const countPerPage = ref<number>(10);
 const showAccountBalanceTrendsCharts = ref<boolean>(false);
-const chartType = ref<number>(TrendChartType.Default.type);
+const chartType = ref<number>(AccountBalanceTrendChartType.Default.type);
 const chartDataDateAggregationType = ref<number | undefined>(undefined);
 
 let rejectFunc: ((reason?: unknown) => void) | null = null;
@@ -459,7 +461,7 @@ function open(options: { accountId: string, startTime: number, endTime: number }
     currentPage.value = 1;
     countPerPage.value = 10;
     showAccountBalanceTrendsCharts.value = false;
-    chartType.value = TrendChartType.Default.type;
+    chartType.value = AccountBalanceTrendChartType.Default.type;
     chartDataDateAggregationType.value = undefined;
     showState.value = true;
     loading.value = true;

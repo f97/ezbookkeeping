@@ -115,7 +115,7 @@ export function setTransactionModelByTransaction(transaction: Transaction, trans
         }
 
         if (!transaction.sourceAccountId) {
-            if (defaultAccountId && allAccountsMap[defaultAccountId]) {
+            if (defaultAccountId && allAccountsMap[defaultAccountId] && !allAccountsMap[defaultAccountId].hidden) {
                 transaction.sourceAccountId = defaultAccountId;
             } else {
                 transaction.sourceAccountId = allVisibleAccounts[0].id;
@@ -123,7 +123,7 @@ export function setTransactionModelByTransaction(transaction: Transaction, trans
         }
 
         if (!transaction.destinationAccountId) {
-            if (defaultAccountId && allAccountsMap[defaultAccountId]) {
+            if (defaultAccountId && allAccountsMap[defaultAccountId] && !allAccountsMap[defaultAccountId].hidden) {
                 transaction.destinationAccountId = defaultAccountId;
             } else {
                 transaction.destinationAccountId = allVisibleAccounts[0].id;

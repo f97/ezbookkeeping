@@ -11,9 +11,11 @@ import {
 } from '@/core/datetime.ts';
 import type { FiscalYearUnixTime } from '@/core/fiscalyear.ts';
 import { ChartDateAggregationType } from '@/core/statistics.ts';
+import type { AccountInfoResponse } from '@/models/account.ts';
 import type { TransactionReconciliationStatementResponseItem } from '@/models/transaction.ts';
 
 import { isDefined, isArray } from '@/lib/common.ts';
+import { sumAmounts } from '@/lib/numeral.ts';
 import {
     getYearAndMonthFromUnixTime,
     getYearFirstUnixTimeBySpecifiedUnixTime,
@@ -26,20 +28,26 @@ import {
 import { getAllDateRangesByYearMonthRange } from '@/lib/statistics.ts';
 
 export interface AccountBalanceUnixTimeAndBalanceRange extends UnixTimeRange {
-    minUnixTimeBalance: number;
-    maxUnixTimeBalance: number;
+    minUnixTimeOpeningBalance: number;
+    minUnixTimeClosingBalance: number;
+    maxUnixTimeClosingBalance: number;
 }
 
 export interface AccountBalanceTrendsChartItem {
     displayDate: string;
-    amount: number;
+    openingBalance: number;
+    closingBalance: number;
+    minimumBalance: number;
+    maximumBalance: number;
+    medianBalance: number;
+    averageBalance: number;
 }
 
 export interface CommonAccountBalanceTrendsChartProps {
     items: TransactionReconciliationStatementResponseItem[] | undefined;
     dateAggregationType?: number;
     fiscalYearStart: number;
-    accountCurrency: string;
+    account: AccountInfoResponse;
 }
 
 export function useAccountBalanceTrendsChartBase(props: CommonAccountBalanceTrendsChartProps) {
@@ -51,19 +59,22 @@ export function useAccountBalanceTrendsChartBase(props: CommonAccountBalanceTren
         }
 
         let minUnixTime = Number.MAX_SAFE_INTEGER, maxUnixTime = 0;
-        let minUnixTimeBalance = 0, maxUnixTimeBalance = 0;
+        let minUnixTimeOpeningBalance = 0;
+        let minUnixTimeClosingBalance = 0;
+        let maxUnixTimeClosingBalance = 0;
 
         for (let i = 0; i < props.items.length; i++) {
             const item = props.items[i];
 
             if (item.time < minUnixTime) {
                 minUnixTime = item.time;
-                minUnixTimeBalance = item.accountBalance;
+                minUnixTimeOpeningBalance = item.accountOpeningBalance;
+                minUnixTimeClosingBalance = item.accountClosingBalance;
             }
 
             if (item.time > maxUnixTime) {
                 maxUnixTime = item.time;
-                maxUnixTimeBalance = item.accountBalance;
+                maxUnixTimeClosingBalance = item.accountClosingBalance;
             }
         }
 
@@ -74,8 +85,9 @@ export function useAccountBalanceTrendsChartBase(props: CommonAccountBalanceTren
         return {
             minUnixTime: minUnixTime,
             maxUnixTime: maxUnixTime,
-            minUnixTimeBalance: minUnixTimeBalance,
-            maxUnixTimeBalance: maxUnixTimeBalance
+            minUnixTimeOpeningBalance: minUnixTimeOpeningBalance,
+            minUnixTimeClosingBalance: minUnixTimeClosingBalance,
+            maxUnixTimeClosingBalance: maxUnixTimeClosingBalance
         };
     });
 
@@ -124,7 +136,12 @@ export function useAccountBalanceTrendsChartBase(props: CommonAccountBalanceTren
             dayDataItemsMap[dateRangeMinUnixTime] = dataItems;
         }
 
-        let lastAmount = dataDateRange.value.minUnixTimeBalance;
+        let lastOpeningBalance = dataDateRange.value.minUnixTimeOpeningBalance;
+        let lastClosingBalance = dataDateRange.value.minUnixTimeClosingBalance;
+        let lastMinimumBalance = lastClosingBalance;
+        let lastMaximumBalance = lastClosingBalance;
+        let lastMedianBalance = lastClosingBalance;
+        let lastAverageBalance = lastClosingBalance;
 
         for (let i = 0; i < allDateRanges.value.length; i++) {
             const dateRange = allDateRanges.value[i];
@@ -145,22 +162,56 @@ export function useAccountBalanceTrendsChartBase(props: CommonAccountBalanceTren
             }
 
             if (isArray(dataItems)) {
-                let lastUnixTime = 0;
+                if (dataItems.length < 1) {
+                    continue;
+                }
 
-                for (let i = 0; i < dataItems.length; i++) {
-                    const dataItem = dataItems[i];
+                dataItems.sort(function (data1: TransactionReconciliationStatementResponseItem, data2: TransactionReconciliationStatementResponseItem) {
+                    return data1.time - data2.time;
+                });
 
-                    if (dataItem.time >= lastUnixTime) {
-                        lastUnixTime = dataItem.time;
-                        lastAmount = dataItem.accountBalance;
-                    }
+                const openingBalance = dataItems[0].accountOpeningBalance;
+                const closingBalance = dataItems[dataItems.length - 1].accountClosingBalance;
+                const minimumBalance = Math.min(...dataItems.map(item => item.accountClosingBalance));
+                const maximumBalance = Math.max(...dataItems.map(item => item.accountClosingBalance));
+                const medianBalance = dataItems[Math.floor(dataItems.length / 2)].accountClosingBalance;
+                const averageBalance = Math.floor(sumAmounts(dataItems.map(item => item.accountClosingBalance)) / dataItems.length);
+
+                if (props.account.isAsset) {
+                    lastOpeningBalance = openingBalance;
+                    lastClosingBalance = closingBalance;
+                    lastMinimumBalance = minimumBalance;
+                    lastMaximumBalance = maximumBalance;
+                    lastMedianBalance = medianBalance;
+                    lastAverageBalance = averageBalance;
+                } else if (props.account.isLiability) {
+                    lastOpeningBalance = -openingBalance;
+                    lastClosingBalance = -closingBalance;
+                    lastMinimumBalance = -minimumBalance;
+                    lastMaximumBalance = -maximumBalance;
+                    lastMedianBalance = -medianBalance;
+                    lastAverageBalance = -averageBalance;
+                } else {
+                    lastOpeningBalance = openingBalance;
+                    lastClosingBalance = closingBalance;
+                    lastMinimumBalance = minimumBalance;
+                    lastMaximumBalance = maximumBalance;
+                    lastMedianBalance = medianBalance;
+                    lastAverageBalance = averageBalance;
                 }
             }
 
             ret.push({
                 displayDate: displayDate,
-                amount: lastAmount
+                openingBalance: lastOpeningBalance,
+                closingBalance: lastClosingBalance,
+                minimumBalance: lastMinimumBalance,
+                maximumBalance: lastMaximumBalance,
+                medianBalance: lastMedianBalance,
+                averageBalance: lastAverageBalance
             });
+
+            lastOpeningBalance = lastClosingBalance;
         }
 
         return ret;
