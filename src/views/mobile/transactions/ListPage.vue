@@ -215,7 +215,7 @@
                         <f7-list-item swipeout chevron-center accordion-item
                                       class="transaction-info"
                                       :id="getTransactionDomId(transaction)"
-                                      :link="transaction.type !== TransactionType.ModifyBalance ? `/transaction/detail?id=${transaction.id}&type=${transaction.type}` : null"
+                                      :link="`/transaction/detail?id=${transaction.id}&type=${transaction.type}`"
                                       :key="transaction.id"
                                       v-for="(transaction, idx) in transactionMonthList.items"
                         >
@@ -299,7 +299,7 @@
                                                     @click="duplicate(transaction)"></f7-swipeout-button>
                                 <f7-swipeout-button color="orange" close
                                                     :text="tt('Edit')"
-                                                    v-if="transaction.editable && transaction.type !== TransactionType.ModifyBalance"
+                                                    v-if="transaction.editable"
                                                     @click="edit(transaction)"></f7-swipeout-button>
                                 <f7-swipeout-button color="red" class="padding-left padding-right"
                                                     v-if="transaction.editable"
