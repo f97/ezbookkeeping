@@ -26,6 +26,7 @@
         "shortDateFormat": "DDMMYYYY",
         "longTimeFormat": "HHMMSS",
         "shortTimeFormat": "HHMM",
+        "numeralSystem": "WesternArabicNumerals",
         "decimalSeparator": "Comma",
         "digitGroupingSymbol": "Dot",
         "digitGrouping": "ThousandsSeparator",
@@ -260,12 +261,18 @@
         "Daily": "Dagelijks"
     },
     "numeral": {
+        "Western Arabic Numerals": "Western Arabic Numerals",
+        "Eastern Arabic Numerals": "Eastern Arabic Numerals",
+        "Persian Digits": "Persian Digits",
+        "Burmese Numerals": "Burmese Numerals",
+        "Devanagari Numerals": "Devanagari Numerals",
         "Dot": "Punt",
         "Comma": "Komma",
         "Space": "Spatie",
         "Apostrophe": "Apostrof",
         "None": "Geen",
-        "Thousands Separator": "Scheidingsteken voor duizendtallen"
+        "Thousands Separator": "Scheidingsteken voor duizendtallen",
+        "Indian Number Grouping": "Indian Number Grouping"
     },
     "color": {
         "amount": {
@@ -1496,6 +1503,7 @@
     "Long Time Format": "Lang tijdsformaat",
     "Short Time Format": "Kort tijdsformaat",
     "Fiscal Year Format": "Boekjaarformaat",
+    "Numeral System": "Numeral System",
     "Decimal Separator": "Decimaalteken",
     "Digit Grouping Symbol": "Scheidingsteken voor duizendtallen",
     "Digit Grouping": "Groeperen van cijfers",

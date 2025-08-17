@@ -26,6 +26,7 @@
         "shortDateFormat": "DDMMYYYY",
         "longTimeFormat": "HHMMSS",
         "shortTimeFormat": "HHMM",
+        "numeralSystem": "WesternArabicNumerals",
         "decimalSeparator": "Comma",
         "digitGroupingSymbol": "Space",
         "digitGrouping": "ThousandsSeparator",
@@ -260,12 +261,18 @@
         "Daily": "Daily"
     },
     "numeral": {
+        "Western Arabic Numerals": "Western Arabic Numerals",
+        "Eastern Arabic Numerals": "Eastern Arabic Numerals",
+        "Persian Digits": "Persian Digits",
+        "Burmese Numerals": "Burmese Numerals",
+        "Devanagari Numerals": "Devanagari Numerals",
         "Dot": "Крапка",
         "Comma": "Кома",
         "Space": "Пробіл",
         "Apostrophe": "Апостроф",
         "None": "Немає",
-        "Thousands Separator": "Роздільник тисяч"
+        "Thousands Separator": "Роздільник тисяч",
+        "Indian Number Grouping": "Indian Number Grouping"
     },
     "color": {
         "amount": {
@@ -1496,6 +1503,7 @@
     "Long Time Format": "Довгий формат часу",
     "Short Time Format": "Короткий формат часу",
     "Fiscal Year Format": "Fiscal Year Format",
+    "Numeral System": "Numeral System",
     "Decimal Separator": "Десятковий роздільник",
     "Digit Grouping Symbol": "Символ групування цифр",
     "Digit Grouping": "Групування цифр",

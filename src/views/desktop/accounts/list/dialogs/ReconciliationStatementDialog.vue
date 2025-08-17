@@ -202,7 +202,7 @@
                             <v-skeleton-loader class="skeleton-no-margin ml-3" type="text" style="width: 80px" :loading="true"></v-skeleton-loader>
                         </span>
                         <span class="ml-2" v-else-if="!loading">
-                            {{ reconciliationStatements?.transactions.length ?? 0 }}
+                            {{ formatNumberToLocalizedNumerals(reconciliationStatements?.transactions.length ?? 0) }}
                         </span>
                         <v-spacer/>
                         <span v-if="reconciliationStatements && reconciliationStatements.transactions && reconciliationStatements.transactions.length > 10">
@@ -319,7 +319,7 @@ const emit = defineEmits<{
     (e: 'error', message: string): void;
 }>();
 
-const { tt } = useI18n();
+const { tt, formatNumberToLocalizedNumerals } = useI18n();
 
 const {
     accountId,
@@ -543,9 +543,9 @@ function updateClosingBalance(): void {
     }
 
     amountInputDialog.value?.open({
-        text: tt('Please enter the new closing balance for the account'),
-        inputLabel: tt('Closing Balance'),
-        inputPlaceholder: tt('Closing Balance'),
+        text: 'Please enter the new closing balance for the account',
+        inputLabel: 'Closing Balance',
+        inputPlaceholder: 'Closing Balance',
         currency: currentAccountCurrency.value,
         initAmount: currentClosingBalance
     }).then(newClosingBalance => {
@@ -556,7 +556,7 @@ function updateClosingBalance(): void {
         const currentUnixTime = getCurrentUnixTime();
         let newTransactionTime: number | undefined = undefined;
 
-        if (endTime.value < currentUnixTime) {
+        if (endTime.value > 0 && endTime.value < currentUnixTime) {
             newTransactionTime = endTime.value;
         } else if (currentUnixTime < startTime.value) {
             newTransactionTime = startTime.value;

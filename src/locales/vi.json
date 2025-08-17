@@ -26,6 +26,7 @@
         "shortDateFormat": "DDMMYYYY",
         "longTimeFormat": "HHMMSSA",
         "shortTimeFormat": "HHMMA",
+        "numeralSystem": "WesternArabicNumerals",
         "decimalSeparator": "Comma",
         "digitGroupingSymbol": "Dot",
         "digitGrouping": "ThousandsSeparator",
@@ -260,12 +261,18 @@
         "Daily": "Daily"
     },
     "numeral": {
+        "Western Arabic Numerals": "Western Arabic Numerals",
+        "Eastern Arabic Numerals": "Eastern Arabic Numerals",
+        "Persian Digits": "Persian Digits",
+        "Burmese Numerals": "Burmese Numerals",
+        "Devanagari Numerals": "Devanagari Numerals",
         "Dot": "Dấu chấm",
         "Comma": "Dấu phẩy",
         "Space": "Khoảng trắng",
         "Apostrophe": "Dấu nháy đơn",
         "None": "Không có",
-        "Thousands Separator": "Dấu phân cách hàng nghìn"
+        "Thousands Separator": "Dấu phân cách hàng nghìn",
+        "Indian Number Grouping": "Indian Number Grouping"
     },
     "color": {
         "amount": {
@@ -1496,6 +1503,7 @@
     "Long Time Format": "Định dạng thời gian dài",
     "Short Time Format": "Định dạng thời gian ngắn",
     "Fiscal Year Format": "Định dạng năm tài chính",
+    "Numeral System": "Hệ thống số",
     "Decimal Separator": "Dấu phân cách thập phân",
     "Digit Grouping Symbol": "Ký hiệu nhóm chữ số",
     "Digit Grouping": "Nhóm chữ số",
