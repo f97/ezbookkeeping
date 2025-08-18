@@ -145,16 +145,13 @@ export function parseAmount(str: string, options: NumberFormatOptions): number {
     }
 }
 
-export function formatAmount(value: number | string, options: NumberFormatOptions): string {
-    let textualValue = '';
+export function formatAmount(value: number, options: NumberFormatOptions): string {
     const isIgnoreDecimalNumber = true;
 
-    if (isNumber(value)) {
-        textualValue = value.toString();
-    } else {
-        textualValue = value;
+    if (!Number.isSafeInteger(value)) {
+        throw new Error('Number \"' + value + '\" is not amount number');
     }
-    
+
     const numeralSystem = options.numeralSystem || NumeralSystem.Default;
     let textualNumber = numeralSystem.formatNumber(value);
 
@@ -213,7 +210,7 @@ export function formatAmount(value: number | string, options: NumberFormatOption
         integer = digitGroupingType.format(integer.split(''), digitGroupingSymbol);
     }
 
-    if (decimals) {
+    if (decimals !== '' && !isIgnoreDecimalNumber) {
         textualNumber = `${integer}${decimalSeparator}${decimals}`;
     } else {
         textualNumber = integer;
