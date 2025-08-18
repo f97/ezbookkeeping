@@ -11,9 +11,9 @@
             <div class="text-no-wrap" v-if="currency && appendText">{{ appendText }}</div>
             <v-tooltip :text="tt('Enter formula mode')">
                 <template v-slot:activator="{ props }">
-                    <v-icon class="ml-2" :icon="mdiCalculatorVariantOutline" @keydown.enter="enterFormulaMode"
-                        @keydown.space="enterFormulaMode" @click="enterFormulaMode" v-bind="props"
-                        v-if="enableFormula && !formulaMode"></v-icon>
+                    <v-icon class="ms-2" :icon="mdiCalculatorVariantOutline"
+                            @keydown.enter="enterFormulaMode" @keydown.space="enterFormulaMode" @click="enterFormulaMode"
+                            v-bind="props" v-if="enableFormula && !formulaMode"></v-icon>
                 </template>
             </v-tooltip>
         </template>
@@ -29,14 +29,16 @@
             <div class="text-no-wrap" v-if="currency && appendText">{{ appendText }}</div>
             <v-tooltip :text="tt('Calculate formula result')">
                 <template v-slot:activator="{ props }">
-                    <v-icon class="ml-2" color="primary" :icon="mdiCheck" @click="calculateFormula" v-bind="props"
-                        v-if="formulaMode"></v-icon>
+                    <v-icon class="ms-2" color="primary" :icon="mdiCheck"
+                            @click="calculateFormula" v-bind="props"
+                            v-if="formulaMode"></v-icon>
                 </template>
             </v-tooltip>
             <v-tooltip :text="tt('Exit formula mode')">
                 <template v-slot:activator="{ props }">
-                    <v-icon class="ml-2" color="secondary" :icon="mdiClose" @click="exitFormulaMode" v-bind="props"
-                        v-if="formulaMode"></v-icon>
+                    <v-icon class="ms-2" color="secondary" :icon="mdiClose"
+                            @click="exitFormulaMode" v-bind="props"
+                            v-if="formulaMode"></v-icon>
                 </template>
             </v-tooltip>
         </template>
@@ -370,6 +372,6 @@ watch(currentValue, (newValue) => {
 }
 
 .text-field-with-colored-label.has-pretend-text .v-field__input {
-    padding-left: 0.5rem;
+    padding-inline-start: 0.5rem;
 }
 </style>
