@@ -820,6 +820,6 @@ init();
 }
 
 .subaccount-delete-button {
-    margin-left: auto;
+    margin-inline-start: auto;
 }
 </style>

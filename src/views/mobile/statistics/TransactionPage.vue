@@ -48,14 +48,63 @@
             </f7-list>
         </f7-popover>
 
-        <f7-card v-if="analysisType === StatisticsAnalysisType.CategoricalAnalysis && query.categoricalChartType === CategoricalChartType.Bar.type">
+        <f7-card v-if="analysisType === StatisticsAnalysisType.CategoricalAnalysis && query.categoricalChartType === CategoricalChartType.Pie.type">
+            <f7-card-header class="no-border display-block">
+                <div :class="{ 'statistics-chart-header': true, 'full-line': true, 'text-align-right': textDirection === TextDirection.LTR, 'text-align-left': textDirection === TextDirection.RTL}">
+                    <span style="margin-inline-end: 4px;">{{ tt('Sort by') }}</span>
+                    <f7-link href="#" popover-open=".sorting-type-popover-menu">{{ querySortingTypeName }}</f7-link>
+                </div>
+            </f7-card-header>
+            <f7-card-content class="pie-chart-container" style="margin-top: -6px" :padding="false">
+                <pie-chart
+                    :items="[{value: 60, color: '7c7c7f'}, {value: 20, color: 'a5a5aa'}, {value: 20, color: 'c5c5c9'}]"
+                    :skeleton="true"
+                    :show-center-text="true"
+                    :show-selected-item-info="true"
+                    class="statistics-pie-chart"
+                    name-field="name"
+                    value-field="value"
+                    color-field="color"
+                    center-text-background="#cccccc"
+                    v-if="loading"
+                ></pie-chart>
+                <pie-chart
+                    :items="categoricalAnalysisData.items"
+                    :min-valid-percent="0.0001"
+                    :show-value="showAmountInChart"
+                    :show-center-text="true"
+                    :show-selected-item-info="true"
+                    :enable-click-item="true"
+                    :default-currency="defaultCurrency"
+                    class="statistics-pie-chart"
+                    name-field="name"
+                    value-field="totalAmount"
+                    percent-field="percent"
+                    hidden-field="hidden"
+                    v-else-if="!loading"
+                    @click="onClickPieChartItem"
+                >
+                    <text class="statistics-pie-chart-total-amount-title" v-if="categoricalAnalysisData.items && categoricalAnalysisData.items.length">
+                        {{ totalAmountName }}
+                    </text>
+                    <text class="statistics-pie-chart-total-amount-value" v-if="categoricalAnalysisData.items && categoricalAnalysisData.items.length">
+                        {{ getDisplayAmount(categoricalAnalysisData.totalAmount, defaultCurrency, 16) }}
+                    </text>
+                    <text class="statistics-pie-chart-total-no-data" cy="50%" v-if="!categoricalAnalysisData.items || !categoricalAnalysisData.items.length">
+                        {{ tt('No data') }}
+                    </text>
+                </pie-chart>
+            </f7-card-content>
+        </f7-card>
+
+        <f7-card v-else-if="analysisType === StatisticsAnalysisType.CategoricalAnalysis && query.categoricalChartType === CategoricalChartType.Bar.type">
             <f7-card-header class="no-border display-block">
                 <div class="statistics-chart-header display-flex full-line justify-content-space-between">
                     <div>
                         {{ totalAmountName }}
                     </div>
                     <div class="align-self-flex-end">
-                        <span style="margin-right: 4px;">{{ tt('Sort by') }}</span>
+                        <span style="margin-inline-end: 4px;">{{ tt('Sort by') }}</span>
                         <f7-link href="#" popover-open=".sorting-type-popover-menu">{{ querySortingTypeName }}</f7-link>
                     </div>
                 </div>
@@ -147,7 +196,7 @@
                 <div class="statistics-chart-header display-flex full-line justify-content-space-between">
                     <div></div>
                     <div class="align-self-flex-end">
-                        <span style="margin-right: 4px;">{{ tt('Sort by') }}</span>
+                        <span style="margin-inline-end: 4px;">{{ tt('Sort by') }}</span>
                         <f7-link href="#" popover-open=".sorting-type-popover-menu">{{ querySortingTypeName }}</f7-link>
                     </div>
                 </div>
@@ -190,13 +239,13 @@
 
         <f7-toolbar tabbar bottom class="toolbar-item-auto-size">
             <f7-link :class="{ 'disabled': reloading || !canShiftDateRange }" @click="shiftDateRange(-1)">
-                <f7-icon f7="arrow_left_square"></f7-icon>
+                <f7-icon class="icon-with-direction" f7="arrow_left_square"></f7-icon>
             </f7-link>
             <f7-link :class="{ 'tabbar-text-with-ellipsis': true, 'disabled': reloading || query.chartDataType === ChartDataType.AccountTotalAssets.type || query.chartDataType === ChartDataType.AccountTotalLiabilities.type }" popover-open=".date-popover-menu">
                 <span :class="{ 'tabbar-item-changed': isQueryDateRangeChanged }">{{ queryDateRangeName }}</span>
             </f7-link>
             <f7-link :class="{ 'disabled': reloading || !canShiftDateRange }" @click="shiftDateRange(1)">
-                <f7-icon f7="arrow_right_square"></f7-icon>
+                <f7-icon class="icon-with-direction" f7="arrow_right_square"></f7-icon>
             </f7-link>
             <f7-link :class="{ 'tabbar-text-with-ellipsis': true, 'disabled': reloading }" popover-open=".date-aggregation-popover-menu"
                      v-if="analysisType === StatisticsAnalysisType.TrendAnalysis">
@@ -294,6 +343,7 @@ import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useStatisticsStore } from '@/stores/statistics.ts';
 
 import type { TypeAndDisplayName } from '@/core/base.ts';
+import { TextDirection } from '@/core/text.ts';
 import { type TimeRangeAndDateType, DateRangeScene, DateRange } from '@/core/datetime.ts';
 import {
     StatisticsAnalysisType,
@@ -318,7 +368,13 @@ const props = defineProps<{
     f7router: Router.Router;
 }>();
 
-const { tt, getAllCategoricalChartTypes, formatPercentToLocalizedNumerals } = useI18n();
+const {
+    tt,
+    getCurrentLanguageTextDirection,
+    getAllCategoricalChartTypes,
+    formatPercentToLocalizedNumerals
+} = useI18n();
+
 const { showPrompt, showToast, routeBackOnError } = useI18nUIComponents();
 
 const {
@@ -364,6 +420,8 @@ const showDateAggregationPopover = ref<boolean>(false);
 const showCustomDateRangeSheet = ref<boolean>(false);
 const showCustomMonthRangeSheet = ref<boolean>(false);
 const showMoreActionSheet = ref<boolean>(false);
+
+const textDirection = computed<TextDirection>(() => getCurrentLanguageTextDirection());
 
 const allChartTypes = computed<TypeAndDisplayName[]>(() => {
     if (analysisType.value === StatisticsAnalysisType.CategoricalAnalysis) {
