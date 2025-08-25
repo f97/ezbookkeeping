@@ -213,18 +213,15 @@ function isSecondarySelected(subItem: unknown): boolean {
     return isSecondaryValueSelected(currentSecondaryValue.value, subItem);
 }
 
-function onPrimaryItemClicked(item: unknown): void {
-    updateCurrentPrimaryValue(currentPrimaryValue, item);
-
+function updateMenuPosition(): void {
     if (props.autoUpdateMenuPosition) {
         nextTick(() => {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const mainSelectRect = document.querySelector('.two-column-main-select')?.getBoundingClientRect();
             const selectMenu = document.querySelector('.two-column-select-menu') as (HTMLElement | null);
             const selectMenuRect = selectMenu?.getBoundingClientRect();
 
             if (mainSelectRect && selectMenu && selectMenuRect) {
-                const newTop = scrollTop + mainSelectRect.top + mainSelectRect.height + 0.5;
+                const newTop = Math.round(mainSelectRect.top + mainSelectRect.height);
 
                 if (newTop + selectMenuRect.height < document.documentElement.scrollHeight) {
                     selectMenu.style.top = newTop + 'px';
@@ -232,6 +229,11 @@ function onPrimaryItemClicked(item: unknown): void {
             }
         });
     }
+}
+
+function onPrimaryItemClicked(item: unknown): void {
+    updateCurrentPrimaryValue(currentPrimaryValue, item);
+    updateMenuPosition();
 }
 
 function onSecondaryItemClicked(subItem: unknown): void {
@@ -253,6 +255,7 @@ function onInputFocused(input: VTextField | null | undefined, focused: boolean):
     if (input && focused) {
         nextTick(() => {
             setChildInputFocus(input?.$el, 'input');
+            updateMenuPosition();
         });
     }
 }
