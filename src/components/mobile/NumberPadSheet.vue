@@ -249,11 +249,6 @@ function inputNum(num: number): void {
     currentValue.value = newValue;
 }
 
-function inputDoubleNum(num: number): void {
-    inputNum(num);
-    inputNum(num);
-}
-
 function inputTripleNum(num: number): void {
     inputNum(num);
     inputNum(num);
