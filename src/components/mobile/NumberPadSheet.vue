@@ -49,14 +49,11 @@
                 <f7-button class="numpad-button numpad-button-num" v-if="supportDecimalSeparator" @click="inputDecimalSeparator()">
                     <span class="numpad-button-text numpad-button-text-normal">{{ decimalSeparator }}</span>
                 </f7-button>
-                <f7-button class="numpad-button numpad-button-num" v-if="!supportDecimalSeparator" @click="inputDoubleNum(0)">
-                    <span class="numpad-button-text numpad-button-text-normal">{{ digits[0] + digits[0] }}</span>
-                </f7-button>
                 <f7-button class="numpad-button numpad-button-num" @click="inputNum(0)">
                     <span class="numpad-button-text numpad-button-text-normal">{{ digits[0] }}</span>
                 </f7-button>
                 <f7-button class="numpad-button numpad-button-num" v-if="!supportDecimalSeparator" @click="inputTripleNum(0)" @taphold="inputDecimalSeparator()">
-                    <span class="numpad-button-text numpad-button-text-normal">000</span>
+                    <span class="numpad-button-text numpad-button-text-normal">{{ digits[0] + digits[0] + digits[0] }}</span>
                 </f7-button>
                 <f7-button class="numpad-button numpad-button-num" @click="backspace" @taphold="clear()">
                 <span class="numpad-button-text numpad-button-text-normal">
