@@ -12,27 +12,13 @@
         </f7-toolbar>
         <f7-page-content class="padding-bottom">
             <div class="block block-outline no-margin no-padding">
-                <vue-date-picker inline enable-seconds auto-apply
-                                 ref="datetimepicker"
-                                 month-name-format="long"
-                                 six-weeks="center"
-                                 class="justify-content-center"
-                                 :enable-time-picker="false"
-                                 :clearable="false"
-                                 :dark="isDarkMode"
-                                 :week-start="firstDayOfWeek"
-                                 :year-range="yearRange"
-                                 :day-names="dayNames"
-                                 :year-first="isYearFirst"
-                                 v-model="dateTime"
-                                 v-show="mode === 'date'">
-                    <template #month="{ text }">
-                        {{ getMonthShortName(text) }}
-                    </template>
-                    <template #month-overlay-value="{ text }">
-                        {{ getMonthShortName(text) }}
-                    </template>
-                </vue-date-picker>
+                <date-time-picker ref="datetimepicker"
+                                  datetime-picker-class="justify-content-center"
+                                  :is-dark-mode="isDarkMode"
+                                  :enable-time-picker="false"
+                                  v-model="dateTime"
+                                  v-show="mode === 'date'">
+                </date-time-picker>
             </div>
             <div class="block block-outline no-margin no-padding padding-vertical-half" v-show="mode === 'time'">
                 <div id="time-picker-container" class="time-picker-container">
@@ -115,14 +101,16 @@
 </template>
 
 <script setup lang="ts">
+import DateTimePicker from '@/components/common/DateTimePicker.vue';
 import { ref, computed, nextTick, useTemplateRef, watch } from 'vue';
-import VueDatePicker from '@vuepic/vue-datepicker';
 
 import { useI18n } from '@/locales/helpers.ts';
 import { useI18nUIComponents } from '@/lib/ui/mobile.ts';
 import { type TimePickerValue, useDateTimeSelectionBase } from '@/components/base/DateTimeSelectionBase.ts';
 
 import { useEnvironmentsStore } from '@/stores/environment.ts';
+
+import { NumeralSystem } from '@/core/numeral.ts';
 
 import { isDefined } from '@/lib/common.ts';
 import {
@@ -137,7 +125,7 @@ import {
     getCombinedDateAndTimeValues
 } from '@/lib/datetime.ts';
 
-type VueDatePickerType = InstanceType<typeof VueDatePicker>;
+type DateTimePickerType = InstanceType<typeof DateTimePicker>;
 
 const props = defineProps<{
     modelValue: number;
@@ -152,7 +140,7 @@ const emit = defineEmits<{
 
 const {
     tt,
-    getMonthShortName,
+    getCurrentNumeralSystemType,
     formatUnixTimeToLongDateTime
 } = useI18n();
 const { showToast } = useI18nUIComponents();
@@ -163,11 +151,7 @@ const {
     isMinuteTwoDigits,
     isSecondTwoDigits,
     isMeridiemIndicatorFirst,
-    yearRange,
     meridiemItems,
-    firstDayOfWeek,
-    dayNames,
-    isYearFirst,
     getDisplayTimeValue,
     generateAllHours,
     generateAllMinutesOrSeconds
@@ -175,7 +159,7 @@ const {
 
 const environmentsStore = useEnvironmentsStore();
 
-const datetimepicker = useTemplateRef<VueDatePickerType>('datetimepicker');
+const datetimepicker = useTemplateRef<DateTimePickerType>('datetimepicker');
 
 let resetTimePickerItemPositionItemsClass: string | undefined = undefined;
 let resetTimePickerItemPositionItemClass: string | undefined = undefined;
@@ -187,6 +171,12 @@ const dateTime = ref<Date>(getLocalDatetimeFromUnixTime(props.modelValue || getC
 const timePickerContainerHeight = ref<number | undefined>(undefined);
 const timePickerItemHeight = ref<number | undefined>(undefined);
 
+const isDarkMode = computed<boolean>(() => environmentsStore.framework7DarkMode || false);
+const numeralSystem = computed<NumeralSystem>(() => getCurrentNumeralSystemType());
+
+const displayTime = computed<string>(() => formatUnixTimeToLongDateTime(getActualUnixTimeForStore(getUnixTimeFromLocalDatetime(dateTime.value), getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes())));
+const switchButtonTitle = computed<string>(() => mode.value === 'time' ? 'Date' : 'Time');
+
 const hourItems = computed<TimePickerValue[]>(() => generateAllHours(3, isHourTwoDigits.value));
 const minuteItems = computed<TimePickerValue[]>(() => generateAllMinutesOrSeconds(3, isMinuteTwoDigits.value));
 const secondItems = computed<TimePickerValue[]>(() => generateAllMinutesOrSeconds(3, isSecondTwoDigits.value));
@@ -196,7 +186,7 @@ const currentMeridiemIndicator = computed<string>({
         return getAMOrPM(dateTime.value.getHours())
     },
     set: (value: string) => {
-        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, currentHour.value, currentMinute.value, currentSecond.value, value, is24Hour.value);
+        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, numeralSystem.value, currentHour.value, currentMinute.value, currentSecond.value, value, is24Hour.value);
     }
 });
 const currentHour = computed<string>({
@@ -204,7 +194,7 @@ const currentHour = computed<string>({
         return getDisplayTimeValue(is24Hour.value ? dateTime.value.getHours() : getHourIn12HourFormat(dateTime.value.getHours()), isHourTwoDigits.value);
     },
     set: (value: string) => {
-        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, value, currentMinute.value, currentSecond.value, currentMeridiemIndicator.value, is24Hour.value);
+        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, numeralSystem.value, value, currentMinute.value, currentSecond.value, currentMeridiemIndicator.value, is24Hour.value);
     }
 });
 const currentMinute = computed<string>({
@@ -212,7 +202,7 @@ const currentMinute = computed<string>({
         return getDisplayTimeValue(dateTime.value.getMinutes(), isMinuteTwoDigits.value);
     },
     set: (value: string) => {
-        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, currentHour.value, value, currentSecond.value, currentMeridiemIndicator.value, is24Hour.value);
+        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, numeralSystem.value, currentHour.value, value, currentSecond.value, currentMeridiemIndicator.value, is24Hour.value);
     }
 });
 const currentSecond = computed<string>({
@@ -220,13 +210,9 @@ const currentSecond = computed<string>({
         return getDisplayTimeValue(dateTime.value.getSeconds(), isSecondTwoDigits.value);
     },
     set: (value: string) => {
-        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, currentHour.value, currentMinute.value, value, currentMeridiemIndicator.value, is24Hour.value);
+        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, numeralSystem.value, currentHour.value, currentMinute.value, value, currentMeridiemIndicator.value, is24Hour.value);
     }
 });
-
-const isDarkMode = computed<boolean>(() => environmentsStore.framework7DarkMode || false);
-const displayTime = computed<string>(() => formatUnixTimeToLongDateTime(getActualUnixTimeForStore(getUnixTimeFromLocalDatetime(dateTime.value), getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes())));
-const switchButtonTitle = computed<string>(() => mode.value === 'time' ? 'Date' : 'Time');
 
 function switchMode(): void {
     if (mode.value === 'time') {
@@ -455,9 +441,7 @@ function onSheetOpen(): void {
         });
     }
 
-    if (datetimepicker.value) {
-        datetimepicker.value.switchView('calendar');
-    }
+    datetimepicker.value?.switchView('calendar');
 }
 
 function onSheetClosed(): void {
@@ -465,8 +449,8 @@ function onSheetClosed(): void {
 }
 
 watch(mode, (newValue) => {
-    if (newValue === 'date' && datetimepicker.value) {
-        datetimepicker.value.switchView('calendar');
+    if (newValue === 'date') {
+        datetimepicker.value?.switchView('calendar');
     } else if (newValue === 'time') {
         nextTick(() => {
             initTimePickerStyle();

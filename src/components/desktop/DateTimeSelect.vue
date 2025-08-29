@@ -12,28 +12,11 @@
         </template>
 
         <template #no-data>
-            <vue-date-picker inline vertical enable-seconds auto-apply
-                             ref="datepicker"
-                             month-name-format="long"
-                             :clearable="false"
-                             :enable-time-picker="false"
-                             :dark="isDarkMode"
-                             :week-start="firstDayOfWeek"
-                             :year-range="yearRange"
-                             :day-names="dayNames"
-                             :year-first="isYearFirst"
-                             :is24="is24Hour"
-                             v-model="dateTime">
-                <template #month="{ text }">
-                    {{ getMonthShortName(text) }}
-                </template>
-                <template #month-overlay-value="{ text }">
-                    {{ getMonthShortName(text) }}
-                </template>
-                <template #am-pm-button="{ toggle, value }">
-                    <button class="dp__pm_am_button" tabindex="0" @click="toggle">{{ tt(`datetime.${value}.content`) }}</button>
-                </template>
-            </vue-date-picker>
+            <date-time-picker :is-dark-mode="isDarkMode"
+                              :enable-time-picker="false"
+                              :vertical="true"
+                              v-model="dateTime">
+            </date-time-picker>
             <div class="date-time-select-time-picker-container">
                 <v-btn class="px-3" color="primary" variant="flat"
                        v-if="!is24Hour && isMeridiemIndicatorFirst"
@@ -50,6 +33,7 @@
                                 :hide-no-data="true"
                                 v-model="currentHour"
                                 @update:focused="onFocused(hourInput, $event)"
+                                @click="onFocused(hourInput, true)"
                                 @keydown="onKeyDown('hour', $event)"
                 />
                 <span>:</span>
@@ -63,6 +47,7 @@
                                 :hide-no-data="true"
                                 v-model="currentMinute"
                                 @update:focused="onFocused(minuteInput, $event)"
+                                @click="onFocused(minuteInput, true)"
                                 @keydown="onKeyDown('minute', $event)"
                 />
                 <span>:</span>
@@ -76,6 +61,7 @@
                                 :hide-no-data="true"
                                 v-model="currentSecond"
                                 @update:focused="onFocused(secondInput, $event)"
+                                @click="onFocused(secondInput, true)"
                                 @keydown="onKeyDown('second', $event)"
                 />
                 <v-btn class="px-3" color="primary" variant="flat"
@@ -98,6 +84,7 @@ import { useI18n } from '@/locales/helpers.ts';
 import { type TimePickerValue, useDateTimeSelectionBase } from '@/components/base/DateTimeSelectionBase.ts';
 
 import { ThemeType } from '@/core/theme.ts';
+import { NumeralSystem } from '@/core/numeral.ts';
 import { MeridiemIndicator } from '@/core/datetime.ts';
 import {
     getHourIn12HourFormat,
@@ -126,7 +113,7 @@ const emit = defineEmits<{
 const theme = useTheme();
 const {
     tt,
-    getMonthShortName,
+    getCurrentNumeralSystemType,
     formatUnixTimeToLongDateTime
 } = useI18n();
 
@@ -136,10 +123,6 @@ const {
     isMinuteTwoDigits,
     isSecondTwoDigits,
     isMeridiemIndicatorFirst,
-    yearRange,
-    firstDayOfWeek,
-    dayNames,
-    isYearFirst,
     getDisplayTimeValue,
     generateAllHours,
     generateAllMinutesOrSeconds
@@ -148,6 +131,9 @@ const {
 const hourInput = useTemplateRef<VAutocomplete>('hourInput');
 const minuteInput = useTemplateRef<VAutocomplete>('minuteInput');
 const secondInput = useTemplateRef<VAutocomplete>('secondInput');
+
+const isDarkMode = computed<boolean>(() => theme.global.name.value === ThemeType.Dark);
+const numeralSystem = computed<NumeralSystem>(() => getCurrentNumeralSystemType());
 
 const dateTime = computed<Date>({
     get: () => {
@@ -165,6 +151,8 @@ const dateTime = computed<Date>({
     }
 });
 
+const displayTime = computed<string>(() => formatUnixTimeToLongDateTime(getActualUnixTimeForStore(getUnixTimeFromLocalDatetime(dateTime.value), getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes())));
+
 const hourItems = computed<TimePickerValue[]>(() => generateAllHours(1, isHourTwoDigits.value));
 const minuteItems = computed<TimePickerValue[]>(() => generateAllMinutesOrSeconds(1, isMinuteTwoDigits.value));
 const secondItems = computed<TimePickerValue[]>(() => generateAllMinutesOrSeconds(1, isSecondTwoDigits.value));
@@ -178,7 +166,7 @@ const currentMeridiemIndicator = computed<string>({
             return;
         }
 
-        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, currentHour.value, currentMinute.value, currentSecond.value, value, is24Hour.value);
+        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, numeralSystem.value, currentHour.value, currentMinute.value, currentSecond.value, value, is24Hour.value);
     }
 });
 const currentHour = computed<string>({
@@ -186,13 +174,13 @@ const currentHour = computed<string>({
         return getDisplayTimeValue(is24Hour.value ? dateTime.value.getHours() : getHourIn12HourFormat(dateTime.value.getHours()), isHourTwoDigits.value);
     },
     set: (value: string) => {
-        const hour = parseInt(value);
+        const hour = numeralSystem.value.parseInt(value);
 
         if (isNaN(hour) || hour < 0 || (is24Hour.value ? hour > 23 : hour > 12)) {
             return;
         }
 
-        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, value, currentMinute.value, currentSecond.value, currentMeridiemIndicator.value, is24Hour.value);
+        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, numeralSystem.value, value, currentMinute.value, currentSecond.value, currentMeridiemIndicator.value, is24Hour.value);
     }
 });
 const currentMinute = computed<string>({
@@ -200,13 +188,13 @@ const currentMinute = computed<string>({
         return getDisplayTimeValue(dateTime.value.getMinutes(), isMinuteTwoDigits.value);
     },
     set: (value: string) => {
-        const minute = parseInt(value);
+        const minute = numeralSystem.value.parseInt(value);
 
         if (isNaN(minute) || minute < 0 || minute > 59) {
             return;
         }
 
-        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, currentHour.value, value, currentSecond.value, currentMeridiemIndicator.value, is24Hour.value);
+        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, numeralSystem.value, currentHour.value, value, currentSecond.value, currentMeridiemIndicator.value, is24Hour.value);
     }
 });
 const currentSecond = computed<string>({
@@ -214,18 +202,15 @@ const currentSecond = computed<string>({
         return getDisplayTimeValue(dateTime.value.getSeconds(), isSecondTwoDigits.value);
     },
     set: (value: string) => {
-        const second = parseInt(value);
+        const second = numeralSystem.value.parseInt(value);
 
         if (isNaN(second) || second < 0 || second > 59) {
             return;
         }
 
-        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, currentHour.value, currentMinute.value, value, currentMeridiemIndicator.value, is24Hour.value);
+        dateTime.value = getCombinedDateAndTimeValues(dateTime.value, numeralSystem.value, currentHour.value, currentMinute.value, value, currentMeridiemIndicator.value, is24Hour.value);
     }
 });
-
-const isDarkMode = computed<boolean>(() => theme.global.name.value === ThemeType.Dark);
-const displayTime = computed<string>(() => formatUnixTimeToLongDateTime(getActualUnixTimeForStore(getUnixTimeFromLocalDatetime(dateTime.value), getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes())));
 
 function toggleMeridiemIndicator(): void {
     if (currentMeridiemIndicator.value === MeridiemIndicator.AM.name) {
@@ -251,7 +236,7 @@ function onKeyDown(type: string, e: KeyboardEvent): void {
         return;
     }
 
-    if (e.key.length === 1 && '0' <= e.key && e.key <= '9') {
+    if (e.key.length === 1 && numeralSystem.value.isDigit(e.key)) {
         return;
     }
 

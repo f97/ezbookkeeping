@@ -33,8 +33,11 @@
                         </div>
                         <div class="mx-6 mt-4" v-if="pageType === TransactionListPageType.List.type">
                             <span class="text-subtitle-2">{{ tt('Transactions Per Page') }}</span>
-                            <v-select class="mt-2" density="compact" :disabled="loading"
-                                      :items="[ 5, 10, 15, 20, 25, 30, 50 ]"
+                            <v-select class="mt-2" density="compact"
+                                      item-title="name"
+                                      item-value="value"
+                                      :disabled="loading"
+                                      :items="allPageCounts"
                                       v-model="countPerPage"
                             />
                         </div>
@@ -165,32 +168,13 @@
                                     </v-card-text>
 
                                     <v-card-text class="transaction-calendar-container pt-0" v-if="pageType === TransactionListPageType.Calendar.type">
-                                        <vue-date-picker inline auto-apply model-type="yyyy-MM-dd"
-                                                         month-name-format="long"
-                                                         :config="{ noSwipe: true }"
-                                                         :readonly="loading"
-                                                         :disable-month-year-select="true"
-                                                         :month-change-on-scroll="false"
-                                                         :month-change-on-arrows="false"
-                                                         :enable-time-picker="false"
-                                                         :hide-offset-dates="true"
-                                                         :min-date="transactionCalendarMinDate"
-                                                         :max-date="transactionCalendarMaxDate"
-                                                         :disabled-dates="noTransactionInMonthDay"
-                                                         :prevent-min-max-navigation="true"
-                                                         :clearable="false"
-                                                         :dark="isDarkMode"
-                                                         :week-start="firstDayOfWeek"
-                                                         :day-names="dayNames"
-                                                         v-model="currentCalendarDate">
-                                            <template #day="{ day }">
-                                                <div class="transaction-calendar-daily-amounts d-flex flex-column align-center justify-center w-100">
-                                                    <span :class="{ 'font-weight-bold': currentMonthTransactionData && currentMonthTransactionData.dailyTotalAmounts[day] }">{{ day }}</span>
-                                                    <span class="text-income" v-if="currentMonthTransactionData && currentMonthTransactionData.dailyTotalAmounts[day] && currentMonthTransactionData.dailyTotalAmounts[day].income">{{ getDisplayMonthTotalAmount(currentMonthTransactionData.dailyTotalAmounts[day].income, defaultCurrency, '', currentMonthTransactionData.dailyTotalAmounts[day].incompleteIncome) }}</span>
-                                                    <span class="text-expense" v-if="currentMonthTransactionData && currentMonthTransactionData.dailyTotalAmounts[day] && currentMonthTransactionData.dailyTotalAmounts[day].expense">{{ getDisplayMonthTotalAmount(currentMonthTransactionData.dailyTotalAmounts[day].expense, defaultCurrency, '', currentMonthTransactionData.dailyTotalAmounts[day].incompleteExpense) }}</span>
-                                                </div>
-                                            </template>
-                                        </vue-date-picker>
+                                        <transaction-calendar day-has-transaction-class="font-weight-bold"
+                                                              :readonly="loading" :is-dark-mode="isDarkMode"
+                                                              :default-currency="defaultCurrency"
+                                                              :min-date="transactionCalendarMinDate"
+                                                              :max-date="transactionCalendarMaxDate"
+                                                              :dailyTotalAmounts="currentMonthTransactionData?.dailyTotalAmounts"
+                                                              v-model="currentCalendarDate"></transaction-calendar>
                                     </v-card-text>
 
                                     <v-table class="transaction-table" :hover="!loading">
@@ -629,7 +613,7 @@
                                  @dateRange:change="changeCustomDateFilter"
                                  @error="onShowDateRangeError" />
 
-    <month-selection-dialog :title="tt('Custom Date Range')"
+    <month-selection-dialog :title="tt('Select Month')"
                             :model-value="queryMonth"
                             v-model:show="showCustomMonthDialog"
                             @update:modelValue="changeCustomMonthDateFilter"
@@ -685,7 +669,7 @@ import { useTransactionsStore } from '@/stores/transaction.ts';
 import { useTransactionTemplatesStore } from '@/stores/transactionTemplate.ts';
 import { useDesktopPageStore } from '@/stores/desktopPage.ts';
 
-import type { TypeAndDisplayName } from '@/core/base.ts';
+import type { NameNumeralValue, TypeAndDisplayName } from '@/core/base.ts';
 import {
     type Year0BasedMonth,
     type LocalizedRecentMonthDateRange,
@@ -693,7 +677,7 @@ import {
     DateRangeScene,
     DateRange
 } from '@/core/datetime.ts';
-import { AmountFilterType } from '@/core/numeral.ts';
+import { type NumeralSystem, AmountFilterType } from '@/core/numeral.ts';
 import { ThemeType } from '@/core/theme.ts';
 import { TransactionType, TransactionTagFilterType } from '@/core/transaction.ts';
 import { TemplateType }  from '@/core/template.ts';
@@ -704,8 +688,7 @@ import type { TransactionTemplate } from '@/models/transaction_template.ts';
 import {
     isObject,
     isString,
-    isNumber,
-    arrangeArrayWithNewStartIndex
+    isNumber
 } from '@/lib/common.ts';
 import {
     getCurrentUnixTime,
@@ -792,10 +775,10 @@ const theme = useTheme();
 
 const {
     tt,
-    getAllLongWeekdayNames,
     getAllRecentMonthDateRanges,
     getAllTransactionTagFilterTypes,
-    getWeekdayLongName
+    getWeekdayLongName,
+    getCurrentNumeralSystemType
 } = useI18n();
 
 const {
@@ -837,7 +820,6 @@ const {
     transactionCalendarMinDate,
     transactionCalendarMaxDate,
     currentMonthTransactionData,
-    noTransactionInMonthDay,
     canAddTransaction,
     getDisplayTime,
     getDisplayLongDate,
@@ -896,7 +878,19 @@ const showFilterCategoryDialog = ref<boolean>(false);
 const showFilterTagDialog = ref<boolean>(false);
 
 const isDarkMode = computed<boolean>(() => theme.global.name.value === ThemeType.Dark);
-const dayNames = computed<string[]>(() => arrangeArrayWithNewStartIndex(getAllLongWeekdayNames(), firstDayOfWeek.value));
+const numeralSystem = computed<NumeralSystem>(() => getCurrentNumeralSystemType());
+
+const allPageCounts = computed<NameNumeralValue[]>(() => {
+    const pageCounts: NameNumeralValue[] = [];
+    const availableCountPerPage: number[] = [ 5, 10, 15, 20, 25, 30, 50 ];
+
+    for (let i = 0; i < availableCountPerPage.length; i++) {
+        const count = availableCountPerPage[i];
+        pageCounts.push({ value: count, name: numeralSystem.value.replaceWesternArabicDigitsToLocalizedDigits(count.toString()) });
+    }
+
+    return pageCounts;
+});
 
 const recentMonthDateRanges = computed<LocalizedRecentMonthDateRange[]>(() => getAllRecentMonthDateRanges(pageType.value === TransactionListPageType.List.type, true));
 
@@ -1888,13 +1882,5 @@ init(props);
 
 .transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item {
     overflow: hidden;
-}
-
-.transaction-calendar-container .dp__main .dp__calendar .dp__calendar_row > .dp__calendar_item .transaction-calendar-daily-amounts > span {
-    display: block;
-    width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 </style>

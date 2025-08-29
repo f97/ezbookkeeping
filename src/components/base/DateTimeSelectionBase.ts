@@ -2,12 +2,8 @@ import { ref, computed } from 'vue';
 
 import { useI18n } from '@/locales/helpers.ts';
 
-import { useUserStore } from '@/stores/user.ts';
-
 import { type NameValue } from '@/core/base.ts';
-import { type WeekDayValue } from '@/core/datetime.ts';
-import { arrangeArrayWithNewStartIndex } from '@/lib/common.ts';
-import { getAllowedYearRange } from '@/lib/datetime.ts';
+import { NumeralSystem } from '@/core/numeral.ts';
 
 export interface TimePickerValue {
     value: string;
@@ -16,9 +12,8 @@ export interface TimePickerValue {
 
 export function useDateTimeSelectionBase() {
     const {
-        getAllMinWeekdayNames,
         getAllMeridiemIndicators,
-        isLongDateMonthAfterYear,
+        getCurrentNumeralSystemType,
         isLongTime24HourFormat,
         isLongTimeMeridiemIndicatorFirst,
         isLongTimeHourTwoDigits,
@@ -26,28 +21,23 @@ export function useDateTimeSelectionBase() {
         isLongTimeSecondTwoDigits
     } = useI18n();
 
-    const userStore = useUserStore();
-
     const is24Hour = ref<boolean>(isLongTime24HourFormat());
     const isHourTwoDigits = ref<boolean>(isLongTimeHourTwoDigits());
     const isMinuteTwoDigits = ref<boolean>(isLongTimeMinuteTwoDigits());
     const isSecondTwoDigits = ref<boolean>(isLongTimeSecondTwoDigits());
     const isMeridiemIndicatorFirst = ref<boolean>(isLongTimeMeridiemIndicatorFirst() || false);
 
-    const yearRange = ref<number[]>(getAllowedYearRange());
-
+    const numeralSystem = computed<NumeralSystem>(() => getCurrentNumeralSystemType());
     const meridiemItems = computed<NameValue[]>(() => getAllMeridiemIndicators());
 
-    const firstDayOfWeek = computed<WeekDayValue>(() => userStore.currentUserFirstDayOfWeek);
-    const dayNames = computed<string[]>(() => arrangeArrayWithNewStartIndex(getAllMinWeekdayNames(), firstDayOfWeek.value));
-    const isYearFirst = computed<boolean>(() => isLongDateMonthAfterYear());
-
     function getDisplayTimeValue(value: number, forceTwoDigits: boolean): string {
-        if (forceTwoDigits && value < 10) {
-            return `0${value}`;
-        } else {
-            return value.toString();
+        let textualValue = value.toString();
+
+        if (forceTwoDigits) {
+            textualValue = textualValue.padStart(2, NumeralSystem.WesternArabicNumerals.digitZero);
         }
+
+        return numeralSystem.value.replaceWesternArabicDigitsToLocalizedDigits(textualValue);
     }
 
     function generateAllHours(count: number, forceTwoDigits: boolean): TimePickerValue[] {
@@ -58,7 +48,7 @@ export function useDateTimeSelectionBase() {
         for (let i = 0; i < count; i++) {
             if (!is24Hour.value) {
                 ret.push({
-                    value: '12',
+                    value: getDisplayTimeValue(12, forceTwoDigits),
                     itemsIndex: i
                 });
             }
@@ -96,12 +86,8 @@ export function useDateTimeSelectionBase() {
         isMinuteTwoDigits,
         isSecondTwoDigits,
         isMeridiemIndicatorFirst,
-        yearRange,
         // computed
         meridiemItems,
-        firstDayOfWeek,
-        dayNames,
-        isYearFirst,
         // functions
         getDisplayTimeValue,
         generateAllHours,
