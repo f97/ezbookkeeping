@@ -8,12 +8,20 @@ import { type TransactionStatisticsFilter, useStatisticsStore } from '@/stores/s
 
 import type { TypeAndDisplayName } from '@/core/base.ts';
 import { type LocalizedDateRange, type WeekDayValue, DateRangeScene, DateRange } from '@/core/datetime.ts';
+import type { ColorStyleValue } from '@/core/color.ts';
 import { StatisticsAnalysisType, ChartDataType, ChartSortingType, ChartDateAggregationType } from '@/core/statistics.ts';
+
 import { DISPLAY_HIDDEN_AMOUNT } from '@/consts/numeral.ts';
-import type { TransactionCategoricalAnalysisData, TransactionTrendsAnalysisData } from '@/models/transaction.ts';
+
+import type {
+    TransactionCategoricalAnalysisData,
+    TransactionCategoricalAnalysisDataItem,
+    TransactionTrendsAnalysisData
+} from '@/models/transaction.ts';
 
 import { limitText, findNameByType, findDisplayNameByType } from '@/lib/common.ts';
 import { getYearMonthFirstUnixTime, getYearMonthLastUnixTime } from '@/lib/datetime.ts';
+import { getDisplayColor, getCategoryDisplayColor, getAccountDisplayColor } from '@/lib/color.ts';
 
 export function useStatisticsTransactionPageBase() {
     const {
@@ -200,6 +208,16 @@ export function useStatisticsTransactionPageBase() {
         }
     }
 
+    function getTransactionCategoricalAnalysisDataItemDisplayColor(item: TransactionCategoricalAnalysisDataItem): ColorStyleValue {
+        if (item.type === 'category') {
+            return getCategoryDisplayColor(item.color);
+        } else if (item.type === 'account') {
+            return getAccountDisplayColor(item.color);
+        } else {
+            return getDisplayColor(item.color);
+        }
+    }
+
     function getDisplayAmount(amount: number, currency: string, textLimit?: number): string {
         const finalAmount = formatAmountToLocalizedNumeralsWithCurrency(amount, currency);
 
@@ -249,6 +267,7 @@ export function useStatisticsTransactionPageBase() {
         trendsAnalysisData,
         // functions
         canShowCustomDateRange,
+        getTransactionCategoricalAnalysisDataItemDisplayColor,
         getDisplayAmount
     };
 }
