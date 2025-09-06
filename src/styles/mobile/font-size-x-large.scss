@@ -40,8 +40,11 @@
     --f7-dialog-title-font-size: 20px;
     --f7-dialog-font-size: 16px;
     --f7-dialog-button-font-size: 19px;
+    --f7-dialog-input-font-size: 16px;
+    --f7-dialog-input-height: 36px;
     --f7-actions-label-font-size: 15px;
     --f7-actions-button-font-size: 22px;
+    --f7-toast-font-size: 16px;
     --dp-font-size: 18px;
     --dp-time-font-size: 36px;
     --ebk-icon-font-size: 30px;
@@ -65,6 +68,7 @@
     --ebk-numpad-value-large-font-size: 26px;
     --ebk-numpad-normal-button-font-size: 30px;
     --ebk-numpad-confirm-button-font-size: 22px;
+    --ebk-datetime-picker-alternate-date-font-size: 14px;
     --ebk-amount-small-font-size: 32px;
     --ebk-amount-normal-font-size: 36px;
     --ebk-amount-large-font-size: 40px;
@@ -78,8 +82,10 @@
     --ebk-transaction-date-width: 30px;
     --ebk-transaction-day-font-size: 18px;
     --ebk-transaction-day-of-week-font-size: 14px;
+    --ebk-transaction-calendar-alternate-date-font-size: 14px;
     --ebk-transaction-calendar-amount-font-size: 14px;
     --ebk-transaction-calendar-daily-amounts-height: 70px;
+    --ebk-transaction-calendar-with-alternate-date-daily-amounts-height: 90px;
     --ebk-transaction-account-arrow-font-size: 14px;
     --ebk-transaction-account-arrow-margin-top: -2px;
     --ebk-transaction-tag-icon-font-size: 26px;

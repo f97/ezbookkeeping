@@ -1,5 +1,5 @@
 import type { TypeAndName, TypeAndDisplayName } from '@/core/base.ts';
-import type { CalendarType } from '@/core/calendar.ts';
+import type { CalendarType, ChineseCalendarLocaleData } from '@/core/calendar.ts';
 import type { NumeralSystem } from '@/core/numeral.ts';
 
 export interface DateTime {
@@ -12,7 +12,6 @@ export interface DateTime {
     getGregorianCalendarMonthDisplayName(options: DateTimeFormatOptions): string;
     getGregorianCalendarMonthDisplayShortName(options: DateTimeFormatOptions): string;
     getLocalizedCalendarMonth(options: DateTimeFormatOptions): string;
-    getLocalizedCalendarMonthIndex(options: DateTimeFormatOptions): number;
     getLocalizedCalendarMonthDisplayName(options: DateTimeFormatOptions): string;
     getLocalizedCalendarMonthDisplayShortName(options: DateTimeFormatOptions): string;
     getGregorianCalendarDay(): number;
@@ -37,6 +36,7 @@ export interface DateTimeFormatOptions {
     numeralSystem: NumeralSystem;
     calendarType: CalendarType;
     localeData: DateTimeLocaleData;
+    chineseCalendarLocaleData: ChineseCalendarLocaleData;
 }
 
 export interface DateTimeLocaleData {
@@ -80,6 +80,10 @@ export interface YearMonthDay extends MonthDay {
 export interface MonthDay {
     readonly month: number; // 1-based (1 = January, 12 = December
     readonly day: number;
+}
+
+export interface CalendarAlternateDate extends YearMonthDay {
+    readonly displayDate: string;
 }
 
 export interface TimeRange {
@@ -331,6 +335,7 @@ export class KnownDateTimeFormat {
     public static readonly YYYYMMDDSlash = new KnownDateTimeFormat('YYYY/MM/DD', /^\d{4}\/(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])$/);
     public static readonly MMDDYYSlash = new KnownDateTimeFormat('MM/DD/YYYY', /^(0[1-9]|1[0-2])\/(0[1-9]|[1-2][0-9]|3[0-1])\/\d{4}$/);
     public static readonly DDMMYYSlash = new KnownDateTimeFormat('DD/MM/YYYY', /^(0[1-9]|[1-2][0-9]|3[0-1])\/(0[1-9]|1[0-2])\/\d{4}$/);
+    public static readonly YYYYMMDD = new KnownDateTimeFormat('YYYYMMDD', /^\d{4}(0[1-9]|1[0-2])(0[1-9]|[1-2][0-9]|3[0-1])$/);
 
     public readonly format: string;
     private readonly regex: RegExp;
