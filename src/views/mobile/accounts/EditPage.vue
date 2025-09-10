@@ -206,29 +206,27 @@
                 v-if="isAccountSupportSavingsFields"
                 @click="accountContext.showSavingsInterestRateNumberPad = true"
             >
-                <number-pad-popup
-                    :title="tt('Interest Rate (%)')"
-                    decimal-places="2"
-                    :max-value="100"
+                <number-pad-sheet
                     :min-value="0"
+                    :max-value="100"
+                    :hint="tt('Interest Rate (%)')"
                     v-model:show="accountContext.showSavingsInterestRateNumberPad"
                     v-model="account.savingsInterestRate">
-                </number-pad-popup>
+                </number-pad-sheet>
             </f7-list-item>
 
             <f7-list-item
                 link="#" no-chevron
                 class="list-item-with-header-and-title"
-                :header="tt('End Date')"
-                :title="account.savingsEndDate ? formatUnixTimeToLongDate(account.savingsEndDate) : ''"
+                :header="tt('Savings Period')"
+                :title="formatSavingsPeriod(savingsPeriodInMonths)"
                 v-if="isAccountSupportSavingsFields"
-                @click="accountContext.showSavingsEndDatePopup = true"
+                @click="accountContext.showSavingsPeriodSelection = true"
             >
-                <date-time-selection-popup
-                    :title="tt('End Date')"
-                    v-model:show="accountContext.showSavingsEndDatePopup"
-                    v-model="account.savingsEndDate">
-                </date-time-selection-popup>
+                <month-period-selection-sheet
+                    v-model:show="accountContext.showSavingsPeriodSelection"
+                    v-model="savingsPeriodInMonths">
+                </month-period-selection-sheet>
             </f7-list-item>
 
             <f7-list-item
@@ -575,6 +573,7 @@ interface AccountContext {
     showCreditCardStatementDatePopup: boolean;
     showSavingsInterestRateNumberPad: boolean;
     showSavingsEndDatePopup: boolean;
+    showSavingsPeriodSelection: boolean;
     showBalanceSheet: boolean;
     showBalanceDateTimeSheet: boolean;
     balanceDateTimeSheetMode: string;
@@ -628,6 +627,7 @@ const DEFAULT_ACCOUNT_CONTEXT: AccountContext = {
     showCreditCardStatementDatePopup: false,
     showSavingsInterestRateNumberPad: false,
     showSavingsEndDatePopup: false,
+    showSavingsPeriodSelection: false,
     showBalanceSheet: false,
     showBalanceDateTimeSheet: false,
     balanceDateTimeSheetMode: 'time'
@@ -643,6 +643,7 @@ const showMoreActionSheet = ref<boolean>(false);
 const showDeleteActionSheet = ref<boolean>(false);
 
 const allCurrencies = computed<LocalizedCurrencyInfo[]>(() => getAllCurrencies());
+const savingsPeriodInMonths = ref<number>(0);
 
 function formatAccountDisplayBalance(selectedAccount: Account): string {
     const balance = account.value.isLiability ? -selectedAccount.balance : selectedAccount.balance;
@@ -663,6 +664,18 @@ function formatAccountBalanceTime(account: Account): string {
     }
 
     return formatUnixTimeToLongTime(getActualUnixTimeForStore(account.balanceTime, getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes()));
+}
+
+function formatSavingsPeriod(months: number): string {
+    if (months <= 0) {
+        return '';
+    }
+    
+    if (months === 1) {
+        return tt('1 month');
+    }
+    
+    return `${months} ${tt('months')}`;
 }
 
 function init(): void {
@@ -830,6 +843,32 @@ watch(() => account.value.balance, (newBalance, oldBalance) => {
         router.navigate(url);
     }
 });
+
+// Convert months to end date when savings period changes
+watch(savingsPeriodInMonths, (newMonths) => {
+    if (newMonths > 0) {
+        const currentDate = new Date();
+        const endDate = new Date(currentDate);
+        endDate.setMonth(endDate.getMonth() + newMonths);
+        account.value.savingsEndDate = Math.floor(endDate.getTime() / 1000);
+    } else {
+        account.value.savingsEndDate = 0;
+    }
+});
+
+// Initialize savings period from existing end date
+watch(() => account.value.savingsEndDate, (endDate) => {
+    if (endDate && endDate > 0) {
+        const currentDate = new Date();
+        const targetDate = new Date(endDate * 1000);
+        const diffTime = targetDate.getTime() - currentDate.getTime();
+        const diffMonths = Math.round(diffTime / (1000 * 60 * 60 * 24 * 30.44)); // Average month length
+        
+        if (diffMonths > 0 && savingsPeriodInMonths.value === 0) {
+            savingsPeriodInMonths.value = diffMonths;
+        }
+    }
+}, { immediate: true });
 
 init();
 </script>
