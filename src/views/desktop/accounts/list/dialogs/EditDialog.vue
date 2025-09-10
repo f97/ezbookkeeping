@@ -128,6 +128,27 @@
                                         v-model="account.creditCardStatementDate"
                                     ></v-autocomplete>
                                 </v-col>
+                                <v-col cols="12" :md="isAccountSupportSavingsFields && (selectedAccount.savingsInterestRate || selectedAccount.savingsEndDate) ? 6 : 12" v-if="currentAccountIndex < 0 && isAccountSupportSavingsFields">
+                                    <v-text-field
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        persistent-placeholder
+                                        :disabled="loading || submitting"
+                                        :label="tt('Interest Rate (%)')"
+                                        :placeholder="tt('Annual interest rate')"
+                                        v-model="selectedAccount.savingsInterestRate"
+                                    />
+                                </v-col>
+                                <v-col cols="12" :md="isAccountSupportSavingsFields && selectedAccount.savingsInterestRate ? 6 : 12" v-if="currentAccountIndex < 0 && isAccountSupportSavingsFields">
+                                    <date-time-select
+                                        :disabled="loading || submitting"
+                                        :label="tt('End Date')"
+                                        :placeholder="tt('Savings end date')"
+                                        v-model="selectedAccount.savingsEndDate"
+                                        @error="onShowDateTimeError" />
+                                </v-col>
                                 <v-col cols="12" :md="(!editAccountId || isNewAccount(selectedAccount)) && selectedAccount.balance ? 6 : 12"
                                        v-if="account.type === AccountType.SingleAccount.type || currentAccountIndex >= 0">
                                     <amount-input :disabled="loading || submitting || (!!editAccountId && !isNewAccount(selectedAccount))"
@@ -240,6 +261,7 @@ const {
     allAccountTypes,
     allAvailableMonthDays,
     isAccountSupportCreditCardStatementDate,
+    isAccountSupportSavingsFields,
     isNewAccount,
     addSubAccount,
     setAccount

@@ -18,6 +18,8 @@ export class Account implements AccountInfoResponse {
     public balanceTime?: number;
     public comment: string;
     public creditCardStatementDate?: number;
+    public savingsInterestRate?: number;
+    public savingsEndDate?: number;
     public displayOrder: number;
     public visible: boolean;
     public subAccounts?: Account[];
@@ -25,7 +27,7 @@ export class Account implements AccountInfoResponse {
     private readonly _isAsset?: boolean;
     private readonly _isLiability?: boolean;
 
-    protected constructor(id: string, name: string, parentId: string, category: number, type: number, icon: string, color: string, currency: string, balance: number, comment: string, displayOrder: number, visible: boolean, balanceTime?: number, creditCardStatementDate?: number, isAsset?: boolean, isLiability?: boolean, subAccounts?: Account[]) {
+    protected constructor(id: string, name: string, parentId: string, category: number, type: number, icon: string, color: string, currency: string, balance: number, comment: string, displayOrder: number, visible: boolean, balanceTime?: number, creditCardStatementDate?: number, savingsInterestRate?: number, savingsEndDate?: number, isAsset?: boolean, isLiability?: boolean, subAccounts?: Account[]) {
         this.id = id;
         this.name = name;
         this.parentId = parentId;
@@ -40,6 +42,8 @@ export class Account implements AccountInfoResponse {
         this.displayOrder = displayOrder;
         this.visible = visible;
         this.creditCardStatementDate = creditCardStatementDate;
+        this.savingsInterestRate = savingsInterestRate;
+        this.savingsEndDate = savingsEndDate;
         this._isAsset = isAsset;
         this._isLiability = isLiability;
 
@@ -96,7 +100,9 @@ export class Account implements AccountInfoResponse {
             this.comment === other.comment &&
             this.displayOrder === other.displayOrder &&
             this.visible === other.visible &&
-            this.creditCardStatementDate === other.creditCardStatementDate;
+            this.creditCardStatementDate === other.creditCardStatementDate &&
+            this.savingsInterestRate === other.savingsInterestRate &&
+            this.savingsEndDate === other.savingsEndDate;
 
         if (!isEqual) {
             return false;
@@ -131,6 +137,8 @@ export class Account implements AccountInfoResponse {
         this.balanceTime = other.balanceTime;
         this.comment = other.comment;
         this.creditCardStatementDate = other.creditCardStatementDate;
+        this.savingsInterestRate = other.savingsInterestRate;
+        this.savingsEndDate = other.savingsEndDate;
         this.visible = other.visible;
     }
 
@@ -377,6 +385,8 @@ export class Account implements AccountInfoResponse {
             this.visible,
             this.balanceTime,
             this.creditCardStatementDate,
+            this.savingsInterestRate,
+            this.savingsEndDate,
             this.isAsset,
             this.isLiability,
             typeof(this.subAccounts) !== 'undefined' ? Account.cloneAccounts(this.subAccounts) : undefined);
@@ -397,7 +407,9 @@ export class Account implements AccountInfoResponse {
             0, // displayOrder
             true, // visible
             balanceTime, // balanceTime
-            0 // creditCardStatementDate
+            0, // creditCardStatementDate
+            0, // savingsInterestRate
+            0 // savingsEndDate
         );
     }
 
@@ -416,7 +428,9 @@ export class Account implements AccountInfoResponse {
             0, // displayOrder
             true, // visible
             balanceTime, // balanceTime
-            0 // creditCardStatementDate
+            0, // creditCardStatementDate
+            0, // savingsInterestRate
+            0 // savingsEndDate
         );
     }
 
@@ -436,6 +450,8 @@ export class Account implements AccountInfoResponse {
             !accountResponse.hidden,
             undefined,
             accountResponse.creditCardStatementDate,
+            accountResponse.savingsInterestRate,
+            accountResponse.savingsEndDate,
             accountResponse.isAsset,
             accountResponse.isLiability,
             accountResponse.subAccounts ? Account.ofMulti(accountResponse.subAccounts) : undefined
@@ -550,6 +566,8 @@ export class AccountWithDisplayBalance extends Account {
             account.visible,
             account.balanceTime,
             account.creditCardStatementDate,
+            account.savingsInterestRate,
+            account.savingsEndDate,
             account.isAsset,
             account.isLiability,
             account.subAccounts
@@ -606,6 +624,8 @@ export interface AccountInfoResponse {
     readonly balance: number;
     readonly comment: string;
     readonly creditCardStatementDate?: number;
+    readonly savingsInterestRate?: number;
+    readonly savingsEndDate?: number;
     readonly displayOrder: number;
     readonly isAsset?: boolean;
     readonly isLiability?: boolean;
