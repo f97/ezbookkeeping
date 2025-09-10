@@ -198,6 +198,38 @@
                                            v-model="account.creditCardStatementDate">
                 </list-item-selection-popup>
             </f7-list-item>
+            <f7-list-item
+                link="#" no-chevron
+                class="list-item-with-header-and-title"
+                :header="tt('Interest Rate (%)')"
+                :title="account.savingsInterestRate ? account.savingsInterestRate.toString() + '%' : ''"
+                v-if="isAccountSupportSavingsFields"
+                @click="accountContext.showSavingsInterestRateNumberPad = true"
+            >
+                <number-pad-popup
+                    :title="tt('Interest Rate (%)')"
+                    decimal-places="2"
+                    :max-value="100"
+                    :min-value="0"
+                    v-model:show="accountContext.showSavingsInterestRateNumberPad"
+                    v-model="account.savingsInterestRate">
+                </number-pad-popup>
+            </f7-list-item>
+
+            <f7-list-item
+                link="#" no-chevron
+                class="list-item-with-header-and-title"
+                :header="tt('End Date')"
+                :title="account.savingsEndDate ? formatUnixTimeToLongDate(account.savingsEndDate) : ''"
+                v-if="isAccountSupportSavingsFields"
+                @click="accountContext.showSavingsEndDatePopup = true"
+            >
+                <date-time-selection-popup
+                    :title="tt('End Date')"
+                    v-model:show="accountContext.showSavingsEndDatePopup"
+                    v-model="account.savingsEndDate">
+                </date-time-selection-popup>
+            </f7-list-item>
 
             <f7-list-item
                 link="#" no-chevron
@@ -541,6 +573,8 @@ interface AccountContext {
     showColorSelectionSheet: boolean;
     showCurrencyPopup: boolean;
     showCreditCardStatementDatePopup: boolean;
+    showSavingsInterestRateNumberPad: boolean;
+    showSavingsEndDatePopup: boolean;
     showBalanceSheet: boolean;
     showBalanceDateTimeSheet: boolean;
     balanceDateTimeSheetMode: string;
@@ -578,6 +612,7 @@ const {
     allAccountTypes,
     allAvailableMonthDays,
     isAccountSupportCreditCardStatementDate,
+    isAccountSupportSavingsFields,
     getAccountCreditCardStatementDate,
     isNewAccount,
     addSubAccount,
@@ -591,6 +626,8 @@ const DEFAULT_ACCOUNT_CONTEXT: AccountContext = {
     showColorSelectionSheet: false,
     showCurrencyPopup: false,
     showCreditCardStatementDatePopup: false,
+    showSavingsInterestRateNumberPad: false,
+    showSavingsEndDatePopup: false,
     showBalanceSheet: false,
     showBalanceDateTimeSheet: false,
     balanceDateTimeSheetMode: 'time'

@@ -167,6 +167,11 @@ func (a *AccountsApi) AccountCreateHandler(c *core.WebContext) (any, *errs.Error
 		return nil, errs.ErrCannotSetStatementDateForNonCreditCard
 	}
 
+	if accountCreateReq.Category != models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT && (accountCreateReq.SavingsInterestRate != 0 || accountCreateReq.SavingsEndDate != 0) {
+		log.Warnf(c, "[accounts.AccountCreateHandler] cannot set savings fields with category \"%d\"", accountCreateReq.Category)
+		return nil, errs.ErrCannotSetSavingsFieldsForNonSavingsAccount
+	}
+
 	if accountCreateReq.Type == models.ACCOUNT_TYPE_SINGLE_ACCOUNT {
 		if len(accountCreateReq.SubAccounts) > 0 {
 			log.Warnf(c, "[accounts.AccountCreateHandler] account cannot have any sub-accounts")
@@ -330,6 +335,11 @@ func (a *AccountsApi) AccountModifyHandler(c *core.WebContext) (any, *errs.Error
 	if accountModifyReq.Category != models.ACCOUNT_CATEGORY_CREDIT_CARD && accountModifyReq.CreditCardStatementDate != 0 {
 		log.Warnf(c, "[accounts.AccountModifyHandler] cannot set statement date with category \"%d\"", accountModifyReq.Category)
 		return nil, errs.ErrCannotSetStatementDateForNonCreditCard
+	}
+
+	if accountModifyReq.Category != models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT && (accountModifyReq.SavingsInterestRate != 0 || accountModifyReq.SavingsEndDate != 0) {
+		log.Warnf(c, "[accounts.AccountModifyHandler] cannot set savings fields with category \"%d\"", accountModifyReq.Category)
+		return nil, errs.ErrCannotSetSavingsFieldsForNonSavingsAccount
 	}
 
 	uid := c.GetCurrentUid()
@@ -705,6 +715,15 @@ func (a *AccountsApi) createNewAccountModel(uid int64, accountCreateReq *models.
 		accountExtend.CreditCardStatementDate = &accountCreateReq.CreditCardStatementDate
 	}
 
+	if !isSubAccount && accountCreateReq.Category == models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT {
+		if accountCreateReq.SavingsInterestRate > 0 {
+			accountExtend.SavingsInterestRate = &accountCreateReq.SavingsInterestRate
+		}
+		if accountCreateReq.SavingsEndDate > 0 {
+			accountExtend.SavingsEndDate = &accountCreateReq.SavingsEndDate
+		}
+	}
+
 	return &models.Account{
 		Uid:          uid,
 		Name:         accountCreateReq.Name,
@@ -759,6 +778,15 @@ func (a *AccountsApi) getToUpdateAccount(uid int64, accountModifyReq *models.Acc
 
 	if !isSubAccount && accountModifyReq.Category == models.ACCOUNT_CATEGORY_CREDIT_CARD {
 		newAccountExtend.CreditCardStatementDate = &accountModifyReq.CreditCardStatementDate
+	}
+
+	if !isSubAccount && accountModifyReq.Category == models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT {
+		if accountModifyReq.SavingsInterestRate > 0 {
+			newAccountExtend.SavingsInterestRate = &accountModifyReq.SavingsInterestRate
+		}
+		if accountModifyReq.SavingsEndDate > 0 {
+			newAccountExtend.SavingsEndDate = &accountModifyReq.SavingsEndDate
+		}
 	}
 
 	newAccount := &models.Account{

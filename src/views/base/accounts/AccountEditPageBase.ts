@@ -88,6 +88,7 @@ export function useAccountEditPageBaseBase() {
     });
 
     const isAccountSupportCreditCardStatementDate = computed<boolean>(() => account.value && account.value.category === AccountCategory.CreditCard.type);
+    const isAccountSupportSavingsFields = computed<boolean>(() => account.value && account.value.category === AccountCategory.SavingsAccount.type);
 
     function getAccountCreditCardStatementDate(statementDate?: number): string | null {
         for (const item of allAvailableMonthDays.value) {
@@ -97,6 +98,19 @@ export function useAccountEditPageBaseBase() {
         }
 
         return null;
+    }
+
+    function calculateSavingsInterest(balance: number, interestRate: number, startDate: number, endDate: number): number {
+        if (!balance || !interestRate || !startDate || !endDate || endDate <= startDate) {
+            return 0;
+        }
+
+        const principal = balance / 100; // Convert from smallest currency unit
+        const rate = interestRate / 100; // Convert percentage to decimal
+        const daysBetween = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+        const interest = principal * rate * (daysBetween / 365); // Simple interest calculation
+
+        return Math.round(interest * 100); // Convert back to smallest currency unit
     }
 
     function getInputEmptyProblemMessage(account: Account, isSubAccount: boolean): string | null {
@@ -162,8 +176,10 @@ export function useAccountEditPageBaseBase() {
         allAccountTypes,
         allAvailableMonthDays,
         isAccountSupportCreditCardStatementDate,
+        isAccountSupportSavingsFields,
         // functions
         getAccountCreditCardStatementDate,
+        calculateSavingsInterest,
         isNewAccount,
         addSubAccount,
         setAccount
