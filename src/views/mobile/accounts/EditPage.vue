@@ -427,7 +427,7 @@
                                             </div>
                                             <div class="item-title">
                                                 <div class="list-item-custom-title no-padding">
-                                                    <ItemIcon icon-type="fixed-f7" icon-id="app_fill" :color="subAccount.color"></ItemIcon>
+                                                    <ItemIcon icon-type="account" :icon-id="subAccount.icon" :color="subAccount.color"></ItemIcon>
                                                 </div>
                                             </div>
                                         </div>
@@ -505,6 +505,37 @@
                     </date-time-selection-sheet>
                 </f7-list-item>
 
+                <f7-list-item
+                    link="#" no-chevron
+                    class="list-item-with-header-and-title"
+                    :header="tt('Interest Rate (%)')"
+                    :title="subAccount.savingsInterestRate ? subAccount.savingsInterestRate.toString() + '%' : ''"
+                    v-if="subAccount.category === AccountCategory.SavingsAccount.type"
+                    @click="subAccountContexts[idx].showSavingsInterestRateNumberPad = true"
+                >
+                    <number-pad-sheet
+                        :min-value="0"
+                        :max-value="100"
+                        :hint="tt('Interest Rate (%)')"
+                        v-model:show="subAccountContexts[idx].showSavingsInterestRateNumberPad"
+                        v-model="subAccount.savingsInterestRate">
+                    </number-pad-sheet>
+                </f7-list-item>
+
+                <f7-list-item
+                    link="#" no-chevron
+                    class="list-item-with-header-and-title"
+                    :header="tt('Savings Period')"
+                    :title="formatSavingsPeriod(subAccountSavingsPeriodInMonths[idx])"
+                    v-if="subAccount.category === AccountCategory.SavingsAccount.type"
+                    @click="subAccountContexts[idx].showSavingsPeriodSelection = true"
+                >
+                    <month-period-selection-sheet
+                        v-model:show="subAccountContexts[idx].showSavingsPeriodSelection"
+                        v-model="subAccountSavingsPeriodInMonths[idx]">
+                    </month-period-selection-sheet>
+                </f7-list-item>
+
                 <f7-list-item :title="tt('Visible')" v-if="editAccountId && !isNewAccount(subAccount)">
                     <f7-toggle :checked="subAccount.visible" @toggle:change="subAccount.visible = $event"></f7-toggle>
                 </f7-list-item>
@@ -552,7 +583,7 @@ import { useAccountEditPageBaseBase } from '@/views/base/accounts/AccountEditPag
 import { useAccountsStore } from '@/stores/account.ts';
 
 import type { LocalizedCurrencyInfo } from '@/core/currency.ts';
-import { AccountType } from '@/core/account.ts';
+import { AccountType, AccountCategory } from '@/core/account.ts';
 import { ALL_ACCOUNT_ICONS } from '@/consts/icon.ts';
 import { ALL_ACCOUNT_COLORS } from '@/consts/color.ts';
 import { TRANSACTION_MIN_AMOUNT, TRANSACTION_MAX_AMOUNT } from '@/consts/transaction.ts';
@@ -644,6 +675,7 @@ const showDeleteActionSheet = ref<boolean>(false);
 
 const allCurrencies = computed<LocalizedCurrencyInfo[]>(() => getAllCurrencies());
 const savingsPeriodInMonths = ref<number>(0);
+const subAccountSavingsPeriodInMonths = ref<number[]>([]);
 
 function formatAccountDisplayBalance(selectedAccount: Account): string {
     const balance = account.value.isLiability ? -selectedAccount.balance : selectedAccount.balance;
@@ -692,9 +724,22 @@ function init(): void {
         }).then(response => {
             setAccount(response);
             subAccountContexts.value = [];
+            subAccountSavingsPeriodInMonths.value = [];
 
             for (let i = 0; i < subAccounts.value.length; i++) {
                 subAccountContexts.value.push(Object.assign({}, DEFAULT_ACCOUNT_CONTEXT));
+                
+                // Initialize sub-account savings period from existing end date
+                const subAccount = subAccounts.value[i];
+                if (subAccount.savingsEndDate && subAccount.savingsEndDate > 0) {
+                    const currentDate = new Date();
+                    const targetDate = new Date(subAccount.savingsEndDate * 1000);
+                    const diffTime = targetDate.getTime() - currentDate.getTime();
+                    const diffMonths = Math.round(diffTime / (1000 * 60 * 60 * 24 * 30.44));
+                    subAccountSavingsPeriodInMonths.value.push(diffMonths > 0 ? diffMonths : 0);
+                } else {
+                    subAccountSavingsPeriodInMonths.value.push(0);
+                }
             }
 
             loading.value = false;
@@ -752,6 +797,7 @@ function save(): void {
 function addSubAccountAndContext(): void {
     if (addSubAccount()) {
         subAccountContexts.value.push(Object.assign({}, DEFAULT_ACCOUNT_CONTEXT));
+        subAccountSavingsPeriodInMonths.value.push(0);
     }
 }
 
@@ -774,6 +820,7 @@ function removeSubAccount(subAccount: Account | null, confirm: boolean): void {
         if (subAccounts.value[i] === subAccount) {
             subAccounts.value.splice(i, 1);
             subAccountContexts.value.splice(i, 1);
+            subAccountSavingsPeriodInMonths.value.splice(i, 1);
         }
     }
 }
@@ -855,6 +902,22 @@ watch(savingsPeriodInMonths, (newMonths) => {
         account.value.savingsEndDate = 0;
     }
 });
+
+// Convert months to end date for sub-accounts when savings period changes
+watch(subAccountSavingsPeriodInMonths, (newMonthsArray, oldMonthsArray) => {
+    for (let i = 0; i < newMonthsArray.length && i < subAccounts.value.length; i++) {
+        if (!oldMonthsArray || newMonthsArray[i] !== oldMonthsArray[i]) {
+            if (newMonthsArray[i] > 0) {
+                const currentDate = new Date();
+                const endDate = new Date(currentDate);
+                endDate.setMonth(endDate.getMonth() + newMonthsArray[i]);
+                subAccounts.value[i].savingsEndDate = Math.floor(endDate.getTime() / 1000);
+            } else {
+                subAccounts.value[i].savingsEndDate = 0;
+            }
+        }
+    }
+}, { deep: true });
 
 // Initialize savings period from existing end date
 watch(() => account.value.savingsEndDate, (endDate) => {

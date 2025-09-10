@@ -14,6 +14,14 @@
             <div class="block-title">{{ tt('Select Period') }}</div>
             <f7-list dividers class="no-margin-vertical">
                 <f7-list-item link="#" no-chevron
+                              :title="tt('1 month')"
+                              :class="{ 'list-item-selected': selectedMonths === 1 }"
+                              @click="selectPeriod(1)">
+                    <template #content-start>
+                        <f7-icon class="list-item-checked-icon" f7="checkmark_alt" :style="{ 'color': selectedMonths === 1 ? '' : 'transparent' }"></f7-icon>
+                    </template>
+                </f7-list-item>
+                <f7-list-item link="#" no-chevron
                               :title="tt('3 months')"
                               :class="{ 'list-item-selected': selectedMonths === 3 }"
                               @click="selectPeriod(3)">
@@ -39,10 +47,10 @@
                 </f7-list-item>
                 <f7-list-item link="#" no-chevron
                               :title="customMonthsDisplay"
-                              :class="{ 'list-item-selected': selectedMonths !== 3 && selectedMonths !== 6 && selectedMonths !== 12 && selectedMonths > 0 }"
+                              :class="{ 'list-item-selected': selectedMonths !== 1 && selectedMonths !== 3 && selectedMonths !== 6 && selectedMonths !== 12 && selectedMonths > 0 }"
                               @click="showCustomMonthsInput = true">
                     <template #content-start>
-                        <f7-icon class="list-item-checked-icon" f7="checkmark_alt" :style="{ 'color': (selectedMonths !== 3 && selectedMonths !== 6 && selectedMonths !== 12 && selectedMonths > 0) ? '' : 'transparent' }"></f7-icon>
+                        <f7-icon class="list-item-checked-icon" f7="checkmark_alt" :style="{ 'color': (selectedMonths !== 1 && selectedMonths !== 3 && selectedMonths !== 6 && selectedMonths !== 12 && selectedMonths > 0) ? '' : 'transparent' }"></f7-icon>
                     </template>
                 </f7-list-item>
             </f7-list>
@@ -80,7 +88,7 @@ const customMonths = ref<number>(1);
 const showCustomMonthsInput = ref<boolean>(false);
 
 const customMonthsDisplay = computed<string>(() => {
-    if (selectedMonths.value > 0 && selectedMonths.value !== 3 && selectedMonths.value !== 6 && selectedMonths.value !== 12) {
+    if (selectedMonths.value > 0 && selectedMonths.value !== 1 && selectedMonths.value !== 3 && selectedMonths.value !== 6 && selectedMonths.value !== 12) {
         return `${selectedMonths.value} ${tt('months')}`;
     }
     return tt('Custom months');
@@ -102,7 +110,7 @@ function confirm(): void {
 
 function onSheetOpen(): void {
     selectedMonths.value = props.modelValue || 0;
-    if (selectedMonths.value > 0 && selectedMonths.value !== 3 && selectedMonths.value !== 6 && selectedMonths.value !== 12) {
+    if (selectedMonths.value > 0 && selectedMonths.value !== 1 && selectedMonths.value !== 3 && selectedMonths.value !== 6 && selectedMonths.value !== 12) {
         customMonths.value = selectedMonths.value;
     }
 }
@@ -112,8 +120,13 @@ function onSheetClosed(): void {
 }
 
 watch(customMonths, (newValue) => {
-    if (showCustomMonthsInput.value && newValue > 0) {
+    if (newValue > 0) {
         selectedMonths.value = newValue;
+    }
+});
+
+watch(() => props.show, (newShow) => {
+    if (!newShow && showCustomMonthsInput.value) {
         showCustomMonthsInput.value = false;
     }
 });

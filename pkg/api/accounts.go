@@ -715,7 +715,7 @@ func (a *AccountsApi) createNewAccountModel(uid int64, accountCreateReq *models.
 		accountExtend.CreditCardStatementDate = &accountCreateReq.CreditCardStatementDate
 	}
 
-	if !isSubAccount && accountCreateReq.Category == models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT {
+	if accountCreateReq.Category == models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT {
 		if accountCreateReq.SavingsInterestRate > 0 {
 			accountExtend.SavingsInterestRate = &accountCreateReq.SavingsInterestRate
 		}
@@ -741,6 +741,15 @@ func (a *AccountsApi) createNewAccountModel(uid int64, accountCreateReq *models.
 
 func (a *AccountsApi) createNewSubAccountModelForModify(uid int64, accountType models.AccountType, accountModifyReq *models.AccountModifyRequest, order int32) *models.Account {
 	accountExtend := &models.AccountExtend{}
+
+	if accountModifyReq.Category == models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT {
+		if accountModifyReq.SavingsInterestRate > 0 {
+			accountExtend.SavingsInterestRate = &accountModifyReq.SavingsInterestRate
+		}
+		if accountModifyReq.SavingsEndDate > 0 {
+			accountExtend.SavingsEndDate = &accountModifyReq.SavingsEndDate
+		}
+	}
 
 	return &models.Account{
 		Uid:          uid,
@@ -780,7 +789,7 @@ func (a *AccountsApi) getToUpdateAccount(uid int64, accountModifyReq *models.Acc
 		newAccountExtend.CreditCardStatementDate = &accountModifyReq.CreditCardStatementDate
 	}
 
-	if !isSubAccount && accountModifyReq.Category == models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT {
+	if accountModifyReq.Category == models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT {
 		if accountModifyReq.SavingsInterestRate > 0 {
 			newAccountExtend.SavingsInterestRate = &accountModifyReq.SavingsInterestRate
 		}
@@ -818,6 +827,18 @@ func (a *AccountsApi) getToUpdateAccount(uid int64, accountModifyReq *models.Acc
 	oldAccountExtend := oldAccount.Extend
 
 	if newAccountExtend.CreditCardStatementDate != oldAccountExtend.CreditCardStatementDate {
+		return newAccount
+	}
+
+	if (newAccountExtend.SavingsInterestRate == nil && oldAccountExtend.SavingsInterestRate != nil) ||
+		(newAccountExtend.SavingsInterestRate != nil && oldAccountExtend.SavingsInterestRate == nil) ||
+		(newAccountExtend.SavingsInterestRate != nil && oldAccountExtend.SavingsInterestRate != nil && *newAccountExtend.SavingsInterestRate != *oldAccountExtend.SavingsInterestRate) {
+		return newAccount
+	}
+
+	if (newAccountExtend.SavingsEndDate == nil && oldAccountExtend.SavingsEndDate != nil) ||
+		(newAccountExtend.SavingsEndDate != nil && oldAccountExtend.SavingsEndDate == nil) ||
+		(newAccountExtend.SavingsEndDate != nil && oldAccountExtend.SavingsEndDate != nil && *newAccountExtend.SavingsEndDate != *oldAccountExtend.SavingsEndDate) {
 		return newAccount
 	}
 
