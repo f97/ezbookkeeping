@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Savings Account Demo - ezBookkeeping</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 375px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #007AFF;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+        }
+        .form-section {
+            padding: 20px;
+        }
+        .form-item {
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .form-item:hover {
+            background-color: #f8f8f8;
+        }
+        .form-item:last-child {
+            border-bottom: none;
+        }
+        .form-label {
+            color: #333;
+            font-weight: 500;
+        }
+        .form-value {
+            color: #666;
+            font-size: 14px;
+        }
+        .form-value.empty {
+            color: #999;
+            font-style: italic;
+        }
+        .demo-note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px;
+            color: #856404;
+        }
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .before-after h3 {
+            text-align: center;
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+        .before {
+            opacity: 0.6;
+        }
+        .after {
+            border: 2px solid #28a745;
+            border-radius: 10px;
+        }
+        .fix-indicator {
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .error-indicator {
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-note">
+        <h3>🛠️ Mobile Savings Account UI Fix Demo</h3>
+        <p>This demonstrates the fix for the mobile savings account issue where the Interest Rate (%) and End Date fields were not clickable due to non-existent components.</p>
+        <p><strong>Problem:</strong> The original code used <code>number-pad-popup</code> and <code>date-time-selection-popup</code> which don't exist.</p>
+        <p><strong>Solution:</strong> Replaced with <code>NumberPadSheet</code> and a new <code>MonthPeriodSelectionSheet</code> component for better UX.</p>
+    </div>
+
+    <div class="before-after">
+        <div class="before">
+            <h3>❌ Before (Broken)</h3>
+            <div class="container">
+                <div class="header">
+                    <h2>Add Savings Account</h2>
+                </div>
+                <div class="form-section">
+                    <div class="form-item">
+                        <div class="form-label">Account Name</div>
+                        <div class="form-value">My Savings</div>
+                    </div>
+                    <div class="form-item">
+                        <div class="form-label">Interest Rate (%)</div>
+                        <div class="form-value empty">
+                            Not clickable <span class="error-indicator">Broken</span>
+                        </div>
+                    </div>
+                    <div class="form-item">
+                        <div class="form-label">End Date</div>
+                        <div class="form-value empty">
+                            Not clickable <span class="error-indicator">Broken</span>
+                        </div>
+                    </div>
+                    <div class="form-item">
+                        <div class="form-label">Account Balance</div>
+                        <div class="form-value">$0.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="after">
+            <h3>✅ After (Fixed)</h3>
+            <div class="container">
+                <div class="header">
+                    <h2>Add Savings Account</h2>
+                </div>
+                <div class="form-section">
+                    <div class="form-item">
+                        <div class="form-label">Account Name</div>
+                        <div class="form-value">My Savings</div>
+                    </div>
+                    <div class="form-item" onclick="showInterestRateDemo()">
+                        <div class="form-label">Interest Rate (%)</div>
+                        <div class="form-value">
+                            2.5% <span class="fix-indicator">Fixed</span>
+                        </div>
+                    </div>
+                    <div class="form-item" onclick="showPeriodDemo()">
+                        <div class="form-label">Savings Period</div>
+                        <div class="form-value">
+                            12 months <span class="fix-indicator">New Feature</span>
+                        </div>
+                    </div>
+                    <div class="form-item">
+                        <div class="form-label">Account Balance</div>
+                        <div class="form-value">$1,000.00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-note">
+        <h3>🔧 Technical Changes Made</h3>
+        <ul>
+            <li><strong>Fixed Interest Rate Field:</strong> Changed from non-existent <code>number-pad-popup</code> to <code>number-pad-sheet</code></li>
+            <li><strong>Improved End Date UX:</strong> Replaced date picker with intuitive month period selection (3, 6, 12, or custom months)</li>
+            <li><strong>Added New Component:</strong> Created <code>MonthPeriodSelectionSheet.vue</code> for better mobile UX</li>
+            <li><strong>Better Localization:</strong> All text properly localized with <code>tt()</code> function</li>
+            <li><strong>Responsive Design:</strong> Components work properly on mobile devices</li>
+        </ul>
+    </div>
+
+    <div class="demo-note">
+        <h3>📱 Component Features</h3>
+        <h4>Interest Rate Selection:</h4>
+        <ul>
+            <li>Mobile-friendly number pad</li>
+            <li>Supports decimal values (0.00% to 100.00%)</li>
+            <li>Automatic % symbol display</li>
+        </ul>
+        
+        <h4>Savings Period Selection:</h4>
+        <ul>
+            <li>Quick selection: 3, 6, 12 months</li>
+            <li>Custom month input (1-240 months)</li>
+            <li>Clear and intuitive interface</li>
+            <li>Automatic end date calculation</li>
+        </ul>
+    </div>
+
+    <script>
+        function showInterestRateDemo() {
+            alert('Interest Rate Selection\n\n' +
+                  '✅ Now works with NumberPadSheet component\n' +
+                  '• Mobile-friendly number pad\n' +
+                  '• Range: 0.00% to 100.00%\n' +
+                  '• Decimal precision: 2 places\n' +
+                  '• Auto % symbol formatting\n\n' +
+                  'Previous issue: Used non-existent number-pad-popup');
+        }
+
+        function showPeriodDemo() {
+            alert('Savings Period Selection\n\n' +
+                  '✅ New MonthPeriodSelectionSheet component\n' +
+                  '• Quick options: 3, 6, 12 months\n' +
+                  '• Custom period: 1-240 months\n' +
+                  '• Better UX than date picker\n' +
+                  '• Auto-calculates end date\n\n' +
+                  'Previous issue: Used non-existent date-time-selection-popup');
+        }
+    </script>
+</body>
+</html>
