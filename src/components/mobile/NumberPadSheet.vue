@@ -114,11 +114,11 @@ const digits = computed<string[]>(() => getAllLocalizedDigits());
 const decimalSeparator = computed<string>(() => getCurrentDecimalSeparator());
 
 const supportDecimalSeparator = computed<boolean>(() => {
-    if (!props.currency || !ALL_CURRENCIES[props.currency] || !isNumber(ALL_CURRENCIES[props.currency].fraction)) {
+    if (!props.currency || !ALL_CURRENCIES[props.currency] || !isNumber(ALL_CURRENCIES[props.currency]!.fraction)) {
         return true;
     }
 
-    return (ALL_CURRENCIES[props.currency].fraction as number) > 0;
+    return (ALL_CURRENCIES[props.currency]!.fraction as number) > 0;
 });
 
 const currentDisplay = computed<string>(() => {
@@ -343,7 +343,7 @@ function confirm(): boolean {
                 finalValue = previous - current;
                 break;
             case '×':
-                finalValue = Math.round(previous * current / 100);
+                finalValue = Math.trunc(previous * current / 100);
                 break;
             default:
                 finalValue = previous;
