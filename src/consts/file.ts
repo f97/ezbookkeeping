@@ -197,7 +197,7 @@ export const SUPPORTED_IMPORT_FILE_CATEGORY_AND_TYPES: ImportFileCategoryAndType
         fileTypes: [
             {
                 type: 'alipay_app_csv',
-                name: 'Alipay (App) Transaction Flow File',
+                name: 'Alipay (App) Statement File',
                 extensions: '.csv',
                 document: {
                     supportMultiLanguages: 'zh-Hans',
@@ -206,7 +206,7 @@ export const SUPPORTED_IMPORT_FILE_CATEGORY_AND_TYPES: ImportFileCategoryAndType
             },
             {
                 type: 'alipay_web_csv',
-                name: 'Alipay (Web) Transaction Flow File',
+                name: 'Alipay (Web) Statement File',
                 extensions: '.csv',
                 document: {
                     supportMultiLanguages: 'zh-Hans',
@@ -215,7 +215,7 @@ export const SUPPORTED_IMPORT_FILE_CATEGORY_AND_TYPES: ImportFileCategoryAndType
             },
             {
                 type: 'wechat_pay_app',
-                name: 'WeChat Pay Billing File',
+                name: 'WeChat Pay Statement File',
                 extensions: '.xlsx,.csv',
                 subTypes: [
                     {
@@ -232,6 +232,15 @@ export const SUPPORTED_IMPORT_FILE_CATEGORY_AND_TYPES: ImportFileCategoryAndType
                 document: {
                     supportMultiLanguages: 'zh-Hans',
                     anchor: '如何获取微信支付账单文件'
+                }
+            },
+            {
+                type: 'jdcom_finance_app_csv',
+                name: 'JD.com Finance Statement File',
+                extensions: '.csv',
+                document: {
+                    supportMultiLanguages: 'zh-Hans',
+                    anchor: '如何获取京东金融账单文件'
                 }
             }
         ]
