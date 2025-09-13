@@ -120,7 +120,7 @@
             "selectedCount": "Đã chọn {count} trên {totalCount}",
             "youHaveUpdatedTransactions": "Bạn đã cập nhật {count} giao dịch",
             "confirmImportTransactions": "Bạn có chắc chắn muốn nhập {count} giao dịch không?",
-            "importingTransactions": "Importing ({process}%)",
+            "importingTransactions": "Đang nhập ({process}%)",
             "importTransactionResult": "Bạn đã nhập thành công {count} giao dịch.",
             "accountActivationAndResendValidationEmailTip": "Liên kết kích hoạt tài khoản đã được gửi tới email của bạn: {email}. Nếu bạn không nhận được email, vui lòng nhập lại mật khẩu và nhấp nút bên dưới để gửi lại email xác nhận.",
             "resendValidationEmailTip": "Nếu bạn không nhận được email, vui lòng nhập lại mật khẩu và nhấp nút bên dưới để gửi lại email xác nhận tới: {email}"
