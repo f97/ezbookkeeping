@@ -82,7 +82,7 @@
                     </v-expansion-panel-title>
                     <v-expansion-panel-text>
                         <v-list rounded density="comfortable" class="pa-0">
-                            <div class="py-3" v-if="!hasAvailableCategory[transactionType.type]">{{ tt('No available category') }}</div>
+                            <div class="ms-5 py-3" v-if="!hasAvailableCategory[transactionType.type]">{{ tt('No available category') }}</div>
 
                             <template :key="category.id"
                                       v-for="(category, idx) in transactionType.allCategories">
@@ -108,7 +108,7 @@
                                         v-if="(showHidden || !category.hidden) && ((showHidden && transactionType.allSubCategories[category.id]) || transactionType.allVisibleSubCategoryCounts[category.id])">
                                     <template :key="subCategory.id"
                                               v-for="(subCategory, subIdx) in transactionType.allSubCategories[category.id]">
-                                        <v-divider v-if="showHidden ? subIdx > 0 : (!subCategory.hidden ? subIdx > transactionType.allFirstVisibleSubCategoryIndexes[category.id] : false)"/>
+                                        <v-divider v-if="showHidden ? subIdx > 0 : (!subCategory.hidden ? subIdx > (transactionType.allFirstVisibleSubCategoryIndexes[category.id] as number) : false)"/>
 
                                         <v-list-item v-if="showHidden || !subCategory.hidden">
                                             <template #prepend>

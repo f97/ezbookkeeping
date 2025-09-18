@@ -8,6 +8,8 @@
                     <h4 class="text-h4" v-if="mode === 'batchReplace' && type === 'transferCategory'">{{ tt('Batch Replace Selected Transfer Categories') }}</h4>
                     <h4 class="text-h4" v-if="mode === 'batchReplace' && type === 'account'">{{ tt('Batch Replace Selected Accounts') }}</h4>
                     <h4 class="text-h4" v-if="mode === 'batchReplace' && type === 'destinationAccount'">{{ tt('Batch Replace Selected Destination Accounts') }}</h4>
+                    <h4 class="text-h4" v-if="mode === 'batchReplace' && type === 'tag'">{{ tt('Batch Replace Selected Transaction Tags') }}</h4>
+                    <h4 class="text-h4" v-if="mode === 'batchAdd' && type === 'tag'">{{ tt('Batch Add Transaction Tags') }}</h4>
                     <h4 class="text-h4" v-if="mode === 'replaceInvalidItems' && type === 'expenseCategory'">{{ tt('Replace Invalid Expense Categories') }}</h4>
                     <h4 class="text-h4" v-if="mode === 'replaceInvalidItems' && type === 'incomeCategory'">{{ tt('Replace Invalid Income Categories') }}</h4>
                     <h4 class="text-h4" v-if="mode === 'replaceInvalidItems' && type === 'transferCategory'">{{ tt('Replace Invalid Transfer Categories') }}</h4>
@@ -131,6 +133,19 @@
             </v-card-text>
             <v-card-text class="my-md-4 w-100 d-flex justify-center" v-if="type === 'tag'">
                 <v-row>
+                    <v-col cols="12" v-if="mode === 'batchReplace'">
+                        <v-autocomplete
+                            item-title="name"
+                            item-value="value"
+                            persistent-placeholder
+                            :disabled="loading"
+                            :label="tt('Source Value')"
+                            :placeholder="tt('Source Value')"
+                            :items="allSourceTagItems"
+                            :no-data-text="tt('No available tag')"
+                            v-model="sourceItem">
+                        </v-autocomplete>
+                    </v-col>
                     <v-col cols="12" v-if="mode === 'replaceInvalidItems'">
                         <v-autocomplete
                             item-title="name"
@@ -150,7 +165,7 @@
                             item-value="id"
                             persistent-placeholder
                             chips
-                            :disabled="loading"
+                            :disabled="loading || removeTag"
                             :label="tt('Target Tag')"
                             :placeholder="tt('Target Tag')"
                             :items="allTags"
@@ -175,11 +190,15 @@
                             </template>
                         </v-autocomplete>
                     </v-col>
+                    <v-col cols="12" class="pt-0" v-if="mode === 'batchReplace' || mode === 'replaceInvalidItems'">
+                        <v-switch :disabled="loading"
+                                  :label="tt('Remove Tag')" v-model="removeTag"/>
+                    </v-col>
                 </v-row>
             </v-card-text>
             <v-card-text class="overflow-y-visible">
                 <div class="w-100 d-flex justify-center gap-4">
-                    <v-btn :disabled="loading || (mode === 'replaceInvalidItems' && !sourceItem && sourceItem !== '') || (!targetItem && targetItem !== '')" @click="confirm">{{ tt('OK') }}</v-btn>
+                    <v-btn :disabled="loading || ((mode === 'replaceInvalidItems' || (mode === 'batchReplace' && type === 'tag')) && !sourceItem && sourceItem !== '') || (!targetItem && targetItem !== '' && !removeTag)" @click="confirm">{{ tt('OK') }}</v-btn>
                     <v-btn color="secondary" variant="tonal" :disabled="loading" @click="cancel">{{ tt('Cancel') }}</v-btn>
                 </div>
             </v-card-text>
@@ -192,7 +211,7 @@
 <script setup lang="ts">
 import SnackBar from '@/components/desktop/SnackBar.vue';
 
-import { ref, computed, useTemplateRef } from 'vue';
+import { ref, computed, useTemplateRef, watch } from 'vue';
 
 import { useI18n } from '@/locales/helpers.ts';
 
@@ -217,7 +236,7 @@ import {
     mdiPound
 } from '@mdi/js';
 
-export type BatchReplaceDialogMode = 'batchReplace' | 'replaceInvalidItems';
+export type BatchReplaceDialogMode = 'batchReplace' | 'batchAdd' | 'replaceInvalidItems';
 export type BatchReplaceDialogDataType = 'expenseCategory' | 'incomeCategory' | 'transferCategory' | 'account' | 'destinationAccount' | 'tag';
 
 type SnackBarType = InstanceType<typeof SnackBar>;
@@ -241,8 +260,10 @@ const loading = ref<boolean>(false);
 const mode = ref<BatchReplaceDialogMode | ''>('');
 const type = ref<BatchReplaceDialogDataType | ''>('');
 const invalidItems = ref<NameValue[] | undefined>([]);
+const allSourceTagItems = ref<NameValue[] | undefined>([]);
 const sourceItem = ref<string | undefined>(undefined);
 const targetItem = ref<string | undefined>(undefined);
+const removeTag = ref<boolean>(false);
 
 let resolveFunc: ((response: BatchReplaceDialogResponse) => void) | null = null;
 let rejectFunc: ((reason?: unknown) => void) | null = null;
@@ -266,18 +287,25 @@ function getAccountDisplayName(accountId?: string): string {
     }
 }
 
-function open(options: { mode: BatchReplaceDialogMode; type: BatchReplaceDialogDataType; invalidItems?: NameValue[] }): Promise<BatchReplaceDialogResponse> {
+function open(options: { mode: BatchReplaceDialogMode; type: BatchReplaceDialogDataType; invalidItems?: NameValue[], allSourceTagItems?: NameValue[] }): Promise<BatchReplaceDialogResponse> {
     mode.value = options.mode;
     type.value = options.type;
     sourceItem.value = undefined;
 
-    if (mode.value === 'batchReplace') {
-        invalidItems.value = undefined;
-    } else if (mode.value === 'replaceInvalidItems') {
+    if (mode.value === 'replaceInvalidItems') {
         invalidItems.value = options.invalidItems;
+    } else {
+        invalidItems.value = undefined;
+    }
+
+    if (type.value === 'tag' && mode.value === 'batchReplace') {
+        allSourceTagItems.value = options.allSourceTagItems;
+    } else {
+        allSourceTagItems.value = undefined;
     }
 
     targetItem.value = undefined;
+    removeTag.value = false;
     showState.value = true;
 
     return new Promise((resolve, reject) => {
@@ -327,14 +355,29 @@ function reload(): void {
 }
 
 function confirm(): void {
-    if (mode.value === 'batchReplace') {
+    let targetItemValue: string | undefined = targetItem.value;
+
+    if (type.value === 'tag' && removeTag.value) {
+        targetItemValue = undefined;
+    }
+
+    if (mode.value === 'batchReplace' && type.value !== 'tag') {
         resolveFunc?.({
-            targetItem: targetItem.value
+            targetItem: targetItemValue
+        });
+    } else if (mode.value === 'batchReplace' && type.value === 'tag') {
+        resolveFunc?.({
+            sourceItem: sourceItem.value,
+            targetItem: targetItemValue
+        });
+    } else if (mode.value === 'batchAdd') {
+        resolveFunc?.({
+            targetItem: targetItemValue
         });
     } else if (mode.value === 'replaceInvalidItems') {
         resolveFunc?.({
             sourceItem: sourceItem.value,
-            targetItem: targetItem.value
+            targetItem: targetItemValue
         });
     }
 
@@ -345,6 +388,12 @@ function cancel(): void {
     rejectFunc?.();
     showState.value = false;
 }
+
+watch(removeTag, (newValue) => {
+    if (newValue) {
+        targetItem.value = undefined;
+    }
+});
 
 defineExpose({
     open

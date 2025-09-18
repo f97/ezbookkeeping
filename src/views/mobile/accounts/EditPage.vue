@@ -397,7 +397,7 @@
                     <template #default>
                         <div class="grid grid-cols-2">
                             <div class="list-item-subitem no-chevron">
-                                <a class="item-link" href="#" @click="subAccountContexts[idx].showIconSelectionSheet = true">
+                                <a class="item-link" href="#" @click="subAccountContexts[idx]!.showIconSelectionSheet = true">
                                     <div class="item-content">
                                         <div class="item-inner">
                                             <div class="item-header">
@@ -414,12 +414,12 @@
 
                                 <icon-selection-sheet :all-icon-infos="ALL_ACCOUNT_ICONS"
                                                       :color="subAccount.color"
-                                                      v-model:show="subAccountContexts[idx].showIconSelectionSheet"
+                                                      v-model:show="subAccountContexts[idx]!.showIconSelectionSheet"
                                                       v-model="subAccount.icon"
                                 ></icon-selection-sheet>
                             </div>
                             <div class="list-item-subitem no-chevron">
-                                <a class="item-link" href="#" @click="subAccountContexts[idx].showColorSelectionSheet = true">
+                                <a class="item-link" href="#" @click="subAccountContexts[idx]!.showColorSelectionSheet = true">
                                     <div class="item-content">
                                         <div class="item-inner">
                                             <div class="item-header">
@@ -435,7 +435,7 @@
                                 </a>
 
                                 <color-selection-sheet :all-color-infos="ALL_ACCOUNT_COLORS"
-                                                       v-model:show="subAccountContexts[idx].showColorSelectionSheet"
+                                                       v-model:show="subAccountContexts[idx]!.showColorSelectionSheet"
                                                        v-model="subAccount.color"
                                 ></color-selection-sheet>
                             </div>
@@ -448,7 +448,7 @@
                     link="#"
                     :header="tt('Currency')"
                     :no-chevron="!!editAccountId && !isNewAccount(subAccount)"
-                    @click="subAccountContexts[idx].showCurrencyPopup = true"
+                    @click="subAccountContexts[idx]!.showCurrencyPopup = true"
                 >
                     <template #title>
                         <div class="no-padding no-margin">
@@ -464,7 +464,7 @@
                                                :filter-placeholder="tt('Currency')"
                                                :filter-no-items-text="tt('No results')"
                                                :items="allCurrencies"
-                                               v-model:show="subAccountContexts[idx].showCurrencyPopup"
+                                               v-model:show="subAccountContexts[idx]!.showCurrencyPopup"
                                                v-model="subAccount.currency">
                     </list-item-selection-popup>
                 </f7-list-item>
@@ -474,13 +474,13 @@
                     class="list-item-with-header-and-title"
                     :header="account.isLiability ? tt('Sub-account Outstanding Balance') : tt('Sub-account Balance')"
                     :title="formatAccountDisplayBalance(subAccount)"
-                    @click="subAccountContexts[idx].showBalanceSheet = true"
+                    @click="subAccountContexts[idx]!.showBalanceSheet = true"
                 >
                     <number-pad-sheet :min-value="TRANSACTION_MIN_AMOUNT"
                                       :max-value="TRANSACTION_MAX_AMOUNT"
                                       :currency="subAccount.currency"
                                       :flip-negative="account.isLiability"
-                                      v-model:show="subAccountContexts[idx].showBalanceSheet"
+                                      v-model:show="subAccountContexts[idx]!.showBalanceSheet"
                                       v-model="subAccount.balance"
                     ></number-pad-sheet>
                 </f7-list-item>
@@ -492,15 +492,15 @@
                     v-if="!editAccountId || isNewAccount(subAccount)"
                 >
                     <template #header>
-                        <div class="account-edit-balancetime-header" @click="showDateTimeDialog(subAccountContexts[idx], 'time')">{{ tt('Sub-account Balance Time') }}</div>
+                        <div class="account-edit-balancetime-header" @click="showDateTimeDialog(subAccountContexts[idx] as AccountContext, 'time')">{{ tt('Sub-account Balance Time') }}</div>
                     </template>
                     <template #title>
                         <div class="account-edit-balancetime-title">
-                            <div @click="showDateTimeDialog(subAccountContexts[idx], 'date')">{{ formatAccountBalanceDate(subAccount) }}</div>&nbsp;<div class="account-edit-balancetime-time" @click="showDateTimeDialog(subAccountContexts[idx], 'time')">{{ formatAccountBalanceTime(subAccount) }}</div>
+                            <div @click="showDateTimeDialog(subAccountContexts[idx] as AccountContext, 'date')">{{ formatAccountBalanceDate(subAccount) }}</div>&nbsp;<div class="account-edit-balancetime-time" @click="showDateTimeDialog(subAccountContexts[idx] as AccountContext, 'time')">{{ formatAccountBalanceTime(subAccount) }}</div>
                         </div>
                     </template>
-                    <date-time-selection-sheet :init-mode="subAccountContexts[idx].balanceDateTimeSheetMode"
-                                               v-model:show="subAccountContexts[idx].showBalanceDateTimeSheet"
+                    <date-time-selection-sheet :init-mode="subAccountContexts[idx]!.balanceDateTimeSheetMode"
+                                               v-model:show="subAccountContexts[idx]!.showBalanceDateTimeSheet"
                                                v-model="subAccount.balanceTime">
                     </date-time-selection-sheet>
                 </f7-list-item>
@@ -582,6 +582,7 @@ import { useAccountEditPageBaseBase } from '@/views/base/accounts/AccountEditPag
 
 import { useAccountsStore } from '@/stores/account.ts';
 
+import { itemAndIndex } from '@/core/base.ts';
 import type { LocalizedCurrencyInfo } from '@/core/currency.ts';
 import { AccountType, AccountCategory } from '@/core/account.ts';
 import { ALL_ACCOUNT_ICONS } from '@/consts/icon.ts';
@@ -801,14 +802,14 @@ function addSubAccountAndContext(): void {
     }
 }
 
-function removeSubAccount(subAccount: Account | null, confirm: boolean): void {
-    if (!subAccount) {
+function removeSubAccount(currentSubAccount: Account | null, confirm: boolean): void {
+    if (!currentSubAccount) {
         showAlert('An error occurred');
         return;
     }
 
     if (!confirm) {
-        subAccountToDelete.value = subAccount;
+        subAccountToDelete.value = currentSubAccount;
         showDeleteActionSheet.value = true;
         return;
     }
@@ -816,10 +817,10 @@ function removeSubAccount(subAccount: Account | null, confirm: boolean): void {
     showDeleteActionSheet.value = false;
     subAccountToDelete.value = null;
 
-    for (let i = 0; i < subAccounts.value.length; i++) {
-        if (subAccounts.value[i] === subAccount) {
-            subAccounts.value.splice(i, 1);
-            subAccountContexts.value.splice(i, 1);
+    for (const [subAccount, index] of itemAndIndex(subAccounts.value)) {
+        if (subAccount === currentSubAccount) {
+            subAccounts.value.splice(index, 1);
+            subAccountContexts.value.splice(index, 1);
             subAccountSavingsPeriodInMonths.value.splice(i, 1);
         }
     }

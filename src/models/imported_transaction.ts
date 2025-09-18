@@ -42,8 +42,8 @@ export class ImportTransaction implements ImportTransactionResponse {
         this.originalDestinationAccountCurrency = response.originalDestinationAccountCurrency;
         this.sourceAmount = response.sourceAmount;
         this.destinationAmount = response.destinationAmount || 0;
-        this.tagIds = response.tagIds;
-        this.originalTagNames = response.originalTagNames;
+        this.tagIds = response.tagIds || [];
+        this.originalTagNames = response.originalTagNames || [];
         this.comment = response.comment;
         this.geoLocation = response.geoLocation;
 
@@ -101,6 +101,24 @@ export class ImportTransaction implements ImportTransactionResponse {
     public static of(response: ImportTransactionResponse, index: number): ImportTransaction {
         return new ImportTransaction(response, index);
     }
+}
+
+export interface ImportTransactionRequest {
+    readonly transactions: ImportTransactionRequestItem[];
+}
+
+export interface ImportTransactionRequestItem {
+    readonly time: string;
+    readonly utcOffset: string;
+    readonly type: string;
+    readonly categoryName?: string;
+    readonly sourceAccountName?: string;
+    readonly destinationAccountName?: string;
+    readonly sourceAmount: string;
+    readonly destinationAmount?: string;
+    readonly geoLocation?: string;
+    readonly tagNames?: string;
+    readonly comment?: string;
 }
 
 export interface ImportTransactionResponse {

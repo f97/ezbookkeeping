@@ -71,7 +71,7 @@ export function localizedPresetCategoriesToTransactionCategoryCreateWithSubCateg
     return categories;
 }
 
-export function getSecondaryTransactionMapByName(allCategories: TransactionCategory[]): Record<string, TransactionCategory> {
+export function getSecondaryTransactionMapByName(allCategories?: TransactionCategory[]): Record<string, TransactionCategory> {
     const ret: Record<string, TransactionCategory> = {};
 
     if (!allCategories) {
@@ -274,7 +274,7 @@ export function isSubCategoryIdAvailable(categories: TransactionCategory[], cate
     return false;
 }
 
-export function getFirstAvailableCategoryId(categories: TransactionCategory[]): string {
+export function getFirstAvailableCategoryId(categories?: TransactionCategory[]): string {
     if (!categories || !categories.length) {
         return '';
     }
@@ -395,9 +395,9 @@ export function containsAvailableCategory(allTransactionCategories: Record<numbe
 
     for (const [type, categoryType] of entries(allTransactionCategories)) {
         if (showHidden) {
-            result[type] = categoryType.allCategories && categoryType.allCategories.length > 0;
+            result[parseInt(type)] = categoryType.allCategories && categoryType.allCategories.length > 0;
         } else {
-            result[type] = categoryType.allVisibleCategoryCount > 0;
+            result[parseInt(type)] = categoryType.allVisibleCategoryCount > 0;
         }
     }
 
