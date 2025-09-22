@@ -33,6 +33,9 @@ import {
 import {
     type ExportTransactionDataRequest
 } from '@/models/data_management.ts';
+import type {
+    RecognizedReceiptImageResponse
+} from '@/models/large_language_model.ts';
 
 import {
     getUserTransactionDraft,
@@ -450,7 +453,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         }
     }
 
-    function isTransactionDraftModified(transaction?: Transaction, initAmount?: number, initCategoryId?: string, initAccountId?: string, initTagIds?: string): boolean {
+    function isTransactionDraftModified(transaction?: Transaction, initAmount?: number, initCategoryId?: string, initAccountId?: string, initTagIds?: string, firstVisibleAccountId?: string): boolean {
         if (!transaction) {
             return false;
         }
@@ -463,7 +466,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
             return true;
         }
 
-        if (transaction.sourceAccountId && transaction.sourceAccountId !== '0' && transaction.sourceAccountId !== userStore.currentUserDefaultAccountId && transaction.sourceAccountId !== initAccountId) {
+        if (transaction.sourceAccountId && transaction.sourceAccountId !== '0' && transaction.sourceAccountId !== userStore.currentUserDefaultAccountId && ((userStore.currentUserDefaultAccountId !== '' && userStore.currentUserDefaultAccountId !== '0') || transaction.sourceAccountId !== firstVisibleAccountId) && transaction.sourceAccountId !== initAccountId) {
             return true;
         }
 
@@ -514,14 +517,14 @@ export const useTransactionsStore = defineStore('transactions', () => {
         return false;
     }
 
-    function saveTransactionDraft(transaction?: Transaction, initAmount?: number, initCategoryId?: string, initAccountId?: string, initTagIds?: string): void {
+    function saveTransactionDraft(transaction?: Transaction, initAmount?: number, initCategoryId?: string, initAccountId?: string, initTagIds?: string, firstVisibleAccountId?: string): void {
         if (settingsStore.appSettings.autoSaveTransactionDraft !== 'enabled' && settingsStore.appSettings.autoSaveTransactionDraft !== 'confirmation') {
             clearTransactionDraft();
             return;
         }
 
         if (transaction) {
-            if (!isTransactionDraftModified(transaction, initAmount, initCategoryId, initAccountId, initTagIds)) {
+            if (!isTransactionDraftModified(transaction, initAmount, initCategoryId, initAccountId, initTagIds, firstVisibleAccountId)) {
                 clearTransactionDraft();
                 return;
             }
@@ -1157,6 +1160,31 @@ export const useTransactionsStore = defineStore('transactions', () => {
         });
     }
 
+    function recognizeReceiptImage({ imageFile }: { imageFile: File }): Promise<RecognizedReceiptImageResponse> {
+        return new Promise((resolve, reject) => {
+            services.recognizeReceiptImage({ imageFile }).then(response => {
+                const data = response.data;
+
+                if (!data || !data.success || !data.result) {
+                    reject({ message: 'Unable to recognize image' });
+                    return;
+                }
+
+                resolve(data.result);
+            }).catch(error => {
+                logger.error('failed to recognize image', error);
+
+                if (error.response && error.response.data && error.response.data.errorMessage) {
+                    reject({ error: error.response.data });
+                } else if (!error.processed) {
+                    reject({ message: 'Unable to recognize image' });
+                } else {
+                    reject(error);
+                }
+            });
+        });
+    }
+
     function parseImportDsvFile({ fileType, fileEncoding, importFile }: { fileType: string, fileEncoding?: string, importFile: File }): Promise<string[][]> {
         return new Promise((resolve, reject) => {
             services.parseImportDsvFile({ fileType, fileEncoding, importFile }).then(response => {
@@ -1370,6 +1398,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         getTransaction,
         saveTransaction,
         deleteTransaction,
+        recognizeReceiptImage,
         parseImportDsvFile,
         parseImportTransaction,
         importTransactions,

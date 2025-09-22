@@ -472,7 +472,7 @@
         <f7-photo-browser ref="pictureBrowser" type="popup" navbar-of-text="/"
                           :theme="isDarkMode ? 'dark' : 'light'" :navbar-show-count="true" :exposition="false"
                           :photos="transactionPictures" :thumbs="transactionThumbs" />
-        <input ref="pictureInput" type="file" style="display: none" :accept="SUPPORTED_IMAGE_EXTENSIONS" @change="uploadPicture($event)" />
+        <input ref="pictureInput" type="file" style="display: none" :accept="`${SUPPORTED_IMAGE_EXTENSIONS};capture=camera`" @change="uploadPicture($event)" />
     </f7-page>
 </template>
 
@@ -567,6 +567,7 @@ const {
     allCategoriesMap,
     allTags,
     allTagsMap,
+    firstVisibleAccountId,
     hasAvailableExpenseCategories,
     hasAvailableIncomeCategories,
     hasAvailableTransferCategories,
@@ -1243,9 +1244,9 @@ function onPageBeforeOut(): void {
     const initAmount: number | undefined = query['amount'] ? parseInt(query['amount']) : undefined;
 
     if (settingsStore.appSettings.autoSaveTransactionDraft === 'confirmation') {
-        if (transactionsStore.isTransactionDraftModified(transaction.value, initAmount, query['categoryId'], query['accountId'], query['tagIds'])) {
+        if (transactionsStore.isTransactionDraftModified(transaction.value, initAmount, query['categoryId'], query['accountId'], query['tagIds'], firstVisibleAccountId.value)) {
             showConfirm('Do you want to save this transaction draft?', () => {
-                transactionsStore.saveTransactionDraft(transaction.value, initAmount, query['categoryId'], query['accountId'], query['tagIds']);
+                transactionsStore.saveTransactionDraft(transaction.value, initAmount, query['categoryId'], query['accountId'], query['tagIds'], firstVisibleAccountId.value);
             }, () => {
                 transactionsStore.clearTransactionDraft();
             });
@@ -1253,7 +1254,7 @@ function onPageBeforeOut(): void {
             transactionsStore.clearTransactionDraft();
         }
     } else if (settingsStore.appSettings.autoSaveTransactionDraft === 'enabled') {
-        transactionsStore.saveTransactionDraft(transaction.value, initAmount, query['categoryId'], query['accountId'], query['tagIds']);
+        transactionsStore.saveTransactionDraft(transaction.value, initAmount, query['categoryId'], query['accountId'], query['tagIds'], firstVisibleAccountId.value);
     }
 }
 

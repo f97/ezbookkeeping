@@ -272,24 +272,25 @@
             </div>
         </template>
         <template #bottom>
-            <div class="title-and-toolbar d-flex align-center text-no-wrap mt-2"
-                 v-if="importTransactions && importTransactions.length > 10">
-                                <span :class="{ 'text-error': selectedInvalidTransactionCount > 0 }">
-                                    {{ tt('format.misc.selectedCount', { count: getDisplayCount(selectedImportTransactionCount), totalCount: getDisplayCount(importTransactions.length) }) }}
-                                </span>
-                <v-spacer/>
-                <span>{{ tt('Transactions Per Page') }}</span>
+            <div class="title-and-toolbar d-flex align-center text-no-wrap mt-2" v-if="importTransactions">
+                <span :class="{ 'text-error': selectedInvalidTransactionCount > 0 }">
+                    {{ tt('format.misc.selectedCount', { count: getDisplayCount(selectedImportTransactionCount), totalCount: getDisplayCount(importTransactions.length) }) }}
+                </span>
+                <v-spacer v-if="importTransactions.length > 10"/>
+                <span v-if="importTransactions.length > 10">{{ tt('Transactions Per Page') }}</span>
                 <v-select class="ms-2" density="compact" max-width="100"
                           item-title="name"
                           item-value="value"
                           :disabled="!!disabled"
                           :items="importTransactionsTablePageOptions"
                           v-model="countPerPage"
+                          v-if="importTransactions.length > 10"
                 />
                 <pagination-buttons density="compact"
                                     :disabled="!!disabled"
                                     :totalPageCount="totalPageCount"
-                                    v-model="currentPage"></pagination-buttons>
+                                    v-model="currentPage"
+                                    v-if="importTransactions.length > 10"></pagination-buttons>
             </div>
         </template>
     </v-data-table>
@@ -1714,14 +1715,22 @@ function showReplaceAllTypesDialog(): void {
                 let updated = false;
 
                 for (const rule of result.rules) {
-                    if (!rule || !rule.dataType || !rule.sourceValue || !rule.targetId) {
+                    if (!rule || !rule.dataType || !rule.targetId) {
                         continue;
                     }
 
                     if (rule.dataType === 'expenseCategory' || rule.dataType === 'incomeCategory' || rule.dataType === 'transferCategory') {
                         if (importTransaction.type !== TransactionType.ModifyBalance && importTransaction.originalCategoryName === rule.sourceValue) {
-                            importTransaction.categoryId = rule.targetId;
-                            updated = true;
+                            if (rule.dataType === 'expenseCategory' && importTransaction.type === TransactionType.Expense) {
+                                importTransaction.categoryId = rule.targetId;
+                                updated = true;
+                            } else if (rule.dataType === 'incomeCategory' && importTransaction.type === TransactionType.Income) {
+                                importTransaction.categoryId = rule.targetId;
+                                updated = true;
+                            } else if (rule.dataType === 'transferCategory' && importTransaction.type === TransactionType.Transfer) {
+                                importTransaction.categoryId = rule.targetId;
+                                updated = true;
+                            }
                         }
                     } else if (rule.dataType === 'account') {
                         if (importTransaction.originalSourceAccountName === rule.sourceValue) {

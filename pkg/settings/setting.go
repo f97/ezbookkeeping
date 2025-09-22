@@ -66,6 +66,13 @@ const (
 	WebDAVStorageType                string = "webdav"
 )
 
+const (
+	OpenAILLMProvider           string = "openai"
+	OpenAICompatibleLLMProvider string = "openai_compatible"
+	OpenRouterLLMProvider       string = "openrouter"
+	OllamaLLMProvider           string = "ollama"
+)
+
 // Uuid generator types
 const (
 	InternalUuidGeneratorType string = "internal"
@@ -140,6 +147,9 @@ const (
 
 	defaultWebDAVRequestTimeout uint32 = 10000 // 10 seconds
 
+	defaultAIRecognitionPictureMaxSize         uint32 = 10485760 // 10MB
+	defaultLargeLanguageModelAPIRequestTimeout uint32 = 60000    // 60 seconds
+
 	defaultInMemoryDuplicateCheckerCleanupInterval uint32 = 60  // 1 minutes
 	defaultDuplicateSubmissionsInterval            uint32 = 300 // 5 minutes
 
@@ -207,6 +217,23 @@ type WebDAVConfig struct {
 	RequestTimeout uint32
 	Proxy          string
 	SkipTLSVerify  bool
+}
+
+// LLMConfig represents the Large Language Model setting config
+type LLMConfig struct {
+	LLMProvider                         string
+	OpenAIAPIKey                        string
+	OpenAIModelID                       string
+	OpenAICompatibleBaseURL             string
+	OpenAICompatibleAPIKey              string
+	OpenAICompatibleModelID             string
+	OpenRouterAPIKey                    string
+	OpenRouterModelID                   string
+	OllamaServerURL                     string
+	OllamaModelID                       string
+	LargeLanguageModelAPIRequestTimeout uint32
+	LargeLanguageModelAPIProxy          string
+	LargeLanguageModelAPISkipTLSVerify  bool
 }
 
 // TipConfig represents a tip setting config
@@ -280,6 +307,13 @@ type Config struct {
 	LocalFileSystemPath string
 	MinIOConfig         *MinIOConfig
 	WebDAVConfig        *WebDAVConfig
+
+	// Large Language Model
+	TransactionFromAIImageRecognition bool
+	MaxAIRecognitionPictureFileSize   uint32
+
+	// Large Language Model for Receipt Image Recognition
+	ReceiptImageRecognitionLLMConfig *LLMConfig
 
 	// Uuid
 	UuidGeneratorType string
@@ -421,6 +455,18 @@ func LoadConfiguration(configFilePath string) (*Config, error) {
 	}
 
 	err = loadStorageConfiguration(config, cfgFile, "storage")
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = loadLLMGlobalConfiguration(config, cfgFile, "llm")
+
+	if err != nil {
+		return nil, err
+	}
+
+	config.ReceiptImageRecognitionLLMConfig, err = loadLLMConfiguration(cfgFile, "llm_image_recognition")
 
 	if err != nil {
 		return nil, err
@@ -749,6 +795,51 @@ func loadStorageConfiguration(config *Config, configFile *ini.File, sectionName 
 	config.WebDAVConfig = webDAVConfig
 
 	return nil
+}
+
+func loadLLMGlobalConfiguration(config *Config, configFile *ini.File, sectionName string) error {
+	config.TransactionFromAIImageRecognition = getConfigItemBoolValue(configFile, sectionName, "transaction_from_ai_image_recognition", false)
+	config.MaxAIRecognitionPictureFileSize = getConfigItemUint32Value(configFile, sectionName, "max_ai_recognition_picture_size", defaultAIRecognitionPictureMaxSize)
+
+	return nil
+}
+
+func loadLLMConfiguration(configFile *ini.File, sectionName string) (*LLMConfig, error) {
+	llmConfig := &LLMConfig{}
+	llmProvider := getConfigItemStringValue(configFile, sectionName, "llm_provider")
+
+	if llmProvider == "" {
+		llmConfig.LLMProvider = ""
+	} else if llmProvider == OpenAILLMProvider {
+		llmConfig.LLMProvider = OpenAILLMProvider
+	} else if llmProvider == OpenAICompatibleLLMProvider {
+		llmConfig.LLMProvider = OpenAICompatibleLLMProvider
+	} else if llmProvider == OpenRouterLLMProvider {
+		llmConfig.LLMProvider = OpenRouterLLMProvider
+	} else if llmProvider == OllamaLLMProvider {
+		llmConfig.LLMProvider = OllamaLLMProvider
+	} else {
+		return nil, errs.ErrInvalidLLMProvider
+	}
+
+	llmConfig.OpenAIAPIKey = getConfigItemStringValue(configFile, sectionName, "openai_api_key")
+	llmConfig.OpenAIModelID = getConfigItemStringValue(configFile, sectionName, "openai_model_id")
+
+	llmConfig.OpenAICompatibleBaseURL = getConfigItemStringValue(configFile, sectionName, "openai_compatible_base_url")
+	llmConfig.OpenAICompatibleAPIKey = getConfigItemStringValue(configFile, sectionName, "openai_compatible_api_key")
+	llmConfig.OpenAICompatibleModelID = getConfigItemStringValue(configFile, sectionName, "openai_compatible_model_id")
+
+	llmConfig.OpenRouterAPIKey = getConfigItemStringValue(configFile, sectionName, "openrouter_api_key")
+	llmConfig.OpenRouterModelID = getConfigItemStringValue(configFile, sectionName, "openrouter_model_id")
+
+	llmConfig.OllamaServerURL = getConfigItemStringValue(configFile, sectionName, "ollama_server_url")
+	llmConfig.OllamaModelID = getConfigItemStringValue(configFile, sectionName, "ollama_model_id")
+
+	llmConfig.LargeLanguageModelAPIProxy = getConfigItemStringValue(configFile, sectionName, "proxy", "system")
+	llmConfig.LargeLanguageModelAPIRequestTimeout = getConfigItemUint32Value(configFile, sectionName, "request_timeout", defaultLargeLanguageModelAPIRequestTimeout)
+	llmConfig.LargeLanguageModelAPISkipTLSVerify = getConfigItemBoolValue(configFile, sectionName, "skip_tls_verify", false)
+
+	return llmConfig, nil
 }
 
 func loadUuidConfiguration(config *Config, configFile *ini.File, sectionName string) error {
