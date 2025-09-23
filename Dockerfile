@@ -1,5 +1,5 @@
 # Build backend binary file
-FROM golang:1.25.1-alpine3.22 AS be-builder
+FROM golang:1.24-alpine3.22 AS be-builder
 ARG RELEASE_BUILD
 ARG BUILD_PIPELINE
 ARG CHECK_3RD_API
