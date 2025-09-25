@@ -511,13 +511,13 @@
                     :header="tt('Interest Rate (%)')"
                     :title="subAccount.savingsInterestRate ? subAccount.savingsInterestRate.toString() + '%' : ''"
                     v-if="subAccount.category === AccountCategory.SavingsAccount.type"
-                    @click="subAccountContexts[idx].showSavingsInterestRateNumberPad = true"
+                    @click="subAccountContexts[idx] && (subAccountContexts[idx]!.showSavingsInterestRateNumberPad = true)"
                 >
                     <number-pad-sheet
                         :min-value="0"
                         :max-value="100"
                         :hint="tt('Interest Rate (%)')"
-                        v-model:show="subAccountContexts[idx].showSavingsInterestRateNumberPad"
+                        v-model:show="subAccountContexts[idx]!.showSavingsInterestRateNumberPad"
                         v-model="subAccount.savingsInterestRate">
                     </number-pad-sheet>
                 </f7-list-item>
@@ -526,12 +526,12 @@
                     link="#" no-chevron
                     class="list-item-with-header-and-title"
                     :header="tt('Savings Period')"
-                    :title="formatSavingsPeriod(subAccountSavingsPeriodInMonths[idx])"
+                    :title="formatSavingsPeriod(subAccountSavingsPeriodInMonths[idx] || 0)"
                     v-if="subAccount.category === AccountCategory.SavingsAccount.type"
-                    @click="subAccountContexts[idx].showSavingsPeriodSelection = true"
+                    @click="subAccountContexts[idx] && (subAccountContexts[idx]!.showSavingsPeriodSelection = true)"
                 >
                     <month-period-selection-sheet
-                        v-model:show="subAccountContexts[idx].showSavingsPeriodSelection"
+                        v-model:show="subAccountContexts[idx]!.showSavingsPeriodSelection"
                         v-model="subAccountSavingsPeriodInMonths[idx]">
                     </month-period-selection-sheet>
                 </f7-list-item>
@@ -732,7 +732,7 @@ function init(): void {
                 
                 // Initialize sub-account savings period from existing end date
                 const subAccount = subAccounts.value[i];
-                if (subAccount.savingsEndDate && subAccount.savingsEndDate > 0) {
+                if (subAccount && subAccount.savingsEndDate && subAccount.savingsEndDate > 0) {
                     const currentDate = new Date();
                     const targetDate = new Date(subAccount.savingsEndDate * 1000);
                     const diffTime = targetDate.getTime() - currentDate.getTime();
@@ -821,7 +821,7 @@ function removeSubAccount(currentSubAccount: Account | null, confirm: boolean): 
         if (subAccount === currentSubAccount) {
             subAccounts.value.splice(index, 1);
             subAccountContexts.value.splice(index, 1);
-            subAccountSavingsPeriodInMonths.value.splice(i, 1);
+            subAccountSavingsPeriodInMonths.value.splice(index, 1);
         }
     }
 }
@@ -852,9 +852,9 @@ watch(() => JSON.stringify(subAccounts.value), (newBalance, oldBalance) => {
     let oldDiffAccount: Account | null = null;
 
     for (let i = 0; i < newSubAccounts.length; i++) {
-        if (newSubAccounts[i].balance !== oldSubAccounts[i].balance) {
-            newDiffAccount = newSubAccounts[i];
-            oldDiffAccount = oldSubAccounts[i];
+        if (newSubAccounts[i] && oldSubAccounts[i] && newSubAccounts[i]!.balance !== oldSubAccounts[i]!.balance) {
+            newDiffAccount = newSubAccounts[i]!;
+            oldDiffAccount = oldSubAccounts[i]!;
             break;
         }
     }
@@ -908,13 +908,17 @@ watch(savingsPeriodInMonths, (newMonths) => {
 watch(subAccountSavingsPeriodInMonths, (newMonthsArray, oldMonthsArray) => {
     for (let i = 0; i < newMonthsArray.length && i < subAccounts.value.length; i++) {
         if (!oldMonthsArray || newMonthsArray[i] !== oldMonthsArray[i]) {
-            if (newMonthsArray[i] > 0) {
+            if (newMonthsArray[i] && newMonthsArray[i]! > 0) {
                 const currentDate = new Date();
                 const endDate = new Date(currentDate);
-                endDate.setMonth(endDate.getMonth() + newMonthsArray[i]);
-                subAccounts.value[i].savingsEndDate = Math.floor(endDate.getTime() / 1000);
+                endDate.setMonth(endDate.getMonth() + newMonthsArray[i]!);
+                if (subAccounts.value[i]) {
+                    subAccounts.value[i]!.savingsEndDate = Math.floor(endDate.getTime() / 1000);
+                }
             } else {
-                subAccounts.value[i].savingsEndDate = 0;
+                if (subAccounts.value[i]) {
+                    subAccounts.value[i]!.savingsEndDate = 0;
+                }
             }
         }
     }
