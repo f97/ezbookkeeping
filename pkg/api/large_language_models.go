@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/mayswind/ezbookkeeping/pkg/core"
 	"github.com/mayswind/ezbookkeeping/pkg/errs"
 	"github.com/mayswind/ezbookkeeping/pkg/llm"
+	"github.com/mayswind/ezbookkeeping/pkg/llm/data"
 	"github.com/mayswind/ezbookkeeping/pkg/log"
 	"github.com/mayswind/ezbookkeeping/pkg/models"
 	"github.com/mayswind/ezbookkeeping/pkg/services"
@@ -52,6 +54,7 @@ func (a *LargeLanguageModelsApi) RecognizeReceiptImageHandler(c *core.WebContext
 		return nil, errs.ErrClientTimezoneOffsetInvalid
 	}
 
+	timezone := time.FixedZone("Client Timezone", int(utcOffset)*60)
 	uid := c.GetCurrentUid()
 	user, err := a.users.GetUserById(c, uid)
 
@@ -92,8 +95,9 @@ func (a *LargeLanguageModelsApi) RecognizeReceiptImageHandler(c *core.WebContext
 	}
 
 	fileExtension := utils.GetFileNameExtension(imageFiles[0].Filename)
+	contentType := utils.GetImageContentType(fileExtension)
 
-	if utils.GetImageContentType(fileExtension) == "" {
+	if contentType == "" {
 		log.Warnf(c, "[large_language_models.RecognizeReceiptImageHandler] the file extension \"%s\" of image in request is not supported for user \"uid:%d\"", fileExtension, uid)
 		return nil, errs.ErrImageTypeNotSupported
 	}
@@ -192,6 +196,7 @@ func (a *LargeLanguageModelsApi) RecognizeReceiptImageHandler(c *core.WebContext
 	}
 
 	systemPromptParams := map[string]any{
+		"CurrentDateTime":          utils.FormatUnixTimeToLongDateTime(time.Now().Unix(), timezone),
 		"AllExpenseCategoryNames":  strings.Join(expenseCategoryNames, "\n"),
 		"AllIncomeCategoryNames":   strings.Join(incomeCategoryNames, "\n"),
 		"AllTransferCategoryNames": strings.Join(transferCategoryNames, "\n"),
@@ -206,11 +211,12 @@ func (a *LargeLanguageModelsApi) RecognizeReceiptImageHandler(c *core.WebContext
 		return nil, errs.Or(err, errs.ErrOperationFailed)
 	}
 
-	llmRequest := &llm.LargeLanguageModelRequest{
-		Stream:         false,
-		SystemPrompt:   strings.ReplaceAll(bodyBuffer.String(), "\r\n", "\n"),
-		UserPrompt:     imageData,
-		UserPromptType: llm.LARGE_LANGUAGE_MODEL_REQUEST_PROMPT_TYPE_IMAGE_URL,
+	llmRequest := &data.LargeLanguageModelRequest{
+		Stream:                false,
+		SystemPrompt:          strings.ReplaceAll(bodyBuffer.String(), "\r\n", "\n"),
+		UserPrompt:            imageData,
+		UserPromptType:        data.LARGE_LANGUAGE_MODEL_REQUEST_PROMPT_TYPE_IMAGE_URL,
+		UserPromptContentType: contentType,
 	}
 
 	llmResponse, err := llm.Container.GetJsonResponseByReceiptImageRecognitionModel(c, c.GetCurrentUid(), a.CurrentConfig(), llmRequest)
@@ -281,7 +287,8 @@ func (a *LargeLanguageModelsApi) parseRecognizedReceiptImageResponse(c *core.Web
 	}
 
 	if len(recognizedResult.Time) > 0 {
-		timestamp, err := utils.ParseFromLongDateTime(recognizedResult.Time, utcOffset)
+		longDateTime := a.getLongDateTime(recognizedResult.Time)
+		timestamp, err := utils.ParseFromLongDateTime(longDateTime, utcOffset)
 
 		if err != nil {
 			log.Warnf(c, "[large_language_models.parseRecognizedReceiptImageResponse] recoginzed time \"%s\" is invalid", recognizedResult.Time)
@@ -348,4 +355,20 @@ func (a *LargeLanguageModelsApi) parseRecognizedReceiptImageResponse(c *core.Web
 	}
 
 	return recognizedReceiptImageResponse, nil
+}
+
+func (a *LargeLanguageModelsApi) getLongDateTime(dateTime string) string {
+	if utils.IsValidLongDateTimeFormat(dateTime) {
+		return dateTime
+	}
+
+	if utils.IsValidLongDateTimeWithoutSecondFormat(dateTime) {
+		return dateTime + ":00"
+	}
+
+	if utils.IsValidLongDateFormat(dateTime) {
+		return dateTime + " 00:00:00"
+	}
+
+	return dateTime
 }
