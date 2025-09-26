@@ -12,6 +12,9 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# Built backend binary
+ezbookkeeping
 ### Windows template
 # Windows thumbnail cache files
 Thumbs.db
