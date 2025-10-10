@@ -1,9 +1,12 @@
 <template>
-    <v-text-field type="text" class="text-field-with-colored-label" :class="extraClass" :color="color"
-        :base-color="color" :density="density" :readonly="!!readonly" :disabled="!!disabled" :label="label"
-        :placeholder="placeholder" :persistent-placeholder="!!persistentPlaceholder" :rules="enableRules ? rules : []"
-        v-model="currentValue" v-if="!hide && !formulaMode" @keydown="onKeyUpDown" @keyup="onKeyUpDown" @paste="onPaste"
-        @click="onClick">
+    <v-text-field type="text" class="text-field-with-colored-label" :class="extraClass"
+                  :color="color" :base-color="color"
+                  :density="density" :variant="variant"
+                  :readonly="!!readonly" :disabled="!!disabled"
+                  :label="label" :placeholder="placeholder"
+                  :persistent-placeholder="!!persistentPlaceholder"
+                  :rules="enableRules ? rules : []" v-model="currentValue" v-if="!hide && !formulaMode"
+                  @keydown="onKeyUpDown" @keyup="onKeyUpDown" @paste="onPaste" @click="onClick">
         <template #prepend-inner v-if="currency && prependText">
             <div>{{ prependText }}</div>
         </template>
@@ -73,7 +76,7 @@ import { DEFAULT_DECIMAL_NUMBER_COUNT } from '@/consts/numeral.ts';
 import { TRANSACTION_MIN_AMOUNT, TRANSACTION_MAX_AMOUNT } from '@/consts/transaction.ts';
 import { isNumber, replaceAll } from '@/lib/common.ts';
 import { evaluateExpressionToAmount } from '@/lib/evaluator.ts';
-import type { ComponentDensity } from '@/lib/ui/desktop.ts';
+import type { ComponentDensity, InputVariant } from '@/lib/ui/desktop.ts';
 import logger from '@/lib/logger.ts';
 
 import {
@@ -88,6 +91,7 @@ interface DesktopAmountInputProps extends CommonNumberInputProps {
     class?: string;
     color?: string;
     density?: ComponentDensity;
+    variant?: InputVariant;
     currency: string;
     showCurrency?: boolean;
     persistentPlaceholder?: boolean;
