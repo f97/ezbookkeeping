@@ -578,7 +578,7 @@ import type { Router } from 'framework7/types';
 
 import { useI18n } from '@/locales/helpers.ts';
 import { useI18nUIComponents, showLoading, hideLoading } from '@/lib/ui/mobile.ts';
-import { useAccountEditPageBaseBase } from '@/views/base/accounts/AccountEditPageBase.ts';
+import { useAccountEditPageBase } from '@/views/base/accounts/AccountEditPageBase.ts';
 
 import { useAccountsStore } from '@/stores/account.ts';
 
@@ -648,7 +648,7 @@ const {
     isNewAccount,
     addSubAccount,
     setAccount
-} = useAccountEditPageBaseBase();
+} = useAccountEditPageBase();
 
 const accountsStore = useAccountsStore();
 
