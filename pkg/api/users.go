@@ -83,7 +83,7 @@ func (a *UsersApi) UserRegisterHandler(c *core.WebContext) (any, *errs.Error) {
 		FeatureRestriction:   a.CurrentConfig().DefaultFeatureRestrictions,
 	}
 
-	err = a.users.CreateUser(c, user)
+	err = a.users.CreateUser(c, user, false)
 
 	if err != nil {
 		log.Errorf(c, "[users.UserRegisterHandler] failed to create user \"%s\", because %s", user.Username, err.Error())
@@ -142,6 +142,7 @@ func (a *UsersApi) UserRegisterHandler(c *core.WebContext) (any, *errs.Error) {
 	authResp.Token = token
 	c.SetTextualToken(token)
 	c.SetTokenClaims(claims)
+	c.SetTokenContext("")
 
 	log.Infof(c, "[users.UserRegisterHandler] user \"uid:%d\" has logined, token will be expired at %d", user.Uid, claims.ExpiresAt)
 
@@ -205,6 +206,7 @@ func (a *UsersApi) UserEmailVerifyHandler(c *core.WebContext) (any, *errs.Error)
 
 		c.SetTextualToken(token)
 		c.SetTokenClaims(claims)
+		c.SetTokenContext("")
 
 		log.Infof(c, "[users.UserEmailVerifyHandler] user \"uid:%d\" token created, new token will be expired at %d", user.Uid, claims.ExpiresAt)
 	}
@@ -275,7 +277,7 @@ func (a *UsersApi) UserUpdateProfileHandler(c *core.WebContext) (any, *errs.Erro
 			return nil, errs.ErrNotPermittedToPerformThisAction
 		}
 
-		if !a.users.IsPasswordEqualsUserPassword(userUpdateReq.OldPassword, user) {
+		if user.Password != "" && !a.users.IsPasswordEqualsUserPassword(userUpdateReq.OldPassword, user) {
 			return nil, errs.ErrUserPasswordWrong
 		}
 
@@ -588,6 +590,7 @@ func (a *UsersApi) UserUpdateProfileHandler(c *core.WebContext) (any, *errs.Erro
 		resp.NewToken = token
 		c.SetTextualToken(token)
 		c.SetTokenClaims(claims)
+		c.SetTokenContext("")
 
 		log.Infof(c, "[users.UserUpdateProfileHandler] user \"uid:%d\" token refreshed, new token will be expired at %d", user.Uid, claims.ExpiresAt)
 

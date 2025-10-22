@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -21,7 +22,7 @@ import (
 
 const oauth2CallbackPageUrlSuccessFormat = "%sdesktop/#/oauth2_callback?platform=%s&provider=%s&token=%s"
 const oauth2CallbackPageUrlNeedVerifyFormat = "%sdesktop/#/oauth2_callback?platform=%s&provider=%s&userName=%s&token=%s"
-const oauth2CallbackPageUrlFailedFormat = "%sdesktop/#/oauth2_callback?error=%s"
+const oauth2CallbackPageUrlFailedFormat = "%sdesktop/#/oauth2_callback?errorCode=%d&errorMessage=%s"
 
 // OAuth2AuthenticationApi represents OAuth 2.0 authorization api
 type OAuth2AuthenticationApi struct {
@@ -208,7 +209,7 @@ func (a *OAuth2AuthenticationApi) CallbackHandler(c *core.WebContext) (string, *
 			log.Errorf(c, "[oauth2_authentications.CallbackHandler] failed to get user by id %d, because %s", userExternalAuth.Uid, err.Error())
 			return a.redirectToFailedCallbackPage(c, errs.Or(err, errs.ErrOperationFailed))
 		}
-	} else if errors.Is(err, errs.ErrUserExternalAuthNotFound) { // user not bound to external auth, try to bind or register new user
+	} else { // errors.Is(err, errs.ErrUserExternalAuthNotFound) // user not bound to external auth, try to bind or register new user
 		if a.CurrentConfig().OAuth2UserIdentifier == settings.OAuth2UserIdentifierEmail {
 			user, err = a.users.GetUserByEmail(c, oauth2UserInfo.Email)
 		} else if a.CurrentConfig().OAuth2UserIdentifier == settings.OAuth2UserIdentifierUsername {
@@ -241,7 +242,6 @@ func (a *OAuth2AuthenticationApi) CallbackHandler(c *core.WebContext) (string, *
 				Username:             userName,
 				Email:                email,
 				Nickname:             nickName,
-				Password:             "",
 				Language:             languageCode,
 				DefaultCurrency:      currencyCode,
 				FirstDayOfWeek:       oauth2UserInfo.FirstDayOfWeek,
@@ -250,7 +250,7 @@ func (a *OAuth2AuthenticationApi) CallbackHandler(c *core.WebContext) (string, *
 				FeatureRestriction:   a.CurrentConfig().DefaultFeatureRestrictions,
 			}
 
-			err = a.users.CreateUser(c, user)
+			err = a.users.CreateUser(c, user, true)
 
 			if err != nil {
 				log.Errorf(c, "[oauth2_authentications.CallbackHandler] failed to create user \"%s\", because %s", user.Username, err.Error())
@@ -259,7 +259,7 @@ func (a *OAuth2AuthenticationApi) CallbackHandler(c *core.WebContext) (string, *
 
 			log.Infof(c, "[oauth2_authentications.CallbackHandler] user \"%s\" has registered successfully, uid is %d", user.Username, user.Uid)
 
-			userExternalAuth := &models.UserExternalAuth{
+			userExternalAuth = &models.UserExternalAuth{
 				Uid:              user.Uid,
 				ExternalAuthType: userExternalAuthType,
 				ExternalUsername: oauth2UserInfo.UserName,
@@ -280,19 +280,39 @@ func (a *OAuth2AuthenticationApi) CallbackHandler(c *core.WebContext) (string, *
 	}
 
 	if userExternalAuth == nil {
-		token, _, err := a.tokens.CreateOAuth2CallbackRequireVerifyToken(c, user)
+		tokenContext, err := json.Marshal(&models.OAuth2CallbackTokenContext{
+			ExternalAuthType: userExternalAuthType,
+			ExternalUsername: oauth2UserInfo.UserName,
+			ExternalEmail:    oauth2UserInfo.Email,
+		})
 
 		if err != nil {
-			log.Errorf(c, "[oauth2_authentications.CallbackHandler] failed to create oauth 2.0 callback verify token for user \"uid:%d\", because %s", user.Uid, err.Error())
+			log.Errorf(c, "[oauth2_authentications.CallbackHandler] failed to marshal oauth 2.0 callback verify token context, because %s", err.Error())
+			return a.redirectToFailedCallbackPage(c, errs.ErrOperationFailed)
+		}
+
+		token, _, err := a.tokens.CreateOAuth2CallbackRequireVerifyToken(c, user, string(tokenContext))
+
+		if err != nil {
+			log.Errorf(c, "[oauth2_authentications.CallbackHandler] failed to create oauth 2.0 callback verify token, because %s", err.Error())
 			return a.redirectToFailedCallbackPage(c, errs.ErrTokenGenerating)
 		}
 
 		return a.redirectToVerifyCallbackPage(c, platform, userExternalAuthType, user.Username, token)
 	} else {
-		token, _, err := a.tokens.CreateOAuth2CallbackToken(c, user)
+		tokenContext, err := json.Marshal(&models.OAuth2CallbackTokenContext{
+			ExternalAuthType: userExternalAuthType,
+		})
 
 		if err != nil {
-			log.Errorf(c, "[oauth2_authentications.CallbackHandler] failed to create oauth 2.0 callback token for user \"uid:%d\", because %s", user.Uid, err.Error())
+			log.Errorf(c, "[oauth2_authentications.CallbackHandler] failed to marshal oauth 2.0 callback token context, because %s", err.Error())
+			return a.redirectToFailedCallbackPage(c, errs.ErrOperationFailed)
+		}
+
+		token, _, err := a.tokens.CreateOAuth2CallbackToken(c, user, string(tokenContext))
+
+		if err != nil {
+			log.Errorf(c, "[oauth2_authentications.CallbackHandler] failed to create oauth 2.0 callback token, because %s", err.Error())
 			return a.redirectToFailedCallbackPage(c, errs.ErrTokenGenerating)
 		}
 
@@ -309,5 +329,5 @@ func (a *OAuth2AuthenticationApi) redirectToVerifyCallbackPage(c *core.WebContex
 }
 
 func (a *OAuth2AuthenticationApi) redirectToFailedCallbackPage(c *core.WebContext, err *errs.Error) (string, *errs.Error) {
-	return fmt.Sprintf(oauth2CallbackPageUrlFailedFormat, a.CurrentConfig().RootUrl, url.QueryEscape(utils.GetDisplayErrorMessage(err))), nil
+	return fmt.Sprintf(oauth2CallbackPageUrlFailedFormat, a.CurrentConfig().RootUrl, err.Code(), url.QueryEscape(utils.GetDisplayErrorMessage(err))), nil
 }

@@ -91,7 +91,7 @@ func (l *UserDataCli) AddNewUser(c *core.CliContext, username string, email stri
 		FeatureRestriction:   l.CurrentConfig().DefaultFeatureRestrictions,
 	}
 
-	err := l.users.CreateUser(c, user)
+	err := l.users.CreateUser(c, user, false)
 
 	if err != nil {
 		log.CliErrorf(c, "[user_data.AddNewUser] failed to create user \"%s\", because %s", user.Username, err.Error())
@@ -447,7 +447,7 @@ func (l *UserDataCli) CreateNewUserToken(c *core.CliContext, username string, to
 
 // RevokeUserToken revokes the specified token of the user
 func (l *UserDataCli) RevokeUserToken(c *core.CliContext, token string) error {
-	_, claims, err := l.tokens.ParseToken(c, token)
+	_, claims, _, err := l.tokens.ParseToken(c, token)
 
 	if err != nil {
 		log.CliErrorf(c, "[user_data.RevokeUserToken] failed to parse token, because %s", err.Error())
