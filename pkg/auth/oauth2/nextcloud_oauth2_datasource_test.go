@@ -14,12 +14,12 @@ func TestNewNextcloudOAuth2Provider(t *testing.T) {
 	assert.Equal(t, "https://example.com/apps/oauth2/authorize", datasource.GetAuthUrl())
 	assert.Equal(t, "https://example.com/apps/oauth2/api/v1/token", datasource.GetTokenUrl())
 
-	datasource = NewNextcloudOAuth2Provider("https://example.com")
-	assert.Equal(t, "https://example.com/apps/oauth2/authorize", datasource.GetAuthUrl())
-	assert.Equal(t, "https://example.com/apps/oauth2/api/v1/token", datasource.GetTokenUrl())
+	datasource = NewNextcloudOAuth2Provider("https://example.com/index.php")
+	assert.Equal(t, "https://example.com/index.php/apps/oauth2/authorize", datasource.GetAuthUrl())
+	assert.Equal(t, "https://example.com/index.php/apps/oauth2/api/v1/token", datasource.GetTokenUrl())
 }
 
-func TestNextcloudOAuth2datasource_GetUserInfoRequest(t *testing.T) {
+func TestNextcloudOAuth2Datasource_GetUserInfoRequest(t *testing.T) {
 	datasource := &NextcloudOAuth2DataSource{baseUrl: "https://example.com/"}
 	req, err := datasource.GetUserInfoRequest()
 
