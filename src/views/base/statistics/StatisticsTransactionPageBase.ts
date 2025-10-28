@@ -14,6 +14,7 @@ import { StatisticsAnalysisType, ChartDataType, ChartSortingType, ChartDateAggre
 import { DISPLAY_HIDDEN_AMOUNT } from '@/consts/numeral.ts';
 
 import type {
+    TransactionStatisticResponseWithInfo,
     TransactionCategoricalAnalysisData,
     TransactionCategoricalAnalysisDataItem,
     TransactionTrendsAnalysisData
@@ -190,7 +191,11 @@ export function useStatisticsTransactionPageBase() {
     });
 
     const totalAmountName = computed<string>(() => {
-        if (query.value.chartDataType === ChartDataType.IncomeByAccount.type
+        if (query.value.chartDataType === ChartDataType.InflowsByAccount.type) {
+            return tt('Total Inflows');
+        } else if (query.value.chartDataType === ChartDataType.OutflowsByAccount.type) {
+            return tt('Total Outflows');
+        } else if (query.value.chartDataType === ChartDataType.IncomeByAccount.type
             || query.value.chartDataType === ChartDataType.IncomeByPrimaryCategory.type
             || query.value.chartDataType === ChartDataType.IncomeBySecondaryCategory.type) {
             return tt('Total Income');
@@ -207,19 +212,38 @@ export function useStatisticsTransactionPageBase() {
         return tt('Total Amount');
     });
 
+    const showPercentInCategoricalChart = computed<boolean>(() => {
+        return query.value.chartDataType !== ChartDataType.OutflowsByAccount.type &&
+            query.value.chartDataType !== ChartDataType.InflowsByAccount.type;
+    });
+
     const showTotalAmountInTrendsChart = computed<boolean>(() => {
-        return query.value.chartDataType !== ChartDataType.TotalExpense.type &&
+        return query.value.chartDataType !== ChartDataType.OutflowsByAccount.type &&
+            query.value.chartDataType !== ChartDataType.InflowsByAccount.type &&
+            query.value.chartDataType !== ChartDataType.TotalOutflows.type &&
+            query.value.chartDataType !== ChartDataType.TotalExpense.type &&
+            query.value.chartDataType !== ChartDataType.TotalInflows.type &&
             query.value.chartDataType !== ChartDataType.TotalIncome.type &&
-            query.value.chartDataType !== ChartDataType.TotalBalance.type;
+            query.value.chartDataType !== ChartDataType.NetCashFlow.type &&
+            query.value.chartDataType !== ChartDataType.NetIncome.type;
+    });
+
+    const showStackedInTrendsChart = computed<boolean>(() => {
+        return query.value.chartDataType !== ChartDataType.OutflowsByAccount.type &&
+            query.value.chartDataType !== ChartDataType.InflowsByAccount.type;
     });
 
     const translateNameInTrendsChart = computed<boolean>(() => {
-        return query.value.chartDataType === ChartDataType.TotalExpense.type ||
+        return query.value.chartDataType === ChartDataType.TotalOutflows.type ||
+            query.value.chartDataType === ChartDataType.TotalExpense.type ||
+            query.value.chartDataType === ChartDataType.TotalInflows.type ||
             query.value.chartDataType === ChartDataType.TotalIncome.type ||
-            query.value.chartDataType === ChartDataType.TotalBalance.type;
+            query.value.chartDataType === ChartDataType.NetCashFlow.type ||
+            query.value.chartDataType === ChartDataType.NetIncome.type;
     });
 
     const categoricalAnalysisData = computed<TransactionCategoricalAnalysisData>(() => statisticsStore.categoricalAnalysisData);
+    const categoricalAllAnalysisData = computed<TransactionStatisticResponseWithInfo | null>(() => statisticsStore.categoricalAllAnalysisData);
     const trendsAnalysisData = computed<TransactionTrendsAnalysisData | null>(() => statisticsStore.trendsAnalysisData);
 
     function canShowCustomDateRange(dateRangeType: number): boolean {
@@ -288,9 +312,12 @@ export function useStatisticsTransactionPageBase() {
         canUseKeywordFilter,
         showAmountInChart,
         totalAmountName,
+        showPercentInCategoricalChart,
         showTotalAmountInTrendsChart,
+        showStackedInTrendsChart,
         translateNameInTrendsChart,
         categoricalAnalysisData,
+        categoricalAllAnalysisData,
         trendsAnalysisData,
         // functions
         canShowCustomDateRange,

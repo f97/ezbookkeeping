@@ -72,6 +72,7 @@
                     :items="categoricalAnalysisData.items"
                     :min-valid-percent="0.0001"
                     :show-value="showAmountInChart"
+                    :show-percent="showPercentInCategoricalChart"
                     :show-center-text="true"
                     :show-selected-item-info="true"
                     :enable-click-item="true"
@@ -109,7 +110,7 @@
                     </div>
                 </div>
                 <div class="display-flex full-line">
-                    <div :class="{ 'statistics-list-item-overview-amount': true, 'text-expense': query.chartDataType === ChartDataType.ExpenseByAccount.type || query.chartDataType === ChartDataType.ExpenseByPrimaryCategory.type || query.chartDataType === ChartDataType.ExpenseBySecondaryCategory.type, 'text-income': query.chartDataType === ChartDataType.IncomeByAccount.type || query.chartDataType === ChartDataType.IncomeByPrimaryCategory.type || query.chartDataType === ChartDataType.IncomeBySecondaryCategory.type }">
+                    <div :class="{ 'statistics-list-item-overview-amount': true, 'text-expense': query.chartDataType === ChartDataType.OutflowsByAccount.type || query.chartDataType === ChartDataType.ExpenseByAccount.type || query.chartDataType === ChartDataType.ExpenseByPrimaryCategory.type || query.chartDataType === ChartDataType.ExpenseBySecondaryCategory.type, 'text-income': query.chartDataType === ChartDataType.InflowsByAccount.type || query.chartDataType === ChartDataType.IncomeByAccount.type || query.chartDataType === ChartDataType.IncomeByPrimaryCategory.type || query.chartDataType === ChartDataType.IncomeBySecondaryCategory.type }">
                         <span v-if="!loading && categoricalAnalysisData && categoricalAnalysisData.items && categoricalAnalysisData.items.length">
                             {{ getDisplayAmount(categoricalAnalysisData.totalAmount, defaultCurrency) }}
                         </span>
@@ -171,7 +172,7 @@
                         <template #title>
                             <div class="statistics-list-item-text">
                                 <span>{{ item.name }}</span>
-                                <small class="statistics-percent" v-if="item.percent >= 0">{{ formatPercentToLocalizedNumerals(item.percent, 2, '&lt;0.01') }}</small>
+                                <small class="statistics-percent" v-if="showPercentInCategoricalChart && item.percent >= 0">{{ formatPercentToLocalizedNumerals(item.percent, 2, '&lt;0.01') }}</small>
                             </div>
                         </template>
 
@@ -210,6 +211,7 @@
                     :date-aggregation-type="trendDateAggregationType"
                     :fiscal-year-start="fiscalYearStart"
                     :items="trendsAnalysisData && trendsAnalysisData.items && trendsAnalysisData.items.length ? trendsAnalysisData.items : []"
+                    :stacked="showStackedInTrendsChart"
                     :translate-name="translateNameInTrendsChart"
                     :default-currency="defaultCurrency"
                     id-field="id"
@@ -403,6 +405,8 @@ const {
     canUseKeywordFilter,
     showAmountInChart,
     totalAmountName,
+    showPercentInCategoricalChart,
+    showStackedInTrendsChart,
     translateNameInTrendsChart,
     categoricalAnalysisData,
     trendsAnalysisData,
@@ -490,15 +494,20 @@ function reload(done?: () => void): void {
 
     reloading.value = true;
 
-    if (query.value.chartDataType === ChartDataType.ExpenseByAccount.type ||
+    if (query.value.chartDataType === ChartDataType.OutflowsByAccount.type ||
+        query.value.chartDataType === ChartDataType.ExpenseByAccount.type ||
         query.value.chartDataType === ChartDataType.ExpenseByPrimaryCategory.type ||
         query.value.chartDataType === ChartDataType.ExpenseBySecondaryCategory.type ||
+        query.value.chartDataType === ChartDataType.InflowsByAccount.type ||
         query.value.chartDataType === ChartDataType.IncomeByAccount.type ||
         query.value.chartDataType === ChartDataType.IncomeByPrimaryCategory.type ||
         query.value.chartDataType === ChartDataType.IncomeBySecondaryCategory.type ||
+        query.value.chartDataType === ChartDataType.TotalOutflows.type ||
         query.value.chartDataType === ChartDataType.TotalExpense.type ||
+        query.value.chartDataType === ChartDataType.TotalInflows.type ||
         query.value.chartDataType === ChartDataType.TotalIncome.type ||
-        query.value.chartDataType === ChartDataType.TotalBalance.type) {
+        query.value.chartDataType === ChartDataType.NetCashFlow.type ||
+        query.value.chartDataType === ChartDataType.NetIncome.type) {
         if (analysisType.value === StatisticsAnalysisType.CategoricalAnalysis) {
             dispatchPromise = statisticsStore.loadCategoricalAnalysis({
                 force: force
@@ -677,13 +686,13 @@ function setCustomDateFilter(startTime: number | TextualYearMonth, endTime: numb
 }
 
 function shiftDateRange(scale: number): void {
-    if (query.value.categoricalChartDateType === DateRange.All.type) {
-        return;
-    }
-
     let changed = false;
 
     if (analysisType.value === StatisticsAnalysisType.CategoricalAnalysis) {
+        if (query.value.categoricalChartDateType === DateRange.All.type) {
+            return;
+        }
+
         const newDateRange = getShiftedDateRangeAndDateType(query.value.categoricalChartStartTime, query.value.categoricalChartEndTime, scale, firstDayOfWeek.value, fiscalYearStart.value, DateRangeScene.Normal);
 
         changed = statisticsStore.updateTransactionStatisticsFilter({
