@@ -232,6 +232,45 @@
             <f7-list-item
                 link="#" no-chevron
                 class="list-item-with-header-and-title"
+                :header="tt('Savings Start Date')"
+                :title="account.savingsStartDate ? formatUnixTimeToLongDate(account.savingsStartDate) : ''"
+                v-if="isAccountSupportSavingsFields"
+                @click="accountContext.showSavingsStartDateSheet = true"
+            >
+                <date-time-selection-sheet
+                    init-mode="date"
+                    v-model:show="accountContext.showSavingsStartDateSheet"
+                    v-model="account.savingsStartDate">
+                </date-time-selection-sheet>
+            </f7-list-item>
+
+            <f7-list-item
+                link="#" no-chevron
+                class="list-item-with-header-and-title"
+                :header="tt('Non-term Interest Rate (%)')"
+                :title="account.nonTermInterestRate ? account.nonTermInterestRate.toString() + '%' : '0.1%'"
+                v-if="isAccountSupportSavingsFields && savingsPeriodInMonths === 0"
+                @click="accountContext.showNonTermInterestRateNumberPad = true"
+            >
+                <number-pad-sheet
+                    :min-value="0"
+                    :max-value="100"
+                    :hint="tt('Non-term Interest Rate (%)')"
+                    v-model:show="accountContext.showNonTermInterestRateNumberPad"
+                    v-model="account.nonTermInterestRate">
+                </number-pad-sheet>
+            </f7-list-item>
+
+            <f7-list-item
+                :title="tt('Allow Early Withdrawal')"
+                v-if="isAccountSupportSavingsFields && savingsPeriodInMonths > 0"
+            >
+                <f7-toggle :checked="account.earlyWithdrawalAllowed" @toggle:change="account.earlyWithdrawalAllowed = $event"></f7-toggle>
+            </f7-list-item>
+
+            <f7-list-item
+                link="#" no-chevron
+                class="list-item-with-header-and-title"
                 :header="account.isLiability ? tt('Account Outstanding Balance') : tt('Account Balance')"
                 :title="formatAccountDisplayBalance(account)"
                 @click="accountContext.showBalanceSheet = true"
@@ -536,6 +575,45 @@
                     </month-period-selection-sheet>
                 </f7-list-item>
 
+                <f7-list-item
+                    link="#" no-chevron
+                    class="list-item-with-header-and-title"
+                    :header="tt('Savings Start Date')"
+                    :title="subAccount.savingsStartDate ? formatUnixTimeToLongDate(subAccount.savingsStartDate) : ''"
+                    v-if="subAccount.category === AccountCategory.SavingsAccount.type"
+                    @click="subAccountContexts[idx] && (subAccountContexts[idx]!.showSavingsStartDateSheet = true)"
+                >
+                    <date-time-selection-sheet
+                        init-mode="date"
+                        v-model:show="subAccountContexts[idx]!.showSavingsStartDateSheet"
+                        v-model="subAccount.savingsStartDate">
+                    </date-time-selection-sheet>
+                </f7-list-item>
+
+                <f7-list-item
+                    link="#" no-chevron
+                    class="list-item-with-header-and-title"
+                    :header="tt('Non-term Interest Rate (%)')"
+                    :title="subAccount.nonTermInterestRate ? subAccount.nonTermInterestRate.toString() + '%' : '0.1%'"
+                    v-if="subAccount.category === AccountCategory.SavingsAccount.type && (subAccountSavingsPeriodInMonths[idx] || 0) === 0"
+                    @click="subAccountContexts[idx] && (subAccountContexts[idx]!.showNonTermInterestRateNumberPad = true)"
+                >
+                    <number-pad-sheet
+                        :min-value="0"
+                        :max-value="100"
+                        :hint="tt('Non-term Interest Rate (%)')"
+                        v-model:show="subAccountContexts[idx]!.showNonTermInterestRateNumberPad"
+                        v-model="subAccount.nonTermInterestRate">
+                    </number-pad-sheet>
+                </f7-list-item>
+
+                <f7-list-item
+                    :title="tt('Allow Early Withdrawal')"
+                    v-if="subAccount.category === AccountCategory.SavingsAccount.type && (subAccountSavingsPeriodInMonths[idx] || 0) > 0"
+                >
+                    <f7-toggle :checked="subAccount.earlyWithdrawalAllowed" @toggle:change="subAccount.earlyWithdrawalAllowed = $event"></f7-toggle>
+                </f7-list-item>
+
                 <f7-list-item :title="tt('Visible')" v-if="editAccountId && !isNewAccount(subAccount)">
                     <f7-toggle :checked="subAccount.visible" @toggle:change="subAccount.visible = $event"></f7-toggle>
                 </f7-list-item>
@@ -606,6 +684,8 @@ interface AccountContext {
     showSavingsInterestRateNumberPad: boolean;
     showSavingsEndDatePopup: boolean;
     showSavingsPeriodSelection: boolean;
+    showSavingsStartDateSheet: boolean;
+    showNonTermInterestRateNumberPad: boolean;
     showBalanceSheet: boolean;
     showBalanceDateTimeSheet: boolean;
     balanceDateTimeSheetMode: string;
@@ -659,6 +739,8 @@ const DEFAULT_ACCOUNT_CONTEXT: AccountContext = {
     showSavingsInterestRateNumberPad: false,
     showSavingsEndDatePopup: false,
     showSavingsPeriodSelection: false,
+    showSavingsStartDateSheet: false,
+    showNonTermInterestRateNumberPad: false,
     showBalanceSheet: false,
     showBalanceDateTimeSheet: false,
     balanceDateTimeSheetMode: 'time'

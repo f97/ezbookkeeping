@@ -600,6 +600,10 @@ export class AccountWithDisplayBalance extends Account {
             account.creditCardStatementDate,
             account.savingsInterestRate,
             account.savingsEndDate,
+            account.savingsStartDate,
+            account.savingsTermMonths,
+            account.nonTermInterestRate,
+            account.earlyWithdrawalAllowed,
             account.isAsset,
             account.isLiability,
             account.subAccounts
