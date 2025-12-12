@@ -819,6 +819,12 @@ function init(): void {
                     const diffTime = targetDate.getTime() - currentDate.getTime();
                     const diffMonths = Math.round(diffTime / (1000 * 60 * 60 * 24 * 30.44));
                     subAccountSavingsPeriodInMonths.value.push(diffMonths > 0 ? diffMonths : 0);
+                } else if (subAccount && subAccount.savingsTermMonths && subAccount.savingsTermMonths > 0) {
+                    // Use the term months if available
+                    subAccountSavingsPeriodInMonths.value.push(subAccount.savingsTermMonths);
+                } else if (account.value.category === AccountCategory.SavingsAccount.type) {
+                    // Default to 12 months for new savings account sub-accounts
+                    subAccountSavingsPeriodInMonths.value.push(12);
                 } else {
                     subAccountSavingsPeriodInMonths.value.push(0);
                 }
@@ -879,7 +885,9 @@ function save(): void {
 function addSubAccountAndContext(): void {
     if (addSubAccount()) {
         subAccountContexts.value.push(Object.assign({}, DEFAULT_ACCOUNT_CONTEXT));
-        subAccountSavingsPeriodInMonths.value.push(0);
+        // Set default savings period to 12 months for savings accounts
+        const defaultPeriod = account.value.category === AccountCategory.SavingsAccount.type ? 12 : 0;
+        subAccountSavingsPeriodInMonths.value.push(defaultPeriod);
     }
 }
 
@@ -1005,7 +1013,7 @@ watch(subAccountSavingsPeriodInMonths, (newMonthsArray, oldMonthsArray) => {
     }
 }, { deep: true });
 
-// Initialize savings period from existing end date
+// Initialize savings period from existing end date or term months
 watch(() => account.value.savingsEndDate, (endDate) => {
     if (endDate && endDate > 0) {
         const currentDate = new Date();
@@ -1016,6 +1024,12 @@ watch(() => account.value.savingsEndDate, (endDate) => {
         if (diffMonths > 0 && savingsPeriodInMonths.value === 0) {
             savingsPeriodInMonths.value = diffMonths;
         }
+    } else if (account.value.savingsTermMonths && account.value.savingsTermMonths > 0 && savingsPeriodInMonths.value === 0) {
+        // Use the term months if available
+        savingsPeriodInMonths.value = account.value.savingsTermMonths;
+    } else if (account.value.category === AccountCategory.SavingsAccount.type && savingsPeriodInMonths.value === 0) {
+        // Default to 12 months for new savings accounts
+        savingsPeriodInMonths.value = 12;
     }
 }, { immediate: true });
 
