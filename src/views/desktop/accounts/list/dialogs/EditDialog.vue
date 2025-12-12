@@ -128,7 +128,7 @@
                                         v-model="account.creditCardStatementDate"
                                     ></v-autocomplete>
                                 </v-col>
-                                <v-col cols="12" :md="isAccountSupportSavingsFields && (selectedAccount.savingsInterestRate || selectedAccount.savingsEndDate) ? 6 : 12" v-if="currentAccountIndex < 0 && isAccountSupportSavingsFields">
+                                <v-col cols="12" :md="isAccountSupportSavingsFields && (selectedAccount.savingsInterestRate || selectedAccount.savingsEndDate) ? 6 : 12" v-if="(currentAccountIndex < 0 && isAccountSupportSavingsFields) || (currentAccountIndex >= 0 && selectedAccount.category === AccountCategory.SavingsAccount.type)">
                                     <v-text-field
                                         type="number"
                                         min="0"
@@ -141,7 +141,7 @@
                                         v-model="selectedAccount.savingsInterestRate"
                                     />
                                 </v-col>
-                                <v-col cols="12" :md="isAccountSupportSavingsFields && selectedAccount.savingsInterestRate ? 6 : 12" v-if="currentAccountIndex < 0 && isAccountSupportSavingsFields">
+                                <v-col cols="12" :md="isAccountSupportSavingsFields && selectedAccount.savingsInterestRate ? 6 : 12" v-if="(currentAccountIndex < 0 && isAccountSupportSavingsFields) || (currentAccountIndex >= 0 && selectedAccount.category === AccountCategory.SavingsAccount.type)">
                                     <date-time-select
                                         :disabled="loading || submitting"
                                         :label="tt('End Date')"
