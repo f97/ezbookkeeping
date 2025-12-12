@@ -48,30 +48,32 @@
                                 item-title="displayName"
                                 item-value="value"
                                 :disabled="generating"
-                                :label="tt('Expiration Time (Seconds)')"
-                                :placeholder="tt('Expiration Time (Seconds)')"
+                                :label="tt('Expiration Time')"
+                                :placeholder="tt('Expiration Time')"
                                 :items="[
                                     { displayName: tt('No Expiration'), value: 0 },
-                                    { displayName: tt('format.misc.nHour', { n: 1 }), value: 3600 },
-                                    { displayName: tt('format.misc.nDays', { n: 1 }), value: 86400 },
-                                    { displayName: tt('format.misc.nDays', { n: 7 }), value: 604800 },
-                                    { displayName: tt('format.misc.nDays', { n: 30 }), value: 2592000 },
-                                    { displayName: tt('format.misc.nDays', { n: 90 }), value: 7776000 },
-                                    { displayName: tt('format.misc.nDays', { n: 180 }), value: 15552000 },
-                                    { displayName: tt('format.misc.nDays', { n: 365 }), value: 31536000 },
+                                    { displayName: tt('format.misc.nHour', { n: formatNumberToLocalizedNumerals(1) }), value: 3600 },
+                                    { displayName: tt('format.misc.nDays', { n: formatNumberToLocalizedNumerals(1) }), value: 86400 },
+                                    { displayName: tt('format.misc.nDays', { n: formatNumberToLocalizedNumerals(7) }), value: 604800 },
+                                    { displayName: tt('format.misc.nDays', { n: formatNumberToLocalizedNumerals(30) }), value: 2592000 },
+                                    { displayName: tt('format.misc.nDays', { n: formatNumberToLocalizedNumerals(90) }), value: 7776000 },
+                                    { displayName: tt('format.misc.nDays', { n: formatNumberToLocalizedNumerals(180) }), value: 15552000 },
+                                    { displayName: tt('format.misc.nDays', { n: formatNumberToLocalizedNumerals(365) }), value: 31536000 },
                                     { displayName: tt('Custom'), value: -1 }
                                 ]"
                                 v-model="tokenExpirationTime"
                             />
                         </v-col>
                         <v-col cols="12" md="6" v-if="tokenExpirationTime < 0">
-                            <v-text-field
-                                type="number"
-                                persistent-placeholder
+                            <number-input
+                                :persistent-placeholder="true"
                                 :disabled="generating"
                                 :label="tt('Custom Expiration Time (Seconds)')"
                                 :placeholder="tt('Custom Expiration Time (Seconds)')"
-                                v-model.number="tokenCustomExpirationTime"
+                                :max-decimal-count="0"
+                                :min-value="0"
+                                :max-value="4294967295"
+                                v-model="tokenCustomExpirationTime"
                             />
                         </v-col>
                         <v-col cols="12" md="12">
@@ -142,7 +144,7 @@ import { copyTextToClipboard } from '@/lib/ui/common.ts';
 
 type SnackBarType = InstanceType<typeof SnackBar>;
 
-const { tt } = useI18n();
+const { tt, formatNumberToLocalizedNumerals } = useI18n();
 
 const tokensStore = useTokensStore();
 

@@ -10,6 +10,7 @@
         :height="importTransactionsTableHeight"
         :headers="importTransactionHeaders"
         :items="importTransactions"
+        :hover="true"
         :search="JSON.stringify(filters)"
         :custom-filter="importTransactionsFilter"
         :no-data-text="tt('No data to import')"
@@ -326,6 +327,35 @@
         </template>
     </v-data-table>
 
+    <v-dialog width="640" v-model="showCustomAmountFilterDialog">
+        <v-card class="pa-2 pa-sm-4 pa-md-4">
+            <template #title>
+                <div class="d-flex align-center justify-center">
+                    <h4 class="text-h4">{{ tt('Filter Amount') }}</h4>
+                </div>
+            </template>
+            <v-card-text class="mb-md-4 w-100 d-flex justify-center">
+                <div class="ms-2 me-2 d-flex flex-column justify-center" v-if="currentAmountFilterType">
+                    {{ tt(currentAmountFilterType.name) }}
+                </div>
+                <amount-input :currency="defaultCurrency"
+                              v-model="currentAmountFilterValue1"/>
+                <div class="ms-2 me-2 d-flex flex-column justify-center" v-if="currentAmountFilterType && currentAmountFilterType.paramCount === 2">
+                    ~
+                </div>
+                <amount-input :currency="defaultCurrency"
+                              v-model="currentAmountFilterValue2"
+                              v-if="currentAmountFilterType && currentAmountFilterType.paramCount === 2"/>
+            </v-card-text>
+            <v-card-text class="overflow-y-visible">
+                <div class="w-100 d-flex justify-center gap-4">
+                    <v-btn @click="showCustomAmountFilterDialog = false; filters.amount = currentAmountFilterType?.toTextualFilter(currentAmountFilterValue1, currentAmountFilterValue2) ?? null">{{ tt('OK') }}</v-btn>
+                    <v-btn color="secondary" variant="tonal" @click="showCustomAmountFilterDialog = false">{{ tt('Cancel') }}</v-btn>
+                </div>
+            </v-card-text>
+        </v-card>
+    </v-dialog>
+
     <v-dialog width="640" v-model="showCustomDescriptionDialog">
         <v-card class="pa-2 pa-sm-4 pa-md-4">
             <template #title>
@@ -381,7 +411,7 @@ import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
 
 import { type NameValue, type NameNumeralValue, itemAndIndex, reversed, keys } from '@/core/base.ts';
-import { type NumeralSystem } from '@/core/numeral.ts';
+import { type NumeralSystem, AmountFilterType } from '@/core/numeral.ts';
 import { CategoryType } from '@/core/category.ts';
 import { TransactionType } from '@/core/transaction.ts';
 
@@ -421,7 +451,9 @@ import {
     mdiPound,
     mdiFindReplace,
     mdiShapePlusOutline,
-    mdiTransfer
+    mdiTransfer,
+    mdiNumericPositive1,
+    mdiNumericNegative1
 } from '@mdi/js';
 
 type SnackBarType = InstanceType<typeof SnackBar>;
@@ -434,6 +466,7 @@ interface ImportTransactionCheckDataFilter {
     maxDatetime: number | null;
     transactionType: TransactionType | null; // null for 'All Transaction Type'
     category: string | null | undefined; // null for 'All Category', undefined for 'Invalid Category'
+    amount: string | null; // null for 'All Amount'
     account: string | null | undefined; // null for 'All Account', undefined for 'Invalid Account'
     tag: string | null | undefined; // null for 'All Tag', undefined for 'Invalid Tag'
     description: string | null; // null for 'All Description'
@@ -485,6 +518,7 @@ const filters = ref<ImportTransactionCheckDataFilter>({
     maxDatetime: null,
     transactionType: null,
     category: null,
+    amount: null,
     account: null,
     tag: null,
     description: null
@@ -493,7 +527,11 @@ const filters = ref<ImportTransactionCheckDataFilter>({
 const currentPage = ref<number>(1);
 const countPerPage = ref<number>(10);
 const showCustomDateRangeDialog = ref<boolean>(false);
+const showCustomAmountFilterDialog = ref<boolean>(false);
 const showCustomDescriptionDialog = ref<boolean>(false);
+const currentAmountFilterType = ref<AmountFilterType | null>(null);
+const currentAmountFilterValue1 = ref<number>(0);
+const currentAmountFilterValue2 = ref<number>(0);
 const currentDescriptionFilterValue = ref<string | null>(null);
 
 const numeralSystem = computed<NumeralSystem>(() => getCurrentNumeralSystemType());
@@ -587,6 +625,49 @@ const filterMenus = computed<ImportTransactionCheckDataMenuGroup[]>(() => [
                 title: name,
                 appendIcon: filters.value.category === name ? mdiCheck : undefined,
                 onClick: () => filters.value.category = name
+            }))
+        ]
+    },
+    {
+        title: tt('Amount'),
+        items: [
+            {
+                title: tt('All'),
+                appendIcon: !filters.value.amount ? mdiCheck : undefined,
+                onClick: () => filters.value.amount = null
+            },
+            ...AmountFilterType.values().map(filterType => ({
+                title: tt(filterType.name),
+                appendIcon: filters.value.amount && filters.value.amount.startsWith(`${filterType.type}:`) ? mdiCheck : undefined,
+                onClick: () => {
+                    let filterValue1: number = 0;
+                    let filterValue2: number = 0;
+
+                    if (filters.value.amount) {
+                        const parts = filters.value.amount.split(':');
+
+                        if (parts.length >= 2) {
+                            filterValue1 = parseInt(parts[1] as string);
+                        }
+
+                        if (parts.length >= 3) {
+                            filterValue2 = parseInt(parts[2] as string);
+                        }
+                    }
+
+                    if (Number.isNaN(filterValue1) || !Number.isFinite(filterValue1)) {
+                        filterValue1 = 0;
+                    }
+
+                    if (Number.isNaN(filterValue2) || !Number.isFinite(filterValue2)) {
+                        filterValue2 = 0;
+                    }
+
+                    currentAmountFilterType.value = filterType;
+                    currentAmountFilterValue1.value = filterValue1;
+                    currentAmountFilterValue2.value = filterValue2;
+                    showCustomAmountFilterDialog.value = true;
+                }
             }))
         ]
     },
@@ -808,6 +889,19 @@ const toolMenus = computed<ImportTransactionCheckDataMenu[]>(() => [
         title: tt('Batch Convert Transfer Transaction to Income Transaction'),
         disabled: isEditing.value || selectedTransferTransactionCount.value < 1,
         onClick: () => convertTransactionType(TransactionType.Transfer, TransactionType.Income)
+    },
+    {
+        prependIcon: mdiNumericPositive1,
+        title: tt('Batch Convert Selected Amounts to Positive Values'),
+        disabled: isEditing.value || selectedImportTransactionCount.value < 1,
+        divider: true,
+        onClick: () => convertTransactionAmountSign(1)
+    },
+    {
+        prependIcon: mdiNumericNegative1,
+        title: tt('Batch Convert Selected Amounts to Negative Values'),
+        disabled: isEditing.value || selectedImportTransactionCount.value < 1,
+        onClick: () => convertTransactionAmountSign(-1)
     }
 ]);
 
@@ -1083,6 +1177,14 @@ function isTransactionDisplayed(transaction: ImportTransaction): boolean {
         }
     } else if (filters.value.category === undefined) {
         if (transaction.type !== TransactionType.ModifyBalance && transaction.categoryId && transaction.categoryId !== '0') {
+            return false;
+        }
+    }
+
+    if (isString(filters.value.amount)) {
+        const match: boolean = AmountFilterType.match(filters.value.amount, transaction.sourceAmount);
+
+        if (!match) {
             return false;
         }
     }
@@ -1908,6 +2010,28 @@ function convertTransactionType(fromType: TransactionType, toType: TransactionTy
     }
 }
 
+function convertTransactionAmountSign(toSign: number): void {
+    if (!props.importTransactions || props.importTransactions.length < 1) {
+        return;
+    }
+
+    for (const importTransaction of props.importTransactions) {
+        if (!importTransaction.selected) {
+            continue;
+        }
+
+        if (toSign > 0) {
+            importTransaction.sourceAmount = Math.abs(importTransaction.sourceAmount);
+            importTransaction.destinationAmount = Math.abs(importTransaction.destinationAmount);
+        } else if (toSign < 0) {
+            importTransaction.sourceAmount = -Math.abs(importTransaction.sourceAmount);
+            importTransaction.destinationAmount = -Math.abs(importTransaction.destinationAmount);
+        }
+
+        updateTransactionData(importTransaction);
+    }
+}
+
 function changeCustomDateFilter(minTime: number, maxTime: number): void {
     filters.value.minDatetime = minTime;
     filters.value.maxDatetime = maxTime;
@@ -1947,6 +2071,19 @@ defineExpose({
 </script>
 
 <style>
+.import-transaction-table > .v-table__wrapper > table {
+    th:not(:last-child),
+    td:not(:last-child) {
+        width: auto !important;
+        white-space: nowrap;
+    }
+
+    th:last-child,
+    td:last-child {
+        width: 100% !important;
+    }
+}
+
 .import-transaction-table .v-autocomplete.v-input.v-input--density-compact:not(.v-textarea) .v-field__input,
 .import-transaction-table .v-select.v-input.v-input--density-compact:not(.v-textarea) .v-field__input {
     min-height: inherit;

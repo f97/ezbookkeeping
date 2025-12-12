@@ -4,8 +4,8 @@
             <f7-nav-left :back-link="tt('Back')"></f7-nav-left>
             <f7-nav-title :title="tt('Transaction Tags')"></f7-nav-title>
             <f7-nav-right class="navbar-compact-icons">
-                <f7-link :class="{ 'disabled': hasEditingTag || !tags.length }" icon-f7="ellipsis" v-if="!sortable" @click="showMoreActionSheet = true"></f7-link>
-                <f7-link :class="{ 'disabled': hasEditingTag }" icon-f7="plus" v-if="!sortable" @click="add"></f7-link>
+                <f7-link icon-f7="ellipsis" :class="{ 'disabled': hasEditingTag || !tags.length }" v-if="!sortable" @click="showMoreActionSheet = true"></f7-link>
+                <f7-link icon-f7="plus" :class="{ 'disabled': hasEditingTag }" v-if="!sortable" @click="add"></f7-link>
                 <f7-link :text="tt('Done')" :class="{ 'disabled': displayOrderSaving || hasEditingTag }" v-else-if="sortable" @click="saveSortResult"></f7-link>
             </f7-nav-right>
         </f7-navbar>
@@ -31,7 +31,7 @@
                  :sortable-enabled="sortable" @sortable:sort="onSort"
                  v-if="!loading">
             <f7-list-item swipeout
-                          :class="{ 'actual-first-child': tag.id === firstShowingId, 'actual-last-child': tag.id === lastShowingId && !newTag }"
+                          :class="{ 'actual-first-child': tag.id === firstShowingId, 'actual-last-child': tag.id === lastShowingId && !newTag, 'editing-list-item': editingTag.id === tag.id }"
                           :id="getTagDomId(tag)"
                           :key="tag.id"
                           v-for="tag in tags"
@@ -55,7 +55,7 @@
                                   :placeholder="tt('Tag Title')"
                                   v-else-if="editingTag.id === tag.id"
                                   v-model:value="editingTag.name"
-                                  @keyup.enter="save(tag)">
+                                  @keyup.enter="save(editingTag)">
                         </f7-input>
                     </div>
                 </template>
@@ -93,7 +93,7 @@
                 </f7-swipeout-actions>
             </f7-list-item>
 
-            <f7-list-item v-if="newTag">
+            <f7-list-item class="editing-list-item" v-if="newTag">
                 <template #media>
                     <f7-icon class="transaction-tag-icon" f7="number"></f7-icon>
                 </template>

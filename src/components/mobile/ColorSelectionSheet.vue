@@ -2,11 +2,10 @@
     <f7-sheet swipe-to-close swipe-handler=".swipe-handler"
               :opened="show"
               @sheet:open="onSheetOpen" @sheet:closed="onSheetClosed">
-        <f7-toolbar>
+        <f7-toolbar class="toolbar-with-swipe-handler">
             <div class="swipe-handler"></div>
-            <div class="left"></div>
-            <div class="right">
-                <f7-link sheet-close :text="tt('Done')"></f7-link>
+            <div class="left">
+                <f7-link sheet-close icon-f7="xmark"></f7-link>
             </div>
         </f7-toolbar>
         <f7-page-content>
@@ -31,8 +30,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 
-import { useI18n } from '@/locales/helpers.ts';
-
 import type { ColorValue, ColorInfo } from '@/core/color.ts';
 import { arrayContainsFieldValue } from '@/lib/common.ts';
 import { getColorsInRows } from '@/lib/color.ts';
@@ -49,8 +46,6 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: ColorValue): void;
     (e: 'update:show', value: boolean): void;
 }>();
-
-const { tt } = useI18n();
 
 const currentValue = ref<ColorValue>(props.modelValue);
 const itemPerRow = ref<number>(props.columnCount || 7);

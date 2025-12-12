@@ -129,10 +129,11 @@ Currently available translations:
 | --- | --- | --- |
 | de | Deutsch | [@chrgm](https://github.com/chrgm) |
 | en | English | / |
-| es | Español | [@Miguelonlonlon](https://github.com/Miguelonlonlon) |
+| es | Español | [@Miguelonlonlon](https://github.com/Miguelonlonlon), [@abrugues](https://github.com/abrugues) |
 | fr | Français | [@brieucdlf](https://github.com/brieucdlf) |
 | it | Italiano | [@waron97](https://github.com/waron97) |
 | ja | 日本語 | [@tkymmm](https://github.com/tkymmm) |
+| kn | ಕನ್ನಡ | [@Darshanbm05](https://github.com/Darshanbm05) |
 | ko | 한국어 | [@overworks](https://github.com/overworks) |
 | nl | Nederlands | [@automagic](https://github.com/automagics) |
 | pt-BR | Português (Brasil) | [@thecodergus](https://github.com/thecodergus) |

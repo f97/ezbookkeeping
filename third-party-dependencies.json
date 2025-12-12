@@ -39,7 +39,7 @@
         "name": "cli",
         "copyright": "Copyright (c) 2023 urfave/cli maintainers",
         "url": "https://github.com/urfave/cli",
-        "licenseUrl": "https://github.com/urfave/cli/blob/v3.5.0/LICENSE"
+        "licenseUrl": "https://github.com/urfave/cli/blob/v3.6.1/LICENSE"
     },
     {
         "name": "INI",
@@ -85,31 +85,31 @@
         "name": "Go Cryptography",
         "copyright": "Copyright (c) 2009 The Go Authors. All rights reserved.",
         "url": "https://golang.org/x/crypto",
-        "licenseUrl": "https://cs.opensource.google/go/x/crypto/+/refs/tags/v0.43.0:LICENSE"
+        "licenseUrl": "https://cs.opensource.google/go/x/crypto/+/refs/tags/v0.45.0:LICENSE"
     },
     {
         "name": "Go Networking",
         "copyright": "Copyright (c) 2009 The Go Authors. All rights reserved.",
         "url": "https://golang.org/x/net",
-        "licenseUrl": "https://cs.opensource.google/go/x/net/+/refs/tags/v0.46.0:LICENSE"
+        "licenseUrl": "https://cs.opensource.google/go/x/net/+/refs/tags/v0.47.0:LICENSE"
     },
     {
         "name": "Go Text",
         "copyright": "Copyright (c) 2009 The Go Authors. All rights reserved.",
         "url": "https://golang.org/x/text",
-        "licenseUrl": "https://cs.opensource.google/go/x/text/+/refs/tags/v0.30.0:LICENSE"
+        "licenseUrl": "https://cs.opensource.google/go/x/text/+/refs/tags/v0.31.0:LICENSE"
     },
     {
         "name": "Go OAuth2",
         "copyright": "Copyright (c) 2009 The Go Authors. All rights reserved.",
         "url": "https://golang.org/x/oauth2",
-        "licenseUrl": "https://cs.opensource.google/go/x/oauth2/+/refs/tags/v0.32.0:LICENSE"
+        "licenseUrl": "https://cs.opensource.google/go/x/oauth2/+/refs/tags/v0.33.0:LICENSE"
     },
     {
         "name": "go-oidc",
         "copyright": "Copyright 2014 CoreOS, Inc",
         "url": "https://github.com/coreos/go-oidc",
-        "licenseUrl": "https://github.com/coreos/go-oidc/blob/v3.16.0/LICENSE"
+        "licenseUrl": "https://github.com/coreos/go-oidc/blob/v3.17.0/LICENSE"
     },
     {
         "name": "Gomail",
@@ -121,13 +121,13 @@
         "name": "MinIO Go Client SDK",
         "copyright": "MinIO Cloud Storage, (C) 2014-2020 MinIO, Inc.",
         "url": "https://github.com/minio/minio-go",
-        "licenseUrl": "https://github.com/minio/minio-go/blob/v7.0.95/LICENSE"
+        "licenseUrl": "https://github.com/minio/minio-go/blob/v7.0.97/LICENSE"
     },
     {
         "name": "gocron",
         "copyright": "Copyright (c) 2014, 辣椒面",
         "url": "https://github.com/go-co-op/gocron",
-        "licenseUrl": "https://github.com/go-co-op/gocron/blob/v2.17.0/LICENSE"
+        "licenseUrl": "https://github.com/go-co-op/gocron/blob/v2.18.2/LICENSE"
     },
     {
         "name": "barcode",
@@ -173,13 +173,13 @@
         "name": "vuejs/core",
         "copyright": "Copyright (c) 2018-present, Yuxi (Evan) You and Vue contributors",
         "url": "https://github.com/vuejs/core",
-        "licenseUrl": "https://github.com/vuejs/core/blob/v3.5.22/LICENSE"
+        "licenseUrl": "https://github.com/vuejs/core/blob/v3.5.25/LICENSE"
     },
     {
         "name": "Pinia",
         "copyright": "Copyright (c) 2019-present Eduardo San Martin Morote",
         "url": "https://github.com/vuejs/pinia",
-        "licenseUrl": "https://github.com/vuejs/pinia/blob/v3.0.3/LICENSE"
+        "licenseUrl": "https://github.com/vuejs/pinia/blob/v3.0.4/LICENSE"
     },
     {
         "name": "vue-router",
@@ -191,13 +191,13 @@
         "name": "vue-i18n",
         "copyright": "Copyright (c) 2016 kazuya kawaguchi",
         "url": "https://github.com/intlify/vue-i18n-next",
-        "licenseUrl": "https://github.com/intlify/vue-i18n-next/blob/v11.1.12/LICENSE"
+        "licenseUrl": "https://github.com/intlify/vue-i18n-next/blob/v11.2.2/LICENSE"
     },
     {
         "name": "vuetify",
         "copyright": "Copyright (c) 2016-now Vuetify, LLC",
         "url": "https://vuetifyjs.com",
-        "licenseUrl": "https://github.com/vuetifyjs/vuetify/blob/v3.10.7/packages/vuetify/LICENSE.md"
+        "licenseUrl": "https://github.com/vuetifyjs/vuetify/blob/v3.11.0/packages/vuetify/LICENSE.md"
     },
     {
         "name": "register-service-worker",
@@ -209,13 +209,13 @@
         "name": "Framework7",
         "copyright": "Copyright (c) 2014 Vladimir Kharlampidi",
         "url": "https://framework7.io/",
-        "licenseUrl": "https://github.com/framework7io/framework7/blob/v8.3.4/LICENSE"
+        "licenseUrl": "https://github.com/framework7io/framework7/blob/v9.0.1/LICENSE"
     },
     {
         "name": "Framework7-vue",
         "copyright": "Copyright (c) 2014 Vladimir Kharlampidi",
         "url": "https://framework7.io/vue/",
-        "licenseUrl": "https://github.com/framework7io/framework7/blob/v8.3.4/LICENSE"
+        "licenseUrl": "https://github.com/framework7io/framework7/blob/v9.0.1/LICENSE"
     },
     {
         "name": "Framework7-icons",
@@ -233,7 +233,7 @@
         "name": "Swiper",
         "copyright": "Copyright (c) 2019 Vladimir Kharlampidi",
         "url": "https://swiperjs.com",
-        "licenseUrl": "https://github.com/nolimits4web/swiper/blob/v10.2.0/LICENSE"
+        "licenseUrl": "https://github.com/nolimits4web/swiper/blob/v12.0.3/LICENSE"
     },
     {
         "name": "Skeleton Elements",
@@ -263,13 +263,13 @@
         "name": "@vuepic/vue-datepicker",
         "copyright": "Copyright (c) 2021-present Vuepic",
         "url": "https://vue3datepicker.com/",
-        "licenseUrl": "https://github.com/Vuepic/vue-datepicker/blob/v11.0.3/LICENSE"
+        "licenseUrl": "https://github.com/Vuepic/vue-datepicker/blob/v12.0.5/LICENSE"
     },
     {
         "name": "axios",
         "copyright": "Copyright (c) 2014-present Matt Zabriskie & Collaborators",
         "url": "https://axios-http.com",
-        "licenseUrl": "https://github.com/axios/axios/blob/v1.12.2/LICENSE"
+        "licenseUrl": "https://github.com/axios/axios/blob/v1.13.2/LICENSE"
     },
     {
         "name": "Moment.js",
@@ -288,6 +288,12 @@
         "copyright": "Copyright (c) 2010-2023, Volodymyr Agafonkin, Copyright (c) 2010-2011, CloudMade, All rights reserved.",
         "url": "https://leafletjs.com/",
         "licenseUrl": "https://github.com/Leaflet/Leaflet/blob/v1.9.4/LICENSE"
+    },
+    {
+        "name": "Chardet",
+        "copyright": "Copyright (C) 2024 Dmitry Shirokov",
+        "url": "https://github.com/runk/node-chardet",
+        "licenseUrl": "https://github.com/runk/node-chardet/blob/v2.1.1/LICENSE"
     },
     {
         "name": "crypto-js",

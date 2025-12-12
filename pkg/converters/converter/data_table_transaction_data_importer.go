@@ -29,7 +29,7 @@ type DataTableTransactionDataImporter struct {
 }
 
 // ParseImportedData returns the imported transaction data
-func (c *DataTableTransactionDataImporter) ParseImportedData(ctx core.Context, user *models.User, dataTable datatable.TransactionDataTable, defaultTimezoneOffset int16, accountMap map[string]*models.Account, expenseCategoryMap map[string]map[string]*models.TransactionCategory, incomeCategoryMap map[string]map[string]*models.TransactionCategory, transferCategoryMap map[string]map[string]*models.TransactionCategory, tagMap map[string]*models.TransactionTag) (models.ImportedTransactionSlice, []*models.Account, []*models.TransactionCategory, []*models.TransactionCategory, []*models.TransactionCategory, []*models.TransactionTag, error) {
+func (c *DataTableTransactionDataImporter) ParseImportedData(ctx core.Context, user *models.User, dataTable datatable.TransactionDataTable, defaultTimezoneOffset int16, additionalOptions TransactionDataImporterOptions, accountMap map[string]*models.Account, expenseCategoryMap map[string]map[string]*models.TransactionCategory, incomeCategoryMap map[string]map[string]*models.TransactionCategory, transferCategoryMap map[string]map[string]*models.TransactionCategory, tagMap map[string]*models.TransactionTag) (models.ImportedTransactionSlice, []*models.Account, []*models.TransactionCategory, []*models.TransactionCategory, []*models.TransactionCategory, []*models.TransactionTag, error) {
 	if dataTable.TransactionRowCount() < 1 {
 		log.Errorf(ctx, "[data_table_transaction_data_importer.ParseImportedData] cannot parse import data for user \"uid:%d\", because data table row count is less 1", user.Uid)
 		return nil, nil, nil, nil, nil, nil, errs.ErrNotFoundTransactionDataInFile
@@ -303,6 +303,7 @@ func (c *DataTableTransactionDataImporter) ParseImportedData(ctx core.Context, u
 
 		var tagIds []string
 		var tagNames []string
+		tagNamesMap := make(map[string]bool)
 
 		if dataTable.HasColumn(datatable.TRANSACTION_DATA_TABLE_TAGS) {
 			var tagNameItems []string
@@ -320,19 +321,39 @@ func (c *DataTableTransactionDataImporter) ParseImportedData(ctx core.Context, u
 					continue
 				}
 
-				tag, exists := tagMap[tagName]
+				allNewTags, tagIds, tagNames = c.addTag(user, tagName, tagNamesMap, tagMap, allNewTags, tagIds, tagNames)
+			}
+		}
 
-				if !exists {
-					tag = c.createNewTransactionTagModel(user.Uid, tagName)
-					allNewTags = append(allNewTags, tag)
-					tagMap[tagName] = tag
-				}
+		if dataTable.HasColumn(datatable.TRANSACTION_DATA_TABLE_PAYEE) && additionalOptions.IsPayeeAsTag() {
+			payee := dataRow.GetData(datatable.TRANSACTION_DATA_TABLE_PAYEE)
 
-				if tag != nil {
-					tagIds = append(tagIds, utils.Int64ToString(tag.TagId))
-				}
+			if payee != "" {
+				allNewTags, tagIds, tagNames = c.addTag(user, payee, tagNamesMap, tagMap, allNewTags, tagIds, tagNames)
+			}
+		}
 
-				tagNames = append(tagNames, tagName)
+		if dataTable.HasColumn(datatable.TRANSACTION_DATA_TABLE_MEMBER) && additionalOptions.IsMemberAsTag() {
+			member := dataRow.GetData(datatable.TRANSACTION_DATA_TABLE_MEMBER)
+
+			if member != "" {
+				allNewTags, tagIds, tagNames = c.addTag(user, member, tagNamesMap, tagMap, allNewTags, tagIds, tagNames)
+			}
+		}
+
+		if dataTable.HasColumn(datatable.TRANSACTION_DATA_TABLE_PROJECT) && additionalOptions.IsProjectAsTag() {
+			project := dataRow.GetData(datatable.TRANSACTION_DATA_TABLE_PROJECT)
+
+			if project != "" {
+				allNewTags, tagIds, tagNames = c.addTag(user, project, tagNamesMap, tagMap, allNewTags, tagIds, tagNames)
+			}
+		}
+
+		if dataTable.HasColumn(datatable.TRANSACTION_DATA_TABLE_MERCHANT) && additionalOptions.IsMerchantAsTag() {
+			merchant := dataRow.GetData(datatable.TRANSACTION_DATA_TABLE_MERCHANT)
+
+			if merchant != "" {
+				allNewTags, tagIds, tagNames = c.addTag(user, merchant, tagNamesMap, tagMap, allNewTags, tagIds, tagNames)
 			}
 		}
 
@@ -340,6 +361,10 @@ func (c *DataTableTransactionDataImporter) ParseImportedData(ctx core.Context, u
 
 		if dataTable.HasColumn(datatable.TRANSACTION_DATA_TABLE_DESCRIPTION) {
 			description = dataRow.GetData(datatable.TRANSACTION_DATA_TABLE_DESCRIPTION)
+		}
+
+		if description == "" && additionalOptions.IsPayeeAsDescription() && dataTable.HasColumn(datatable.TRANSACTION_DATA_TABLE_PAYEE) {
+			description = dataRow.GetData(datatable.TRANSACTION_DATA_TABLE_PAYEE)
 		}
 
 		transaction := &models.ImportTransaction{
@@ -457,6 +482,27 @@ func (c *DataTableTransactionDataImporter) getTransactionCategory(categories map
 	}
 
 	return subCategory, exists
+}
+
+func (c *DataTableTransactionDataImporter) addTag(user *models.User, tagName string, tagNamesMap map[string]bool, tagMap map[string]*models.TransactionTag, allNewTags []*models.TransactionTag, tagIds []string, tagNames []string) ([]*models.TransactionTag, []string, []string) {
+	if tagName != "" && !tagNamesMap[tagName] {
+		tag, exists := tagMap[tagName]
+
+		if !exists {
+			tag = c.createNewTransactionTagModel(user.Uid, tagName)
+			allNewTags = append(allNewTags, tag)
+			tagMap[tagName] = tag
+		}
+
+		if tag != nil {
+			tagIds = append(tagIds, utils.Int64ToString(tag.TagId))
+		}
+
+		tagNames = append(tagNames, tagName)
+		tagNamesMap[tagName] = true
+	}
+
+	return allNewTags, tagIds, tagNames
 }
 
 func (c *DataTableTransactionDataImporter) createNewAccountModel(uid int64, accountName string, currency string) *models.Account {

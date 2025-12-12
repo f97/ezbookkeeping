@@ -12,6 +12,7 @@ import { useExchangeRatesStore } from './exchangeRates.ts';
 import { type BeforeResolveFunction, itemAndIndex, entries, keys } from '@/core/base.ts';
 import { type TextualYearMonth, DateRange } from '@/core/datetime.ts';
 import { CategoryType } from '@/core/category.ts';
+import type { ImportFileTypeSupportedAdditionalOptions } from '@/core/file.ts';
 import { TransactionType, TransactionTagFilterType } from '@/core/transaction.ts';
 import { TRANSACTION_MIN_AMOUNT, TRANSACTION_MAX_AMOUNT } from '@/consts/transaction.ts';
 import {
@@ -21,6 +22,7 @@ import {
     type TransactionPageWrapper,
     type TransactionReconciliationStatementResponse,
     Transaction,
+    TransactionTagFilter,
     EMPTY_TRANSACTION_RESULT
 } from '@/models/transaction.ts';
 import type {
@@ -47,6 +49,7 @@ import {
     isNumber,
     isString,
     isArray1SubsetOfArray2,
+    getObjectOwnFieldCount,
     splitItemsToMap,
     countSplitItems
 } from '@/lib/common.ts';
@@ -69,8 +72,7 @@ export interface TransactionListPartialFilter {
     type?: number;
     categoryIds?: string;
     accountIds?: string;
-    tagIds?: string;
-    tagFilterType?: number;
+    tagFilter?: string;
     amountFilter?: string;
     keyword?: string;
 }
@@ -82,8 +84,7 @@ export interface TransactionListFilter extends TransactionListPartialFilter {
     type: number;
     categoryIds: string;
     accountIds: string;
-    tagIds: string;
-    tagFilterType: number;
+    tagFilter: string;
     amountFilter: string;
     keyword: string;
 }
@@ -123,8 +124,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         type: 0,
         categoryIds: '',
         accountIds: '',
-        tagIds: '',
-        tagFilterType: TransactionTagFilterType.Default.type,
+        tagFilter: '',
         amountFilter: '',
         keyword: ''
     });
@@ -136,11 +136,32 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
     const allFilterCategoryIds = computed<Record<string, boolean>>(() => splitItemsToMap(transactionsFilter.value.categoryIds, ','));
     const allFilterAccountIds = computed<Record<string, boolean>>(() => splitItemsToMap(transactionsFilter.value.accountIds, ','));
-    const allFilterTagIds = computed<Record<string, boolean>>(() => splitItemsToMap(transactionsFilter.value.tagIds, ','));
+    const allFilterTagIds = computed<Record<string, boolean>>(() => {
+        const tagFilters: TransactionTagFilter[] = TransactionTagFilter.parse(transactionsFilter.value.tagFilter);
+        const allTagIdsMap: Record<string, boolean> = {};
+
+        for (const tagFilter of tagFilters) {
+            let state: boolean = true;
+
+            if (tagFilter.type === TransactionTagFilterType.HasAny || tagFilter.type === TransactionTagFilterType.HasAll) {
+                state = true;
+            } else if (tagFilter.type === TransactionTagFilterType.NotHasAny || tagFilter.type === TransactionTagFilterType.NotHasAll) {
+                state = false;
+            } else {
+                continue;
+            }
+
+            for (const tagId of tagFilter.tagIds) {
+                allTagIdsMap[tagId] = state;
+            }
+        }
+
+        return allTagIdsMap;
+    });
 
     const allFilterCategoryIdsCount = computed<number>(() => countSplitItems(transactionsFilter.value.categoryIds, ','));
     const allFilterAccountIdsCount = computed<number>(() => countSplitItems(transactionsFilter.value.accountIds, ','));
-    const allFilterTagIdsCount = computed<number>(() => countSplitItems(transactionsFilter.value.tagIds, ','));
+    const allFilterTagIdsCount = computed<number>(() => getObjectOwnFieldCount(allFilterTagIds.value));
 
     const noTransaction = computed<boolean>(() => {
         for (const transactionMonthList of transactions.value) {
@@ -587,8 +608,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         transactionsFilter.value.type = 0;
         transactionsFilter.value.categoryIds = '';
         transactionsFilter.value.accountIds = '';
-        transactionsFilter.value.tagIds = '';
-        transactionsFilter.value.tagFilterType = TransactionTagFilterType.Default.type;
+        transactionsFilter.value.tagFilter = '';
         transactionsFilter.value.amountFilter = '';
         transactionsFilter.value.keyword = '';
         transactions.value = [];
@@ -640,16 +660,10 @@ export const useTransactionsStore = defineStore('transactions', () => {
             transactionsFilter.value.accountIds = '';
         }
 
-        if (filter && isString(filter.tagIds)) {
-            transactionsFilter.value.tagIds = filter.tagIds;
+        if (filter && isString(filter.tagFilter)) {
+            transactionsFilter.value.tagFilter = filter.tagFilter;
         } else {
-            transactionsFilter.value.tagIds = '';
-        }
-
-        if (filter && isNumber(filter.tagFilterType)) {
-            transactionsFilter.value.tagFilterType = filter.tagFilterType;
-        } else {
-            transactionsFilter.value.tagFilterType = TransactionTagFilterType.Default.type;
+            transactionsFilter.value.tagFilter = '';
         }
 
         if (filter && isString(filter.amountFilter)) {
@@ -703,13 +717,8 @@ export const useTransactionsStore = defineStore('transactions', () => {
             changed = true;
         }
 
-        if (filter && isString(filter.tagIds) && transactionsFilter.value.tagIds !== filter.tagIds) {
-            transactionsFilter.value.tagIds = filter.tagIds;
-            changed = true;
-        }
-
-        if (filter && isNumber(filter.tagFilterType) && transactionsFilter.value.tagFilterType !== filter.tagFilterType) {
-            transactionsFilter.value.tagFilterType = filter.tagFilterType;
+        if (filter && isString(filter.tagFilter) && transactionsFilter.value.tagFilter !== filter.tagFilter) {
+            transactionsFilter.value.tagFilter = filter.tagFilter;
             changed = true;
         }
 
@@ -743,12 +752,8 @@ export const useTransactionsStore = defineStore('transactions', () => {
             querys.push('categoryIds=' + transactionsFilter.value.categoryIds);
         }
 
-        if (transactionsFilter.value.tagIds) {
-            querys.push('tagIds=' + transactionsFilter.value.tagIds);
-        }
-
-        if (transactionsFilter.value.tagFilterType) {
-            querys.push('tagFilterType=' + transactionsFilter.value.tagFilterType);
+        if (transactionsFilter.value.tagFilter) {
+            querys.push('tagFilter=' + transactionsFilter.value.tagFilter);
         }
 
         querys.push('dateType=' + transactionsFilter.value.dateType);
@@ -776,8 +781,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
             type: transactionsFilter.value.type,
             categoryIds: transactionsFilter.value.categoryIds,
             accountIds: transactionsFilter.value.accountIds,
-            tagIds: transactionsFilter.value.tagIds,
-            tagFilterType: transactionsFilter.value.tagFilterType,
+            tagFilter: transactionsFilter.value.tagFilter,
             amountFilter: transactionsFilter.value.amountFilter,
             keyword: transactionsFilter.value.keyword
         };
@@ -802,8 +806,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
                 type: transactionsFilter.value.type,
                 categoryIds: transactionsFilter.value.categoryIds,
                 accountIds: transactionsFilter.value.accountIds,
-                tagIds: transactionsFilter.value.tagIds,
-                tagFilterType: transactionsFilter.value.tagFilterType,
+                tagFilter: transactionsFilter.value.tagFilter,
                 amountFilter: transactionsFilter.value.amountFilter,
                 keyword: transactionsFilter.value.keyword
             }).then(response => {
@@ -882,8 +885,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
                 type: transactionsFilter.value.type,
                 categoryIds: transactionsFilter.value.categoryIds,
                 accountIds: transactionsFilter.value.accountIds,
-                tagIds: transactionsFilter.value.tagIds,
-                tagFilterType: transactionsFilter.value.tagFilterType,
+                tagFilter: transactionsFilter.value.tagFilter,
                 amountFilter: transactionsFilter.value.amountFilter,
                 keyword: transactionsFilter.value.keyword
             }).then(response => {
@@ -1263,9 +1265,9 @@ export const useTransactionsStore = defineStore('transactions', () => {
         });
     }
 
-    function parseImportTransaction({ fileType, fileEncoding, importFile, columnMapping, transactionTypeMapping, hasHeaderLine, timeFormat, timezoneFormat, amountDecimalSeparator, amountDigitGroupingSymbol, geoSeparator, geoOrder, tagSeparator }: { fileType: string, fileEncoding?: string, importFile: File, columnMapping?: Record<number, number>, transactionTypeMapping?: Record<string, TransactionType>, hasHeaderLine?: boolean, timeFormat?: string, timezoneFormat?: string, amountDecimalSeparator?: string, amountDigitGroupingSymbol?: string, geoSeparator?: string, geoOrder?: string, tagSeparator?: string }): Promise<ImportTransactionResponsePageWrapper> {
+    function parseImportTransaction({ fileType, additionalOptions, fileEncoding, importFile, columnMapping, transactionTypeMapping, hasHeaderLine, timeFormat, timezoneFormat, amountDecimalSeparator, amountDigitGroupingSymbol, geoSeparator, geoOrder, tagSeparator }: { fileType: string, additionalOptions?: ImportFileTypeSupportedAdditionalOptions, fileEncoding?: string, importFile: File, columnMapping?: Record<number, number>, transactionTypeMapping?: Record<string, TransactionType>, hasHeaderLine?: boolean, timeFormat?: string, timezoneFormat?: string, amountDecimalSeparator?: string, amountDigitGroupingSymbol?: string, geoSeparator?: string, geoOrder?: string, tagSeparator?: string }): Promise<ImportTransactionResponsePageWrapper> {
         return new Promise((resolve, reject) => {
-            services.parseImportTransaction({ fileType, fileEncoding, importFile, columnMapping, transactionTypeMapping, hasHeaderLine, timeFormat, timezoneFormat, amountDecimalSeparator, amountDigitGroupingSymbol, geoSeparator, geoOrder, tagSeparator }).then(response => {
+            services.parseImportTransaction({ fileType, additionalOptions, fileEncoding, importFile, columnMapping, transactionTypeMapping, hasHeaderLine, timeFormat, timezoneFormat, amountDecimalSeparator, amountDigitGroupingSymbol, geoSeparator, geoOrder, tagSeparator }).then(response => {
                 const data = response.data;
 
                 if (!data || !data.success || !data.result) {

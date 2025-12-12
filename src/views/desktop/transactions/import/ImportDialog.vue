@@ -44,8 +44,8 @@
                         <v-menu activator="parent" max-height="500">
                             <v-list>
                                 <template :key="groupIndex" v-for="(group, groupIndex) in importTransactionCheckDataTab.filterMenus">
-                                    <v-list-subheader :title="group.title" />
                                     <v-divider class="my-2" v-if="groupIndex > 0" />
+                                    <v-list-subheader :title="group.title" />
                                     <v-list-item :key="`menu_${groupIndex}_${index}`"
                                                  :prepend-icon="menu.prependIcon"
                                                  :title="menu.title"
@@ -145,6 +145,31 @@
                             />
                         </v-col>
 
+                        <v-col cols="12" md="12" v-if="supportedAdditionalOptions">
+                            <v-select
+                                :disabled="submitting"
+                                :label="tt('Additional Options')"
+                                :placeholder="tt('Additional Options')"
+                                v-model="fileType"
+                                v-model:menu="additionalOptionsMenuState"
+                            >
+                                <template #selection>
+                                    <span class="cursor-pointer">{{ displaySelectedAdditionalOptions }}</span>
+                                </template>
+
+                                <template #no-data>
+                                    <v-list class="py-0">
+                                        <template v-for="item in allSupportedAdditionalOptions">
+                                            <v-list-item :key="item.key"
+                                                         :append-icon="importAdditionalOptions[item.key] ? mdiCheck : undefined"
+                                                         @click="importAdditionalOptions[item.key] = !importAdditionalOptions[item.key]"
+                                                         v-if="isDefined(supportedAdditionalOptions[item.key])">{{ tt(item.name) }}</v-list-item>
+                                        </template>
+                                    </v-list>
+                                </template>
+                            </v-select>
+                        </v-col>
+
                         <v-col cols="12" md="12" v-if="!isImportDataFromTextbox">
                             <v-text-field
                                 readonly
@@ -212,7 +237,7 @@
                        :prepend-icon="mdiClose" @click="close(false)"
                        v-if="currentStep !== 'finalResult'">{{ tt('Cancel') }}</v-btn>
                 <v-btn class="button-icon-with-direction" color="primary"
-                       :disabled="loading || submitting || (!isImportDataFromTextbox && !importFile) || (isImportDataFromTextbox && !importData)"
+                       :disabled="loading || submitting || (!isImportDataFromTextbox && !importFile) || (isImportDataFromTextbox && !importData) || (!isImportDataFromTextbox && allSupportedEncodings && fileEncoding === 'auto' && !autoDetectedFileEncoding)"
                        :append-icon="!submitting ? mdiArrowRight : undefined" @click="parseData"
                        v-if="currentStep === 'defineColumn' || currentStep === 'executeCustomScript' || currentStep === 'uploadFile'">
                     {{ tt('Next') }}
@@ -257,16 +282,23 @@ import { useTransactionsStore } from '@/stores/transaction.ts';
 import { useOverviewStore } from '@/stores/overview.ts';
 import { useStatisticsStore } from '@/stores/statistics.ts';
 
-import { itemAndIndex } from '@/core/base.ts';
+import { type KeyAndName, itemAndIndex } from '@/core/base.ts';
 import { type NumeralSystem } from '@/core/numeral.ts';
 import { TransactionType } from '@/core/transaction.ts';
-import { KnownFileType } from '@/core/file.ts';
+import {
+    type ImportFileTypeSupportedAdditionalOptions,
+    type LocalizedImportFileCategoryAndTypes,
+    type LocalizedImportFileType,
+    type LocalizedImportFileTypeSubType,
+    type LocalizedImportFileTypeSupportedEncodings,
+    KnownFileType
+} from '@/core/file.ts';
+import { UTF_8 } from '@/consts/file.ts';
 
-import type { LocalizedImportFileCategoryAndTypes, LocalizedImportFileType, LocalizedImportFileTypeSubType, LocalizedImportFileTypeSupportedEncodings } from '@/core/file.ts';
 import { ImportTransaction } from '@/models/imported_transaction.ts';
 
-import { isNumber } from '@/lib/common.ts';
-import { findExtensionByType, isFileExtensionSupported } from '@/lib/file.ts';
+import { isDefined, isNumber } from '@/lib/common.ts';
+import { findExtensionByType, isFileExtensionSupported, detectFileEncoding } from '@/lib/file.ts';
 import { generateRandomUUID } from '@/lib/misc.ts';
 import logger from '@/lib/logger.ts';
 
@@ -297,9 +329,11 @@ defineProps<{
 
 const {
     tt,
+    joinMultiText,
     getCurrentNumeralSystemType,
     getAllSupportedImportFileCagtegoryAndTypes,
-    formatNumberToLocalizedNumerals
+    formatNumberToLocalizedNumerals,
+    getLocalizedFileEncodingName
 } = useI18n();
 
 const accountsStore = useAccountsStore();
@@ -316,16 +350,43 @@ const importTransactionExecuteCustomScriptTab = useTemplateRef<ImportTransaction
 const importTransactionCheckDataTab = useTemplateRef<ImportTransactionCheckDataTabType>('importTransactionCheckDataTab');
 const fileInput = useTemplateRef<HTMLInputElement>('fileInput');
 
+const allSupportedAdditionalOptions: KeyAndName[] = [
+    {
+        key: 'payeeAsTag',
+        name: 'Parse Payee as Tag'
+    },
+    {
+        key: 'payeeAsDescription',
+        name: 'Parse Payee as Description'
+    },
+    {
+        key: 'memberAsTag',
+        name: 'Parse Member as Tag'
+    },
+    {
+        key: 'projectAsTag',
+        name: 'Parse Project as Tag'
+    },
+    {
+        key: 'merchantAsTag',
+        name: 'Parse Merchant as Tag'
+    }
+];
+
 const showState = ref<boolean>(false);
+const additionalOptionsMenuState = ref<boolean>(false);
 const clientSessionId = ref<string>('');
 const currentStep = ref<ImportTransactionDialogStep>('uploadFile');
 const importProcess = ref<number>(0);
 const fileType = ref<string>('ezbookkeeping');
 const fileSubType = ref<string>('ezbookkeeping_csv');
-const fileEncoding = ref<string>('utf-8');
+const fileEncoding = ref<string>('auto');
+const detectingFileEncoding = ref<boolean>(false);
+const autoDetectedFileEncoding = ref<string | undefined>(undefined);
 const processDSVMethod = ref<ImportDSVProcessMethod>(ImportDSVProcessMethod.ColumnMapping);
 const importFile = ref<File | null>(null);
 const importData = ref<string>('');
+const importAdditionalOptions = ref<ImportFileTypeSupportedAdditionalOptions>({});
 const parsedFileData = ref<string[][] | undefined>(undefined);
 const importTransactions = ref<ImportTransaction[] | undefined>(undefined);
 
@@ -340,8 +401,41 @@ const numeralSystem = computed<NumeralSystem>(() => getCurrentNumeralSystemType(
 
 const allSupportedImportFileCategoryAndTypes = computed<LocalizedImportFileCategoryAndTypes[]>(() => getAllSupportedImportFileCagtegoryAndTypes());
 const allFileSubTypes = computed<LocalizedImportFileTypeSubType[] | undefined>(() => allSupportedImportFileTypesMap.value[fileType.value]?.subTypes);
-const allSupportedEncodings = computed<LocalizedImportFileTypeSupportedEncodings[] | undefined>(() => allSupportedImportFileTypesMap.value[fileType.value]?.supportedEncodings);
+const allSupportedEncodings = computed<LocalizedImportFileTypeSupportedEncodings[] | undefined>(() => {
+    const supportedEncodings = allSupportedImportFileTypesMap.value[fileType.value]?.supportedEncodings;
+
+    if (!supportedEncodings) {
+        return undefined;
+    }
+
+    const ret: LocalizedImportFileTypeSupportedEncodings[] = [];
+    let autoDetectDisplayName = tt('Auto detect');
+
+    if (importFile.value) {
+        if (detectingFileEncoding.value) {
+            autoDetectDisplayName += ` [${tt('Detecting...')}]`;
+        } else if (autoDetectedFileEncoding.value) {
+            autoDetectDisplayName += ` [${getLocalizedFileEncodingName(autoDetectedFileEncoding.value)}]`;
+        } else {
+            autoDetectDisplayName += ` [${tt('Unknown')}]`;
+        }
+    }
+
+    const autoDetectEncoding: LocalizedImportFileTypeSupportedEncodings = {
+        displayName: autoDetectDisplayName,
+        encoding: 'auto'
+    };
+
+    ret.push(autoDetectEncoding);
+
+    if (supportedEncodings && supportedEncodings.length) {
+        ret.push(...supportedEncodings);
+    }
+
+    return ret;
+});
 const isImportDataFromTextbox = computed<boolean>(() => allSupportedImportFileTypesMap.value[fileType.value]?.dataFromTextbox ?? false);
+const supportedAdditionalOptions = computed<ImportFileTypeSupportedAdditionalOptions | undefined>(() => allSupportedImportFileTypesMap.value[fileType.value]?.supportedAdditionalOptions);
 
 const allSteps = computed<StepBarItem[]>(() => {
     const steps: StepBarItem[] = [
@@ -408,6 +502,26 @@ const supportedImportFileExtensions = computed<string | undefined>(() => {
     return allSupportedImportFileTypesMap.value[fileType.value]?.extensions;
 });
 
+const displaySelectedAdditionalOptions = computed<string>(() => {
+    if (!supportedAdditionalOptions.value) {
+        return tt('None');
+    }
+
+    const selectedOptions: string[] = [];
+
+    for (const option of allSupportedAdditionalOptions) {
+        if (isDefined(supportedAdditionalOptions.value[option.key]) && importAdditionalOptions.value[option.key]) {
+            selectedOptions.push(tt(option.name));
+        }
+    }
+
+    if (selectedOptions.length < 1) {
+        return tt('None');
+    }
+
+    return joinMultiText(selectedOptions);
+});
+
 const exportFileGuideDocumentUrl = computed<string | undefined>(() => {
     const document = allSupportedImportFileTypesMap.value[fileType.value]?.document;
 
@@ -431,12 +545,15 @@ function getDisplayCount(count: number): string {
 function open(): Promise<void> {
     fileType.value = 'ezbookkeeping';
     fileSubType.value = 'ezbookkeeping_csv';
-    fileEncoding.value = 'utf-8';
+    fileEncoding.value = 'auto';
+    detectingFileEncoding.value = false;
+    autoDetectedFileEncoding.value = undefined;
     processDSVMethod.value = ImportDSVProcessMethod.ColumnMapping;
     currentStep.value = 'uploadFile';
     importProcess.value = 0;
     importFile.value = null;
     importData.value = '';
+    importAdditionalOptions.value = Object.assign({}, supportedAdditionalOptions.value ?? {});
     parsedFileData.value = undefined;
     importTransactionDefineColumnTab.value?.reset();
     importTransactionExecuteCustomScriptTab.value?.reset();
@@ -492,7 +609,21 @@ function setImportFile(event: Event): void {
     }
 
     importFile.value = el.files[0] as File;
+    detectingFileEncoding.value = false;
+    autoDetectedFileEncoding.value = undefined;
     el.value = '';
+
+    if (allSupportedEncodings.value) {
+        detectingFileEncoding.value = true;
+
+        detectFileEncoding(importFile.value).then(detectedEncoding => {
+            detectingFileEncoding.value = false;
+            autoDetectedFileEncoding.value = detectedEncoding;
+        }).catch(() => {
+            detectingFileEncoding.value = false;
+            autoDetectedFileEncoding.value = undefined;
+        });
+    }
 }
 
 function parseData(): void {
@@ -505,13 +636,24 @@ function parseData(): void {
     }
 
     if (allSupportedEncodings.value) {
-        encoding = fileEncoding.value;
+        if (fileEncoding.value === 'auto') {
+            encoding = autoDetectedFileEncoding.value;
+        } else {
+            encoding = fileEncoding.value;
+        }
     }
 
     if (!isImportDataFromTextbox.value) {
         if (!importFile.value) {
             snackbar.value?.showError('Please select a file to import');
             return;
+        }
+
+        if (allSupportedEncodings.value) {
+            if (fileEncoding.value === 'auto' && !autoDetectedFileEncoding.value) {
+                snackbar.value?.showError('Unable to detect the file encoding automatically. Please select the actual encoding.');
+                return;
+            }
         }
 
         uploadFile = importFile.value;
@@ -530,7 +672,7 @@ function parseData(): void {
             return;
         }
 
-        encoding = 'utf-8';
+        encoding = UTF_8;
     } else { // should not happen, but ts would check whether uploadFile has been assigned a value
         snackbar.value?.showMessage('An error occurred');
         return;
@@ -614,6 +756,7 @@ function parseData(): void {
 
         transactionsStore.parseImportTransaction({
             fileType: type,
+            additionalOptions: importAdditionalOptions.value,
             fileEncoding: encoding,
             importFile: uploadFile,
             columnMapping: columnMapping,
@@ -773,6 +916,7 @@ watch(fileType, () => {
 
     importFile.value = null;
     parsedFileData.value = undefined;
+    importAdditionalOptions.value = Object.assign({}, supportedAdditionalOptions.value ?? {});
     importTransactions.value = undefined;
 });
 

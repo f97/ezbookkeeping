@@ -122,8 +122,7 @@ import {
 } from '@/core/category.ts';
 
 import {
-    TransactionEditScopeType,
-    TransactionTagFilterType
+    TransactionEditScopeType
 } from '@/core/transaction.ts';
 
 import {
@@ -1526,6 +1525,7 @@ export function useI18n() {
                     subTypes: subTypes.length ? subTypes : undefined,
                     supportedEncodings: supportedEncodings.length ? supportedEncodings : undefined,
                     dataFromTextbox: fileType.dataFromTextbox,
+                    supportedAdditionalOptions: fileType.supportedAdditionalOptions,
                     document: document
                 };
 
@@ -2140,6 +2140,10 @@ export function useI18n() {
         return ret;
     }
 
+    function getLocalizedFileEncodingName(encoding: string): string {
+        return t(`encoding.${encoding}`);
+    }
+
     function getLocalizedOAuth2ProviderName(oauth2Provider: string, oidcDisplayNames: Record<string, string>): string {
         if (oauth2Provider === 'oidc') {
             const providerDisplayName = getServerMultiLanguageConfigContent(oidcDisplayNames);
@@ -2357,7 +2361,6 @@ export function useI18n() {
         getAllStatisticsDateAggregationTypes: (analysisType: StatisticsAnalysisType) => getLocalizedChartDateAggregationTypeAndDisplayName(analysisType, true),
         getAllStatisticsDateAggregationTypesWithShortName: (analysisType: StatisticsAnalysisType) => getLocalizedChartDateAggregationTypeAndDisplayName(analysisType, false),
         getAllTransactionEditScopeTypes: () => getLocalizedDisplayNameAndType(TransactionEditScopeType.values()),
-        getAllTransactionTagFilterTypes: () => getLocalizedDisplayNameAndType(TransactionTagFilterType.values()),
         getAllTransactionScheduledFrequencyTypes: () => getLocalizedDisplayNameAndType(ScheduledTemplateFrequencyType.values()),
         getAllImportTransactionColumnTypes: () => getLocalizedDisplayNameAndType(ImportTransactionColumnType.values()),
         getAllTransactionDefaultCategories,
@@ -2453,6 +2456,7 @@ export function useI18n() {
         getAmountPrependAndAppendText,
         getCategorizedAccountsWithDisplayBalance,
         // other format functions
+        getLocalizedFileEncodingName,
         getLocalizedOAuth2ProviderName,
         getLocalizedOAuth2LoginText,
         // localization setting functions

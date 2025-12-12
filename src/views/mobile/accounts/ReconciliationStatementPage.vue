@@ -6,28 +6,30 @@
                 <span style="color: var(--f7-text-color)" v-if="!finishQuery">{{ tt('Reconciliation Statement') }}</span>
                 <f7-link popover-open=".display-mode-popover-menu" v-if="finishQuery">
                     <span style="color: var(--f7-text-color)">{{ tt('Reconciliation Statement') }}</span>
-                    <f7-icon class="page-title-bar-icon" color="gray" style="opacity: 0.5" f7="chevron_down_circle_fill"></f7-icon>
+                    <f7-icon class="page-title-bar-icon" style="opacity: 0.5"
+                             color="gray" f7="chevron_down_circle_fill"></f7-icon>
                 </f7-link>
             </f7-nav-title>
-            <f7-nav-right>
-                <f7-link :class="{ 'disabled': !validQuery }" :text="tt('Next')" @click="reload(false)" v-if="!finishQuery"></f7-link>
-                <f7-link :class="{ 'disabled': loading }" icon-f7="ellipsis" v-if="finishQuery" @click="showMoreActionSheet = true"></f7-link>
+            <f7-nav-right class="navbar-compact-icons">
+                <f7-link icon-f7="checkmark_alt" :class="{ 'disabled': !validQuery }" @click="reload(false)" v-if="!finishQuery"></f7-link>
+                <f7-link icon-f7="ellipsis" :class="{ 'disabled': loading }" v-if="finishQuery" @click="showMoreActionSheet = true"></f7-link>
             </f7-nav-right>
         </f7-navbar>
 
-        <f7-popover class="display-mode-popover-menu"
-                    v-model:opened="showDisplayModePopover">
+        <f7-popover class="display-mode-popover-menu">
             <f7-list dividers>
-                <f7-list-item :title="tt('Transaction List')"
+                <f7-list-item link="#" no-chevron popover-close
+                              :title="tt('Transaction List')"
                               :class="{ 'list-item-selected': !showAccountBalanceTrendsCharts }"
-                              @click="showAccountBalanceTrendsCharts = false; showDisplayModePopover = false">
+                              @click="showAccountBalanceTrendsCharts = false">
                     <template #after>
                         <f7-icon class="list-item-checked-icon" f7="checkmark_alt" v-if="!showAccountBalanceTrendsCharts"></f7-icon>
                     </template>
                 </f7-list-item>
-                <f7-list-item :title="tt('Account Balance Trends')"
+                <f7-list-item link="#" no-chevron popover-close
+                              :title="tt('Account Balance Trends')"
                               :class="{ 'list-item-selected': showAccountBalanceTrendsCharts }"
-                              @click="showAccountBalanceTrendsCharts = true; showDisplayModePopover = false">
+                              @click="showAccountBalanceTrendsCharts = true">
                     <template #after>
                         <f7-icon class="list-item-checked-icon" f7="checkmark_alt" v-if="showAccountBalanceTrendsCharts"></f7-icon>
                     </template>
@@ -188,10 +190,10 @@
                             <div class="item-media">
                                 <div class="transaction-icon display-flex align-items-center">
                                     <ItemIcon icon-type="category"
-                                              :icon-id="allCategoriesMap[item.transaction.categoryId]?.icon"
-                                              :color="allCategoriesMap[item.transaction.categoryId]?.color"
-                                              v-if="allCategoriesMap[item.transaction.categoryId] && allCategoriesMap[item.transaction.categoryId]?.color"></ItemIcon>
-                                    <f7-icon v-else-if="!allCategoriesMap[item.transaction.categoryId] || !allCategoriesMap[item.transaction.categoryId]?.color"
+                                              :icon-id="item.transaction.category?.icon"
+                                              :color="item.transaction.category?.color"
+                                              v-if="item.transaction.category && item.transaction.category?.color"></ItemIcon>
+                                    <f7-icon v-else-if="!item.transaction.category || !item.transaction.category?.color"
                                              f7="pencil_ellipsis_rectangle">
                                     </f7-icon>
                                 </div>
@@ -203,8 +205,8 @@
                                         <span v-if="item.transaction.type === TransactionType.ModifyBalance">
                                             {{ tt('Modify Balance') }}
                                         </span>
-                                            <span v-else-if="item.transaction.type !== TransactionType.ModifyBalance && allCategoriesMap[item.transaction.categoryId]">
-                                            {{ allCategoriesMap[item.transaction.categoryId]!.name }}
+                                            <span v-else-if="item.transaction.type !== TransactionType.ModifyBalance && item.transaction.category">
+                                            {{ item.transaction.category.name }}
                                         </span>
                                         </div>
                                     </div>
@@ -278,10 +280,10 @@
             </f7-card-content>
         </f7-card>
 
-        <f7-popover class="chart-data-date-aggregation-type-popover-menu"
-                    v-model:opened="showChartDataDateAggregationTypePopover">
+        <f7-popover class="chart-data-date-aggregation-type-popover-menu">
             <f7-list dividers>
-                <f7-list-item :title="dateAggregationType.displayName"
+                <f7-list-item link="#" no-chevron popover-close
+                              :title="dateAggregationType.displayName"
                               :class="{ 'list-item-selected': chartDataDateAggregationType === dateAggregationType.type }"
                               :key="dateAggregationType.type"
                               v-for="dateAggregationType in allDateAggregationTypes"
@@ -352,7 +354,7 @@ import { AccountType } from '@/core/account.ts';
 import { TransactionType } from '@/core/transaction.ts';
 import { ChartDateAggregationType } from '@/core/statistics.ts';
 import { TRANSACTION_MIN_AMOUNT, TRANSACTION_MAX_AMOUNT } from '@/consts/transaction.ts';
-import { type TransactionReconciliationStatementResponseItem } from '@/models/transaction.ts';
+import { type TransactionReconciliationStatementResponseItemWithInfo } from '@/models/transaction.ts';
 
 import { isDefined, isEquals, findDisplayNameByType } from '@/lib/common.ts';
 import {
@@ -372,7 +374,7 @@ interface ReconciliationStatementVirtualListItem {
     index: number;
     type: ReconciliationStatementVirtualListItemType;
     displayDate?: string;
-    transaction?: TransactionReconciliationStatementResponseItem;
+    transaction?: TransactionReconciliationStatementResponseItemWithInfo;
 }
 
 type ReconciliationStatementVirtualListItemType = 'transaction' | 'date';
@@ -402,7 +404,6 @@ const {
     allDateAggregationTypes,
     currentTimezoneOffsetMinutes,
     isCurrentLiabilityAccount,
-    allCategoriesMap,
     currentAccount,
     currentAccountCurrency,
     displayStartDateTime,
@@ -412,6 +413,7 @@ const {
     displayTotalBalance,
     displayOpeningBalance,
     displayClosingBalance,
+    setReconciliationStatements,
     getDisplayDate,
     getDisplayTime,
     getDisplayTimezone,
@@ -430,14 +432,12 @@ const loadingError = ref<unknown | null>(null);
 const queryDateRangeType = ref<number>(DateRange.ThisMonth.type);
 const showAccountBalanceTrendsCharts = ref<boolean>(false);
 const chartDataDateAggregationType = ref<number>(ChartDateAggregationType.Day.type);
-const transactionToDelete = ref<TransactionReconciliationStatementResponseItem | null>(null);
+const transactionToDelete = ref<TransactionReconciliationStatementResponseItemWithInfo | null>(null);
 const newClosingBalance = ref<number>(0);
-const showDisplayModePopover = ref<boolean>(false);
 const showCustomDateRangeSheet = ref<boolean>(false);
 const showNewClosingBalanceSheet = ref<boolean>(false);
 const showMoreActionSheet = ref<boolean>(false);
 const showDeleteActionSheet = ref<boolean>(false);
-const showChartDataDateAggregationTypePopover = ref<boolean>(false);
 const virtualDataItems = ref<ReconciliationStatementVirtualListData>({
     items: [],
     topPosition: 0
@@ -485,7 +485,7 @@ const chartDataDateAggregationTypeDisplayName = computed<string>(() => {
     return findDisplayNameByType(allDateAggregationTypes.value, chartDataDateAggregationType.value) || tt('Unknown');
 });
 
-function getTransactionDomId(transaction: TransactionReconciliationStatementResponseItem): string {
+function getTransactionDomId(transaction: TransactionReconciliationStatementResponseItemWithInfo): string {
     return 'transaction_' + transaction.id;
 }
 
@@ -567,7 +567,7 @@ function reload(force: boolean): void {
         }
 
         loading.value = false;
-        reconciliationStatements.value = result;
+        setReconciliationStatements(result);
     }).catch(error => {
         loading.value = false;
 
@@ -581,11 +581,11 @@ function addTransaction(): void {
     props.f7router.navigate(`/transaction/add?accountId=${accountId.value}`);
 }
 
-function duplicateTransaction(transaction: TransactionReconciliationStatementResponseItem): void {
+function duplicateTransaction(transaction: TransactionReconciliationStatementResponseItemWithInfo): void {
     props.f7router.navigate(`/transaction/add?id=${transaction.id}&type=${transaction.type}`);
 }
 
-function editTransaction(transaction: TransactionReconciliationStatementResponseItem): void {
+function editTransaction(transaction: TransactionReconciliationStatementResponseItemWithInfo): void {
     props.f7router.navigate(`/transaction/edit?id=${transaction.id}&type=${transaction.type}`);
 }
 
@@ -636,7 +636,7 @@ function updateClosingBalance(balance?: number): void {
     props.f7router.navigate(`/transaction/add?${params.join('&')}`);
 }
 
-function removeTransaction(transaction: TransactionReconciliationStatementResponseItem | null, confirm: boolean): void {
+function removeTransaction(transaction: TransactionReconciliationStatementResponseItemWithInfo | null, confirm: boolean): void {
     if (!transaction) {
         showAlert('An error occurred');
         return;
@@ -672,7 +672,6 @@ function removeTransaction(transaction: TransactionReconciliationStatementRespon
 
 function setChartDataDateAggregationType(type: number): void {
     chartDataDateAggregationType.value = type;
-    showChartDataDateAggregationTypePopover.value = false;
 }
 
 function renderExternal(vl: unknown, vlData: ReconciliationStatementVirtualListData): void {

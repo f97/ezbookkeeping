@@ -140,8 +140,12 @@ const displayPreviewResult = computed<string>(() => {
     } else if (executionError.value) {
         return executionError.value;
     } else if (previewResult.value) {
-        const rows = previewResult.value.slice(0, previewCount.value);
-        return JSON.stringify(rows, null, 2);
+        if (previewCount.value > 0) {
+            const rows = previewResult.value.slice(0, previewCount.value);
+            return JSON.stringify(rows, null, 2);
+        } else {
+            return JSON.stringify(previewResult.value, null, 2);
+        }
     } else {
         return tt('No Preview Result');
     }
@@ -167,13 +171,12 @@ function getDisplayCount(count: number): string {
 function getTablePageOptions(linesCount?: number): NameNumeralValue[] {
     const pageOptions: NameNumeralValue[] = [];
 
-    if (!linesCount || linesCount < 1) {
-        pageOptions.push({ value: -1, name: tt('All') });
-        return pageOptions;
+    if (!linesCount) {
+        linesCount = 0;
     }
 
     for (const count of [ 10, 50, 100 ]) {
-        if (linesCount < count) {
+        if (count > 10 && count > previewCount.value && linesCount < count) {
             break;
         }
 

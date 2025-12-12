@@ -19,6 +19,14 @@ export interface Framework7Dom {
     css(property: string): string | number;
 }
 
+export function isiOS(): boolean {
+    return ((/iphone|ipod|ipad/gi).test(navigator.platform) && (/Safari/i).test(navigator.appVersion));
+}
+
+export function isiOSHomeScreenMode(): boolean {
+    return isiOS() && !!window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+}
+
 export function showLoading(delayConditionFunc?: () => boolean, delayMills?: number): void {
     if (!delayConditionFunc) {
         f7ready((f7) => {
@@ -39,6 +47,16 @@ export function showLoading(delayConditionFunc?: () => boolean, delayMills?: num
 export function hideLoading(): void {
     f7ready((f7) => {
         return f7.preloader.hide();
+    });
+}
+
+export function closePopover(selector: string): void {
+    f7ready((f7) => {
+        const popover = f7.popover.get(selector);
+
+        if (popover) {
+            popover.close();
+        }
     });
 }
 
@@ -130,7 +148,7 @@ export function getElementBoundingRect(selector: string): DOMRect | null {
     return el.getBoundingClientRect();
 }
 
-export function scrollToSelectedItem(parentEl: Framework7Dom, containerSelector: string, selectedItemSelector: string): void {
+export function scrollToSelectedItem(parentEl: Framework7Dom, containerSelector: string, selectedItemSelector: string, hasBottomToolbar?: boolean): void {
     if (!parentEl || !parentEl.length) {
         return;
     }
@@ -165,6 +183,11 @@ export function scrollToSelectedItem(parentEl: Framework7Dom, containerSelector:
 
     if (targetPos <= 0) {
         return;
+    }
+
+    if (hasBottomToolbar) {
+        const toolbarHeight = parentEl.find('.toolbar.toolbar-bottom').outerHeight() || 0;
+        targetPos += toolbarHeight / 2;
     }
 
     container.scrollTop(targetPos);

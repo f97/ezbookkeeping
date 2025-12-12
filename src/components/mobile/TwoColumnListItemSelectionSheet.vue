@@ -1,22 +1,21 @@
 <template>
     <f7-sheet ref="sheet" swipe-to-close swipe-handler=".swipe-handler"
               style="height: auto" :opened="show" @sheet:open="onSheetOpen" @sheet:closed="onSheetClosed">
-        <f7-toolbar>
+        <f7-toolbar class="toolbar-with-swipe-handler">
             <div class="swipe-handler"></div>
-            <div class="left"></div>
-            <div class="right">
-                <f7-link sheet-close :text="tt('Done')"></f7-link>
+            <div class="left">
+                <f7-link sheet-close icon-f7="xmark"></f7-link>
             </div>
+            <f7-searchbar ref="searchbar" custom-searchs
+                          :value="filterContent"
+                          :placeholder="filterPlaceholder"
+                          :disable-button="false"
+                          v-if="enableFilter"
+                          @input="filterContent = $event.target.value"
+                          @focus="onSearchBarFocus">
+            </f7-searchbar>
         </f7-toolbar>
-        <f7-searchbar ref="searchbar" custom-searchs
-                      :value="filterContent"
-                      :placeholder="filterPlaceholder"
-                      :disable-button="false"
-                      v-if="enableFilter"
-                      @input="filterContent = $event.target.value"
-                      @focus="onSearchBarFocus">
-        </f7-searchbar>
-        <f7-page-content class="no-padding-top">
+        <f7-page-content class="margin-top">
             <div class="grid grid-gap" :class="{ 'grid-cols-2': filteredItems && filteredItems.length }">
                 <div>
                     <div class="primary-list-container">
@@ -89,7 +88,7 @@ const emit = defineEmits<{
     (e: 'update:show', value: boolean): void;
 }>();
 
-const { tt, ti } = useI18n();
+const { ti } = useI18n();
 
 const {
     filterContent,
@@ -149,13 +148,13 @@ function onSheetClosed(): void {
 
 <style>
 .primary-list-container, .secondary-list-container {
-    height: 260px;
+    height: 310px;
     overflow-y: auto;
 }
 
 @media (max-height: 629px) {
     .primary-list-container, .secondary-list-container {
-        height: 240px;
+        height: 290px;
     }
 }
 

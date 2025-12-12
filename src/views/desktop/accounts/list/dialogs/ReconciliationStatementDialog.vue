@@ -137,9 +137,10 @@
                 multi-sort
                 density="compact"
                 item-value="index"
-                :class="{ 'disabled': loading }"
+                :class="{ 'reconciliation-statement-table': true, 'disabled': loading }"
                 :headers="dataTableHeaders"
                 :items="reconciliationStatements?.transactions ?? []"
+                :hover="true"
                 :no-data-text="loading ? '' : tt('No transaction data')"
                 v-model:items-per-page="countPerPage"
                 v-model:page="currentPage"
@@ -155,18 +156,18 @@
                             :class="{ 'text-income' : item.type === TransactionType.Income, 'text-expense': item.type === TransactionType.Expense }"
                             :color="getTransactionTypeColor(item)">{{ getDisplayTransactionType(item) }}</v-chip>
                 </template>
-                <template #item.categoryId="{ item }">
+                <template #item.categoryName="{ item }">
                     <div class="d-flex align-center">
                         <ItemIcon size="24px" icon-type="category"
-                                  :icon-id="allCategoriesMap[item.categoryId]?.icon ?? ''"
-                                  :color="allCategoriesMap[item.categoryId]?.color ?? ''"
-                                  v-if="allCategoriesMap[item.categoryId] && allCategoriesMap[item.categoryId]?.color"></ItemIcon>
-                        <v-icon size="24" :icon="mdiPencilBoxOutline" v-else-if="!allCategoriesMap[item.categoryId] || !allCategoriesMap[item.categoryId]?.color" />
+                                  :icon-id="item.category?.icon ?? ''"
+                                  :color="item.category?.color ?? ''"
+                                  v-if="item.category && item.category?.color"></ItemIcon>
+                        <v-icon size="24" :icon="mdiPencilBoxOutline" v-else-if="!item.category || !item.category?.color" />
                         <span class="ms-2" v-if="item.type === TransactionType.ModifyBalance">
                             {{ tt('Modify Balance') }}
                         </span>
-                        <span class="ms-2" v-else-if="item.type !== TransactionType.ModifyBalance && allCategoriesMap[item.categoryId]">
-                            {{ allCategoriesMap[item.categoryId]?.name }}
+                        <span class="ms-2" v-else-if="item.type !== TransactionType.ModifyBalance && item.category">
+                            {{ item.category?.name }}
                         </span>
                     </div>
                 </template>
@@ -175,11 +176,11 @@
                     <v-icon class="icon-with-direction mx-1" size="13" :icon="mdiArrowRight" v-if="item.type === TransactionType.Transfer && item.sourceAccountId !== item.destinationAccountId && getDisplaySourceAmount(item) !== getDisplayDestinationAmount(item)"></v-icon>
                     <span v-if="item.type === TransactionType.Transfer && item.sourceAccountId !== item.destinationAccountId && getDisplaySourceAmount(item) !== getDisplayDestinationAmount(item)">{{ getDisplayDestinationAmount(item) }}</span>
                 </template>
-                <template #item.sourceAccountId="{ item }">
+                <template #item.sourceAccountName="{ item }">
                     <div class="d-flex align-center">
-                        <span v-if="item.sourceAccountId && allAccountsMap[item.sourceAccountId]">{{ allAccountsMap[item.sourceAccountId]?.name }}</span>
+                        <span v-if="item.sourceAccount">{{ item.sourceAccount?.name }}</span>
                         <v-icon class="icon-with-direction mx-1" size="13" :icon="mdiArrowRight" v-if="item.type === TransactionType.Transfer"></v-icon>
-                        <span v-if="item.type === TransactionType.Transfer && item.destinationAccountId && allAccountsMap[item.destinationAccountId]">{{ allAccountsMap[item.destinationAccountId]?.name }}</span>
+                        <span v-if="item.type === TransactionType.Transfer && item.destinationAccount">{{ item.destinationAccount?.name }}</span>
                     </div>
                 </template>
                 <template #item.accountBalance="{ item }">
@@ -326,8 +327,6 @@ const {
     currentAccount,
     currentAccountCurrency,
     isCurrentLiabilityAccount,
-    allAccountsMap,
-    allCategoriesMap,
     exportFileName,
     displayStartDateTime,
     displayEndDateTime,
@@ -336,6 +335,7 @@ const {
     displayTotalBalance,
     displayOpeningBalance,
     displayClosingBalance,
+    setReconciliationStatements,
     getDisplayTransactionType,
     getDisplayDateTime,
     getDisplayTimezone,
@@ -395,12 +395,12 @@ const dataTableHeaders = computed<object[]>(() => {
 
     headers.push({ key: 'time', value: 'time', title: tt('Transaction Time'), sortable: true, nowrap: true });
     headers.push({ key: 'type', value: 'type', title: tt('Type'), sortable: true, nowrap: true });
-    headers.push({ key: 'categoryId', value: 'categoryId', title: tt('Category'), sortable: true, nowrap: true });
+    headers.push({ key: 'categoryName', value: 'categoryName', title: tt('Category'), sortable: true, nowrap: true });
     headers.push({ key: 'sourceAmount', value: 'sourceAmount', title: tt('Amount'), sortable: true, nowrap: true });
-    headers.push({ key: 'sourceAccountId', value: 'sourceAccountId', title: tt('Account'), sortable: true, nowrap: true });
+    headers.push({ key: 'sourceAccountName', value: 'sourceAccountName', title: tt('Account'), sortable: true, nowrap: true });
     headers.push({ key: 'accountBalance', value: 'accountBalance', title: tt(accountBalanceName), sortable: true, nowrap: true });
     headers.push({ key: 'comment', value: 'comment', title: tt('Description'), sortable: true, nowrap: true });
-    headers.push({ key: 'operation', title: tt('Operation'), sortable: false, nowrap: true, align: 'end' });
+    headers.push({ key: 'operation', title: tt('Operation'), sortable: false, nowrap: true, align: 'center' });
     return headers;
 });
 
@@ -464,7 +464,7 @@ function open(options: { accountId: string, startTime: number, endTime: number }
             endTime: options.endTime
         });
     }).then(result => {
-        reconciliationStatements.value = result;
+        setReconciliationStatements(result);
         loading.value = false;
     }).catch(error => {
         loading.value = false;
@@ -496,7 +496,7 @@ function reload(force: boolean): void {
             }
         }
 
-        reconciliationStatements.value = result;
+        setReconciliationStatements(result);
         loading.value = false;
     }).catch(error => {
         loading.value = false;
@@ -617,3 +617,18 @@ defineExpose({
     open
 });
 </script>
+
+<style>
+.reconciliation-statement-table > .v-table__wrapper > table {
+    th:not(:nth-last-child(2)),
+    td:not(:nth-last-child(2)) {
+        width: auto !important;
+        white-space: nowrap;
+    }
+
+    th:nth-last-child(2),
+    td:nth-last-child(2) {
+        width: 100% !important;
+    }
+}
+</style>
