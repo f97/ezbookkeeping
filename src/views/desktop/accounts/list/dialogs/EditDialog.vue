@@ -149,6 +149,31 @@
                                         v-model="selectedAccount.savingsEndDate"
                                         @error="onShowDateTimeError" />
                                 </v-col>
+                                <v-col cols="12" md="6" v-if="(currentAccountIndex < 0 && account.category === AccountCategory.SavingsAccount.type) || (currentAccountIndex >= 0 && selectedAccount.category === AccountCategory.SavingsAccount.type)">
+                                    <date-time-select
+                                        :disabled="loading || submitting"
+                                        :label="tt('Start Date')"
+                                        :placeholder="tt('Savings start date')"
+                                        v-model="selectedAccount.savingsStartDate"
+                                        @error="onShowDateTimeError" />
+                                </v-col>
+                                <v-col cols="12" md="6" v-if="((currentAccountIndex < 0 && account.category === AccountCategory.SavingsAccount.type) || (currentAccountIndex >= 0 && selectedAccount.category === AccountCategory.SavingsAccount.type)) && !selectedAccount.savingsEndDate">
+                                    <v-text-field
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="0.01"
+                                        persistent-placeholder
+                                        :disabled="loading || submitting"
+                                        :label="tt('Non-term Interest Rate (%)')"
+                                        :placeholder="tt('Interest rate for non-term savings')"
+                                        v-model="selectedAccount.nonTermInterestRate"
+                                    />
+                                </v-col>
+                                <v-col class="py-0" cols="12" md="6" v-if="((currentAccountIndex < 0 && account.category === AccountCategory.SavingsAccount.type) || (currentAccountIndex >= 0 && selectedAccount.category === AccountCategory.SavingsAccount.type)) && selectedAccount.savingsEndDate">
+                                    <v-switch :disabled="loading || submitting"
+                                              :label="tt('Allow Early Withdrawal')" v-model="selectedAccount.earlyWithdrawalAllowed"/>
+                                </v-col>
                                 <v-col cols="12" :md="(!editAccountId || isNewAccount(selectedAccount)) && selectedAccount.balance ? 6 : 12"
                                        v-if="account.type === AccountType.SingleAccount.type || currentAccountIndex >= 0">
                                     <amount-input :disabled="loading || submitting || (!!editAccountId && !isNewAccount(selectedAccount))"
@@ -224,7 +249,7 @@ import { useUserStore } from '@/stores/user.ts';
 import { useAccountsStore } from '@/stores/account.ts';
 
 import { itemAndIndex } from '@/core/base.ts';
-import { AccountType } from '@/core/account.ts';
+import { AccountType, AccountCategory } from '@/core/account.ts';
 import { ALL_ACCOUNT_ICONS } from '@/consts/icon.ts';
 import { ALL_ACCOUNT_COLORS } from '@/consts/color.ts';
 import { Account } from '@/models/account.ts';

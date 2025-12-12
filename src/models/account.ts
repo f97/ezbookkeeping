@@ -20,6 +20,10 @@ export class Account implements AccountInfoResponse {
     public creditCardStatementDate?: number;
     public savingsInterestRate?: number;
     public savingsEndDate?: number;
+    public savingsStartDate?: number;
+    public savingsTermMonths?: number;
+    public nonTermInterestRate?: number;
+    public earlyWithdrawalAllowed?: boolean;
     public displayOrder: number;
     public visible: boolean;
     public subAccounts?: Account[];
@@ -27,7 +31,7 @@ export class Account implements AccountInfoResponse {
     private readonly _isAsset?: boolean;
     private readonly _isLiability?: boolean;
 
-    protected constructor(id: string, name: string, parentId: string, category: number, type: number, icon: string, color: string, currency: string, balance: number, comment: string, displayOrder: number, visible: boolean, balanceTime?: number, creditCardStatementDate?: number, savingsInterestRate?: number, savingsEndDate?: number, isAsset?: boolean, isLiability?: boolean, subAccounts?: Account[]) {
+    protected constructor(id: string, name: string, parentId: string, category: number, type: number, icon: string, color: string, currency: string, balance: number, comment: string, displayOrder: number, visible: boolean, balanceTime?: number, creditCardStatementDate?: number, savingsInterestRate?: number, savingsEndDate?: number, savingsStartDate?: number, savingsTermMonths?: number, nonTermInterestRate?: number, earlyWithdrawalAllowed?: boolean, isAsset?: boolean, isLiability?: boolean, subAccounts?: Account[]) {
         this.id = id;
         this.name = name;
         this.parentId = parentId;
@@ -44,6 +48,10 @@ export class Account implements AccountInfoResponse {
         this.creditCardStatementDate = creditCardStatementDate;
         this.savingsInterestRate = savingsInterestRate;
         this.savingsEndDate = savingsEndDate;
+        this.savingsStartDate = savingsStartDate;
+        this.savingsTermMonths = savingsTermMonths;
+        this.nonTermInterestRate = nonTermInterestRate;
+        this.earlyWithdrawalAllowed = earlyWithdrawalAllowed;
         this._isAsset = isAsset;
         this._isLiability = isLiability;
 
@@ -102,7 +110,11 @@ export class Account implements AccountInfoResponse {
             this.visible === other.visible &&
             this.creditCardStatementDate === other.creditCardStatementDate &&
             this.savingsInterestRate === other.savingsInterestRate &&
-            this.savingsEndDate === other.savingsEndDate;
+            this.savingsEndDate === other.savingsEndDate &&
+            this.savingsStartDate === other.savingsStartDate &&
+            this.savingsTermMonths === other.savingsTermMonths &&
+            this.nonTermInterestRate === other.nonTermInterestRate &&
+            this.earlyWithdrawalAllowed === other.earlyWithdrawalAllowed;
 
         if (!isEqual) {
             return false;
@@ -139,6 +151,10 @@ export class Account implements AccountInfoResponse {
         this.creditCardStatementDate = other.creditCardStatementDate;
         this.savingsInterestRate = other.savingsInterestRate;
         this.savingsEndDate = other.savingsEndDate;
+        this.savingsStartDate = other.savingsStartDate;
+        this.savingsTermMonths = other.savingsTermMonths;
+        this.nonTermInterestRate = other.nonTermInterestRate;
+        this.earlyWithdrawalAllowed = other.earlyWithdrawalAllowed;
         this.visible = other.visible;
     }
 
@@ -190,6 +206,12 @@ export class Account implements AccountInfoResponse {
             balanceTime: (parentAccount || this.type === AccountType.SingleAccount.type) && this.balanceTime ? this.balanceTime : 0,
             comment: this.comment,
             creditCardStatementDate: !parentAccount && this.category === AccountCategory.CreditCard.type ? this.creditCardStatementDate : undefined,
+            savingsInterestRate: this.category === AccountCategory.SavingsAccount.type ? this.savingsInterestRate : undefined,
+            savingsEndDate: this.category === AccountCategory.SavingsAccount.type ? this.savingsEndDate : undefined,
+            savingsStartDate: this.category === AccountCategory.SavingsAccount.type ? this.savingsStartDate : undefined,
+            savingsTermMonths: this.category === AccountCategory.SavingsAccount.type ? this.savingsTermMonths : undefined,
+            nonTermInterestRate: this.category === AccountCategory.SavingsAccount.type ? this.nonTermInterestRate : undefined,
+            earlyWithdrawalAllowed: this.category === AccountCategory.SavingsAccount.type ? this.earlyWithdrawalAllowed : undefined,
             subAccounts: !parentAccount ? subAccountCreateRequests : undefined,
             clientSessionId: !parentAccount ? clientSessionId : undefined
         };
@@ -223,6 +245,12 @@ export class Account implements AccountInfoResponse {
             balanceTime: parentAccount && (!this.id || this.id === '0') ? this.balanceTime : undefined,
             comment: this.comment,
             creditCardStatementDate: !parentAccount && this.category === AccountCategory.CreditCard.type ? this.creditCardStatementDate : undefined,
+            savingsInterestRate: this.category === AccountCategory.SavingsAccount.type ? this.savingsInterestRate : undefined,
+            savingsEndDate: this.category === AccountCategory.SavingsAccount.type ? this.savingsEndDate : undefined,
+            savingsStartDate: this.category === AccountCategory.SavingsAccount.type ? this.savingsStartDate : undefined,
+            savingsTermMonths: this.category === AccountCategory.SavingsAccount.type ? this.savingsTermMonths : undefined,
+            nonTermInterestRate: this.category === AccountCategory.SavingsAccount.type ? this.nonTermInterestRate : undefined,
+            earlyWithdrawalAllowed: this.category === AccountCategory.SavingsAccount.type ? this.earlyWithdrawalAllowed : undefined,
             hidden: !this.visible,
             subAccounts: !parentAccount ? subAccountModifyRequests : undefined,
             clientSessionId: !parentAccount ? clientSessionId : undefined
@@ -375,6 +403,10 @@ export class Account implements AccountInfoResponse {
             this.creditCardStatementDate,
             this.savingsInterestRate,
             this.savingsEndDate,
+            this.savingsStartDate,
+            this.savingsTermMonths,
+            this.nonTermInterestRate,
+            this.earlyWithdrawalAllowed,
             this.isAsset,
             this.isLiability,
             typeof(this.subAccounts) !== 'undefined' ? Account.cloneAccounts(this.subAccounts) : undefined);
@@ -397,7 +429,11 @@ export class Account implements AccountInfoResponse {
             balanceTime, // balanceTime
             0, // creditCardStatementDate
             0, // savingsInterestRate
-            0 // savingsEndDate
+            0, // savingsEndDate
+            0, // savingsStartDate
+            0, // savingsTermMonths
+            0, // nonTermInterestRate
+            false // earlyWithdrawalAllowed
         );
     }
 
@@ -418,7 +454,11 @@ export class Account implements AccountInfoResponse {
             balanceTime, // balanceTime
             0, // creditCardStatementDate
             0, // savingsInterestRate
-            0 // savingsEndDate
+            0, // savingsEndDate
+            0, // savingsStartDate
+            0, // savingsTermMonths
+            0, // nonTermInterestRate
+            false // earlyWithdrawalAllowed
         );
     }
 
@@ -440,6 +480,10 @@ export class Account implements AccountInfoResponse {
             accountResponse.creditCardStatementDate,
             accountResponse.savingsInterestRate,
             accountResponse.savingsEndDate,
+            accountResponse.savingsStartDate,
+            accountResponse.savingsTermMonths,
+            accountResponse.nonTermInterestRate,
+            accountResponse.earlyWithdrawalAllowed,
             accountResponse.isAsset,
             accountResponse.isLiability,
             accountResponse.subAccounts ? Account.ofMulti(accountResponse.subAccounts) : undefined
@@ -556,6 +600,10 @@ export class AccountWithDisplayBalance extends Account {
             account.creditCardStatementDate,
             account.savingsInterestRate,
             account.savingsEndDate,
+            account.savingsStartDate,
+            account.savingsTermMonths,
+            account.nonTermInterestRate,
+            account.earlyWithdrawalAllowed,
             account.isAsset,
             account.isLiability,
             account.subAccounts
@@ -580,6 +628,12 @@ export interface AccountCreateRequest {
     readonly balanceTime: number;
     readonly comment: string;
     readonly creditCardStatementDate?: number;
+    readonly savingsInterestRate?: number;
+    readonly savingsEndDate?: number;
+    readonly savingsStartDate?: number;
+    readonly savingsTermMonths?: number;
+    readonly nonTermInterestRate?: number;
+    readonly earlyWithdrawalAllowed?: boolean;
     readonly subAccounts?: AccountCreateRequest[];
     readonly clientSessionId?: string;
 }
@@ -595,6 +649,12 @@ export interface AccountModifyRequest {
     readonly balanceTime?: number;
     readonly comment: string;
     readonly creditCardStatementDate?: number;
+    readonly savingsInterestRate?: number;
+    readonly savingsEndDate?: number;
+    readonly savingsStartDate?: number;
+    readonly savingsTermMonths?: number;
+    readonly nonTermInterestRate?: number;
+    readonly earlyWithdrawalAllowed?: boolean;
     readonly hidden: boolean;
     readonly subAccounts?: AccountModifyRequest[];
     readonly clientSessionId?: string;
@@ -614,6 +674,10 @@ export interface AccountInfoResponse {
     readonly creditCardStatementDate?: number;
     readonly savingsInterestRate?: number;
     readonly savingsEndDate?: number;
+    readonly savingsStartDate?: number;
+    readonly savingsTermMonths?: number;
+    readonly nonTermInterestRate?: number;
+    readonly earlyWithdrawalAllowed?: boolean;
     readonly displayOrder: number;
     readonly isAsset?: boolean;
     readonly isLiability?: boolean;
