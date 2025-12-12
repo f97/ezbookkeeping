@@ -157,6 +157,34 @@ export function useAccountEditPageBase() {
 
     watch(() => account.value.category, (newValue, oldValue) => {
         account.value.setSuitableIcon(oldValue, newValue);
+        
+        // Set default values when changing to savings account
+        if (newValue === AccountCategory.SavingsAccount.type) {
+            // Set default start date to today if not already set
+            if (!account.value.savingsStartDate || account.value.savingsStartDate === 0) {
+                account.value.savingsStartDate = getCurrentUnixTime();
+            }
+            
+            // Set default term to 12 months if not already set
+            if (!account.value.savingsTermMonths || account.value.savingsTermMonths === 0) {
+                account.value.savingsTermMonths = 12;
+            }
+            
+            // Set default interest rate to 7.5% if not already set
+            if (!account.value.savingsInterestRate || account.value.savingsInterestRate === 0) {
+                account.value.savingsInterestRate = 7.5;
+            }
+            
+            // Calculate end date from start date + term if not already set
+            if (!account.value.savingsEndDate || account.value.savingsEndDate === 0) {
+                if (account.value.savingsStartDate && account.value.savingsTermMonths) {
+                    const startDate = new Date(account.value.savingsStartDate * 1000);
+                    const endDate = new Date(startDate);
+                    endDate.setMonth(endDate.getMonth() + account.value.savingsTermMonths);
+                    account.value.savingsEndDate = Math.floor(endDate.getTime() / 1000);
+                }
+            }
+        }
     });
 
     return {

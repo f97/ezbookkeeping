@@ -69,9 +69,9 @@ var defaultCreditCardAccountStatementDate = 0
 // Account represents account data stored in database
 type Account struct {
 	AccountId       int64           `xorm:"PK"`
-	Uid             int64           `xorm:"INDEX(IDX_account_uid_deleted_parent_account_id_order) NOT NULL"`
+	Uid             int64           `xorm:"INDEX(IDX_account_uid_deleted_parent_account_id_order) INDEX(IDX_account_uid_category) NOT NULL"`
 	Deleted         bool            `xorm:"INDEX(IDX_account_uid_deleted_parent_account_id_order) NOT NULL"`
-	Category        AccountCategory `xorm:"NOT NULL"`
+	Category        AccountCategory `xorm:"INDEX(IDX_account_uid_category) NOT NULL"`
 	Type            AccountType     `xorm:"NOT NULL"`
 	ParentAccountId int64           `xorm:"INDEX(IDX_account_uid_deleted_parent_account_id_order) NOT NULL"`
 	Name            string          `xorm:"VARCHAR(64) NOT NULL"`
