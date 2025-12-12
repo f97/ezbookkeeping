@@ -167,7 +167,7 @@ func (a *AccountsApi) AccountCreateHandler(c *core.WebContext) (any, *errs.Error
 		return nil, errs.ErrCannotSetStatementDateForNonCreditCard
 	}
 
-	if accountCreateReq.Category != models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT && (accountCreateReq.SavingsInterestRate != 0 || accountCreateReq.SavingsEndDate != 0) {
+	if accountCreateReq.Category != models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT && (accountCreateReq.SavingsInterestRate != 0 || accountCreateReq.SavingsEndDate != 0 || accountCreateReq.SavingsStartDate != 0 || accountCreateReq.SavingsTermMonths != 0 || accountCreateReq.NonTermInterestRate != 0) {
 		log.Warnf(c, "[accounts.AccountCreateHandler] cannot set savings fields with category \"%d\"", accountCreateReq.Category)
 		return nil, errs.ErrCannotSetSavingsFieldsForNonSavingsAccount
 	}
@@ -337,7 +337,7 @@ func (a *AccountsApi) AccountModifyHandler(c *core.WebContext) (any, *errs.Error
 		return nil, errs.ErrCannotSetStatementDateForNonCreditCard
 	}
 
-	if accountModifyReq.Category != models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT && (accountModifyReq.SavingsInterestRate != 0 || accountModifyReq.SavingsEndDate != 0) {
+	if accountModifyReq.Category != models.ACCOUNT_CATEGORY_SAVINGS_ACCOUNT && (accountModifyReq.SavingsInterestRate != 0 || accountModifyReq.SavingsEndDate != 0 || accountModifyReq.SavingsStartDate != 0 || accountModifyReq.SavingsTermMonths != 0 || accountModifyReq.NonTermInterestRate != 0) {
 		log.Warnf(c, "[accounts.AccountModifyHandler] cannot set savings fields with category \"%d\"", accountModifyReq.Category)
 		return nil, errs.ErrCannotSetSavingsFieldsForNonSavingsAccount
 	}
@@ -722,6 +722,16 @@ func (a *AccountsApi) createNewAccountModel(uid int64, accountCreateReq *models.
 		if accountCreateReq.SavingsEndDate > 0 {
 			accountExtend.SavingsEndDate = &accountCreateReq.SavingsEndDate
 		}
+		if accountCreateReq.SavingsStartDate > 0 {
+			accountExtend.SavingsStartDate = &accountCreateReq.SavingsStartDate
+		}
+		if accountCreateReq.SavingsTermMonths > 0 {
+			accountExtend.SavingsTermMonths = &accountCreateReq.SavingsTermMonths
+		}
+		if accountCreateReq.NonTermInterestRate > 0 {
+			accountExtend.NonTermInterestRate = &accountCreateReq.NonTermInterestRate
+		}
+		accountExtend.EarlyWithdrawalAllowed = &accountCreateReq.EarlyWithdrawalAllowed
 	}
 
 	return &models.Account{
@@ -749,6 +759,16 @@ func (a *AccountsApi) createNewSubAccountModelForModify(uid int64, accountType m
 		if accountModifyReq.SavingsEndDate > 0 {
 			accountExtend.SavingsEndDate = &accountModifyReq.SavingsEndDate
 		}
+		if accountModifyReq.SavingsStartDate > 0 {
+			accountExtend.SavingsStartDate = &accountModifyReq.SavingsStartDate
+		}
+		if accountModifyReq.SavingsTermMonths > 0 {
+			accountExtend.SavingsTermMonths = &accountModifyReq.SavingsTermMonths
+		}
+		if accountModifyReq.NonTermInterestRate > 0 {
+			accountExtend.NonTermInterestRate = &accountModifyReq.NonTermInterestRate
+		}
+		accountExtend.EarlyWithdrawalAllowed = &accountModifyReq.EarlyWithdrawalAllowed
 	}
 
 	return &models.Account{
@@ -796,6 +816,16 @@ func (a *AccountsApi) getToUpdateAccount(uid int64, accountModifyReq *models.Acc
 		if accountModifyReq.SavingsEndDate > 0 {
 			newAccountExtend.SavingsEndDate = &accountModifyReq.SavingsEndDate
 		}
+		if accountModifyReq.SavingsStartDate > 0 {
+			newAccountExtend.SavingsStartDate = &accountModifyReq.SavingsStartDate
+		}
+		if accountModifyReq.SavingsTermMonths > 0 {
+			newAccountExtend.SavingsTermMonths = &accountModifyReq.SavingsTermMonths
+		}
+		if accountModifyReq.NonTermInterestRate > 0 {
+			newAccountExtend.NonTermInterestRate = &accountModifyReq.NonTermInterestRate
+		}
+		newAccountExtend.EarlyWithdrawalAllowed = &accountModifyReq.EarlyWithdrawalAllowed
 	}
 
 	newAccount := &models.Account{
@@ -839,6 +869,30 @@ func (a *AccountsApi) getToUpdateAccount(uid int64, accountModifyReq *models.Acc
 	if (newAccountExtend.SavingsEndDate == nil && oldAccountExtend.SavingsEndDate != nil) ||
 		(newAccountExtend.SavingsEndDate != nil && oldAccountExtend.SavingsEndDate == nil) ||
 		(newAccountExtend.SavingsEndDate != nil && oldAccountExtend.SavingsEndDate != nil && *newAccountExtend.SavingsEndDate != *oldAccountExtend.SavingsEndDate) {
+		return newAccount
+	}
+
+	if (newAccountExtend.SavingsStartDate == nil && oldAccountExtend.SavingsStartDate != nil) ||
+		(newAccountExtend.SavingsStartDate != nil && oldAccountExtend.SavingsStartDate == nil) ||
+		(newAccountExtend.SavingsStartDate != nil && oldAccountExtend.SavingsStartDate != nil && *newAccountExtend.SavingsStartDate != *oldAccountExtend.SavingsStartDate) {
+		return newAccount
+	}
+
+	if (newAccountExtend.SavingsTermMonths == nil && oldAccountExtend.SavingsTermMonths != nil) ||
+		(newAccountExtend.SavingsTermMonths != nil && oldAccountExtend.SavingsTermMonths == nil) ||
+		(newAccountExtend.SavingsTermMonths != nil && oldAccountExtend.SavingsTermMonths != nil && *newAccountExtend.SavingsTermMonths != *oldAccountExtend.SavingsTermMonths) {
+		return newAccount
+	}
+
+	if (newAccountExtend.NonTermInterestRate == nil && oldAccountExtend.NonTermInterestRate != nil) ||
+		(newAccountExtend.NonTermInterestRate != nil && oldAccountExtend.NonTermInterestRate == nil) ||
+		(newAccountExtend.NonTermInterestRate != nil && oldAccountExtend.NonTermInterestRate != nil && *newAccountExtend.NonTermInterestRate != *oldAccountExtend.NonTermInterestRate) {
+		return newAccount
+	}
+
+	if (newAccountExtend.EarlyWithdrawalAllowed == nil && oldAccountExtend.EarlyWithdrawalAllowed != nil) ||
+		(newAccountExtend.EarlyWithdrawalAllowed != nil && oldAccountExtend.EarlyWithdrawalAllowed == nil) ||
+		(newAccountExtend.EarlyWithdrawalAllowed != nil && oldAccountExtend.EarlyWithdrawalAllowed != nil && *newAccountExtend.EarlyWithdrawalAllowed != *oldAccountExtend.EarlyWithdrawalAllowed) {
 		return newAccount
 	}
 

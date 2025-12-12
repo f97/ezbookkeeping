@@ -93,6 +93,10 @@ type AccountExtend struct {
 	CreditCardStatementDate *int     `json:"creditCardStatementDate"`
 	SavingsInterestRate     *float64 `json:"savingsInterestRate"`
 	SavingsEndDate          *int64   `json:"savingsEndDate"`
+	SavingsStartDate        *int64   `json:"savingsStartDate"`
+	SavingsTermMonths       *int     `json:"savingsTermMonths"`
+	NonTermInterestRate     *float64 `json:"nonTermInterestRate"`
+	EarlyWithdrawalAllowed  *bool    `json:"earlyWithdrawalAllowed"`
 }
 
 // AccountCreateRequest represents all parameters of account creation request
@@ -109,6 +113,10 @@ type AccountCreateRequest struct {
 	CreditCardStatementDate int                     `json:"creditCardStatementDate" binding:"min=0,max=28"`
 	SavingsInterestRate     float64                 `json:"savingsInterestRate" binding:"min=0,max=100"`
 	SavingsEndDate          int64                   `json:"savingsEndDate"`
+	SavingsStartDate        int64                   `json:"savingsStartDate"`
+	SavingsTermMonths       int                     `json:"savingsTermMonths" binding:"min=0"`
+	NonTermInterestRate     float64                 `json:"nonTermInterestRate" binding:"min=0,max=100"`
+	EarlyWithdrawalAllowed  bool                    `json:"earlyWithdrawalAllowed"`
 	SubAccounts             []*AccountCreateRequest `json:"subAccounts" binding:"omitempty"`
 	ClientSessionId         string                  `json:"clientSessionId"`
 }
@@ -127,6 +135,10 @@ type AccountModifyRequest struct {
 	CreditCardStatementDate int                     `json:"creditCardStatementDate" binding:"min=0,max=28"`
 	SavingsInterestRate     float64                 `json:"savingsInterestRate" binding:"min=0,max=100"`
 	SavingsEndDate          int64                   `json:"savingsEndDate"`
+	SavingsStartDate        int64                   `json:"savingsStartDate"`
+	SavingsTermMonths       int                     `json:"savingsTermMonths" binding:"min=0"`
+	NonTermInterestRate     float64                 `json:"nonTermInterestRate" binding:"min=0,max=100"`
+	EarlyWithdrawalAllowed  bool                    `json:"earlyWithdrawalAllowed"`
 	Hidden                  bool                    `json:"hidden"`
 	SubAccounts             []*AccountModifyRequest `json:"subAccounts" binding:"omitempty"`
 	ClientSessionId         string                  `json:"clientSessionId"`
@@ -179,6 +191,10 @@ type AccountInfoResponse struct {
 	CreditCardStatementDate *int                     `json:"creditCardStatementDate,omitempty"`
 	SavingsInterestRate     *float64                 `json:"savingsInterestRate,omitempty"`
 	SavingsEndDate          *int64                   `json:"savingsEndDate,omitempty"`
+	SavingsStartDate        *int64                   `json:"savingsStartDate,omitempty"`
+	SavingsTermMonths       *int                     `json:"savingsTermMonths,omitempty"`
+	NonTermInterestRate     *float64                 `json:"nonTermInterestRate,omitempty"`
+	EarlyWithdrawalAllowed  *bool                    `json:"earlyWithdrawalAllowed,omitempty"`
 	DisplayOrder            int32                    `json:"displayOrder"`
 	IsAsset                 bool                     `json:"isAsset,omitempty"`
 	IsLiability             bool                     `json:"isLiability,omitempty"`
@@ -191,6 +207,10 @@ func (a *Account) ToAccountInfoResponse() *AccountInfoResponse {
 	var creditCardStatementDate *int
 	var savingsInterestRate *float64
 	var savingsEndDate *int64
+	var savingsStartDate *int64
+	var savingsTermMonths *int
+	var nonTermInterestRate *float64
+	var earlyWithdrawalAllowed *bool
 
 	if a.ParentAccountId == LevelOneAccountParentId && a.Category == ACCOUNT_CATEGORY_CREDIT_CARD {
 		if a.Extend != nil {
@@ -200,10 +220,14 @@ func (a *Account) ToAccountInfoResponse() *AccountInfoResponse {
 		}
 	}
 
-	if a.ParentAccountId == LevelOneAccountParentId && a.Category == ACCOUNT_CATEGORY_SAVINGS_ACCOUNT {
+	if (a.ParentAccountId == LevelOneAccountParentId || a.ParentAccountId > LevelOneAccountParentId) && a.Category == ACCOUNT_CATEGORY_SAVINGS_ACCOUNT {
 		if a.Extend != nil {
 			savingsInterestRate = a.Extend.SavingsInterestRate
 			savingsEndDate = a.Extend.SavingsEndDate
+			savingsStartDate = a.Extend.SavingsStartDate
+			savingsTermMonths = a.Extend.SavingsTermMonths
+			nonTermInterestRate = a.Extend.NonTermInterestRate
+			earlyWithdrawalAllowed = a.Extend.EarlyWithdrawalAllowed
 		}
 	}
 
@@ -221,6 +245,10 @@ func (a *Account) ToAccountInfoResponse() *AccountInfoResponse {
 		CreditCardStatementDate: creditCardStatementDate,
 		SavingsInterestRate:     savingsInterestRate,
 		SavingsEndDate:          savingsEndDate,
+		SavingsStartDate:        savingsStartDate,
+		SavingsTermMonths:       savingsTermMonths,
+		NonTermInterestRate:     nonTermInterestRate,
+		EarlyWithdrawalAllowed:  earlyWithdrawalAllowed,
 		DisplayOrder:            a.DisplayOrder,
 		IsAsset:                 assetAccountCategory[a.Category],
 		IsLiability:             liabilityAccountCategory[a.Category],
