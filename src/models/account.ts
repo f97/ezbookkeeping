@@ -413,26 +413,6 @@ export class Account implements AccountInfoResponse {
     }
 
     public createNewSubAccount(currency: string, balanceTime: number): Account {
-        // If parent is a savings account, inherit savings defaults
-        const savingsInterestRate = this.category === AccountCategory.SavingsAccount.type ? (this.savingsInterestRate || 7.5) : 0;
-        const savingsStartDate = this.category === AccountCategory.SavingsAccount.type ? (this.savingsStartDate || balanceTime) : 0;
-        const savingsTermMonths = this.category === AccountCategory.SavingsAccount.type ? (this.savingsTermMonths || 12) : 0;
-        const nonTermInterestRate = this.category === AccountCategory.SavingsAccount.type ? (this.nonTermInterestRate || 0) : 0;
-        const earlyWithdrawalAllowed = this.category === AccountCategory.SavingsAccount.type ? (this.earlyWithdrawalAllowed || false) : false;
-        
-        // Calculate end date from start date + term for savings accounts
-        let savingsEndDate = 0;
-        if (this.category === AccountCategory.SavingsAccount.type) {
-            if (this.savingsEndDate) {
-                savingsEndDate = this.savingsEndDate;
-            } else if (savingsStartDate && savingsTermMonths > 0) {
-                const startDate = new Date(savingsStartDate * 1000);
-                const endDate = new Date(startDate);
-                endDate.setMonth(endDate.getMonth() + savingsTermMonths);
-                savingsEndDate = Math.floor(endDate.getTime() / 1000);
-            }
-        }
-        
         return new Account(
             '', // id
             '', // name
@@ -448,12 +428,12 @@ export class Account implements AccountInfoResponse {
             true, // visible
             balanceTime, // balanceTime
             0, // creditCardStatementDate
-            savingsInterestRate, // savingsInterestRate
-            savingsEndDate, // savingsEndDate
-            savingsStartDate, // savingsStartDate
-            savingsTermMonths, // savingsTermMonths
-            nonTermInterestRate, // nonTermInterestRate
-            earlyWithdrawalAllowed // earlyWithdrawalAllowed
+            0, // savingsInterestRate
+            0, // savingsEndDate
+            0, // savingsStartDate
+            0, // savingsTermMonths
+            0, // nonTermInterestRate
+            false // earlyWithdrawalAllowed
         );
     }
 
