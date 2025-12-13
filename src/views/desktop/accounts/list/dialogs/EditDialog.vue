@@ -29,7 +29,7 @@
                         <template v-if="account.type === AccountType.MultiSubAccounts.type">
                             <v-tab :key="idx" :value="idx" v-for="(subAccount, idx) in subAccounts">
                                 <span>{{ tt('Sub Account') + ' #' + (idx + 1) }}</span>
-                                <v-btn class="ms-2" color="error" size="24" variant="text"
+                                <v-btn class="ms-2" color="error" size="20" variant="text"
                                        :icon="mdiDeleteOutline"
                                        @click="removeSubAccount(subAccount)"></v-btn>
                             </v-tab>
