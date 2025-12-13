@@ -16,12 +16,54 @@ export const ALL_ACCOUNT_ICONS: Record<string, IconInfo> = {
     '30': {
         icon: 'las la-piggy-bank'
     },
+    '40': {
+        icon: 'las la-hand-holding-usd'
+    },
+    '50': {
+        icon: 'las la-money-bill-wave'
+    },
+    '60': {
+        icon: 'las la-file-invoice-dollar'
+    },
+    '70': {
+        icon: 'las la-landmark'
+    },
+    '80': {
+        icon: 'las la-university'
+    },
+    '90': {
+        icon: 'las la-percentage'
+    },
     // 100 - 199 : Bank Service Symbols
     '100': {
         icon: 'las la-credit-card'
     },
     '110': {
         icon: 'las la-money-check-alt'
+    },
+    '120': {
+        icon: 'las la-money-check'
+    },
+    '130': {
+        icon: 'las la-credit-card'
+    },
+    '140': {
+        icon: 'las la-wallet'
+    },
+    '150': {
+        icon: 'las la-dollar-sign'
+    },
+    '160': {
+        icon: 'las la-coins'
+    },
+    '170': {
+        icon: 'las la-chart-line'
+    },
+    '180': {
+        icon: 'las la-chart-area'
+    },
+    '190': {
+        icon: 'las la-shield-alt'
     },
     // 500 - 999 : Other Symbols
     '500': {
@@ -39,8 +81,20 @@ export const ALL_ACCOUNT_ICONS: Record<string, IconInfo> = {
     '540': {
         icon: 'las la-donate'
     },
+    '550': {
+        icon: 'las la-briefcase'
+    },
     '560': {
         icon: 'las la-shield-alt'
+    },
+    '570': {
+        icon: 'las la-gem'
+    },
+    '580': {
+        icon: 'las la-crown'
+    },
+    '590': {
+        icon: 'las la-star'
     },
     '600': {
         icon: 'las la-calendar-minus'
@@ -74,6 +128,27 @@ export const ALL_ACCOUNT_ICONS: Record<string, IconInfo> = {
     },
     '912': {
         icon: 'las la-industry'
+    },
+    '920': {
+        icon: 'las la-store'
+    },
+    '930': {
+        icon: 'las la-shopping-bag'
+    },
+    '940': {
+        icon: 'las la-mobile-alt'
+    },
+    '950': {
+        icon: 'las la-laptop'
+    },
+    '960': {
+        icon: 'las la-car'
+    },
+    '970': {
+        icon: 'las la-plane'
+    },
+    '980': {
+        icon: 'las la-utensils'
     },
     '990': {
         icon: 'las la-globe'
