@@ -5,12 +5,12 @@
                 <div class="d-flex align-center justify-center">
                     <div class="d-flex w-100 align-center justify-center">
                         <h4 class="text-h4">{{ tt('Reconciliation Statement') }}</h4>
-                        <v-btn density="compact" color="default" variant="text" size="24"
+                        <v-btn density="compact" color="default" variant="text" size="20"
                                class="ms-2" :icon="true" :loading="loading" @click="reload(true)">
                             <template #loader>
-                                <v-progress-circular indeterminate size="20"/>
+                                <v-progress-circular indeterminate size="16"/>
                             </template>
-                            <v-icon :icon="mdiRefresh" size="24" />
+                            <v-icon :icon="mdiRefresh" size="20" />
                             <v-tooltip activator="parent">{{ tt('Refresh') }}</v-tooltip>
                         </v-btn>
                     </div>

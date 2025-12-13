@@ -18,7 +18,7 @@ export class PresetAmountColor implements TypeAndName {
     private static readonly allInstancesByType: Record<number, PresetAmountColor> = {};
 
     public static readonly SystemDefaultType: number = 0;
-    public static readonly Green = new PresetAmountColor(1, 'Green', '#009688', '#009688', 'expense-amount-color-green', 'income-amount-color-green');
+    public static readonly Green = new PresetAmountColor(1, 'Green', '#22c55e', '#22c55e', 'expense-amount-color-green', 'income-amount-color-green');
     public static readonly Red = new PresetAmountColor(2, 'Red', '#d43f3f', '#d43f3f', 'expense-amount-color-red', 'income-amount-color-red');
     public static readonly Yellow = new PresetAmountColor(3, 'Yellow', '#e2b60a', '#e2b60a', 'expense-amount-color-yellow', 'income-amount-color-yellow');
     public static readonly BlackOrWhite = new PresetAmountColor(4, 'Black or White', '#413935', '#fcf0e3', 'expense-amount-color-blackorwhite', 'income-amount-color-blackorwhite');

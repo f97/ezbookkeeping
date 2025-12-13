@@ -15,13 +15,13 @@
                     <h4 class="text-h4" v-if="mode === 'replaceInvalidItems' && type === 'transferCategory'">{{ tt('Replace Invalid Transfer Categories') }}</h4>
                     <h4 class="text-h4" v-if="mode === 'replaceInvalidItems' && type === 'account'">{{ tt('Replace Invalid Accounts') }}</h4>
                     <h4 class="text-h4" v-if="mode === 'replaceInvalidItems' && type === 'tag'">{{ tt('Replace Invalid Transaction Tags') }}</h4>
-                    <v-btn density="compact" color="default" variant="text" size="24"
+                    <v-btn density="compact" color="default" variant="text" size="20"
                            class="ms-2" :icon="true" :disabled="loading"
                            :loading="loading" @click="reload">
                         <template #loader>
-                            <v-progress-circular indeterminate size="20"/>
+                            <v-progress-circular indeterminate size="16"/>
                         </template>
-                        <v-icon :icon="mdiRefresh" size="24" />
+                        <v-icon :icon="mdiRefresh" size="20" />
                         <v-tooltip activator="parent">{{ tt('Refresh') }}</v-tooltip>
                     </v-btn>
                 </div>
