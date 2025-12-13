@@ -68,12 +68,12 @@
                 <template #title>
                     <div class="d-flex align-center">
                         <span>{{ tt('Third-Party Logins') }}</span>
-                        <v-btn density="compact" color="default" variant="text" size="24"
+                        <v-btn density="compact" color="default" variant="text" size="20"
                                class="ms-2" :icon="true" :loading="loadingExternalAuth" @click="reloadExternalAuth(false)">
                             <template #loader>
-                                <v-progress-circular indeterminate size="20"/>
+                                <v-progress-circular indeterminate size="16"/>
                             </template>
-                            <v-icon :icon="mdiRefresh" size="24" />
+                            <v-icon :icon="mdiRefresh" size="20" />
                             <v-tooltip activator="parent">{{ tt('Refresh') }}</v-tooltip>
                         </v-btn>
                     </div>
@@ -133,12 +133,12 @@
                         <span>{{ tt('Device & Sessions') }}</span>
                         <v-btn class="ms-3" density="compact" color="default" variant="outlined"
                                @click="generateToken" v-if="isAPITokenEnabled() || isMCPServerEnabled()">{{ tt('Generate Token') }}</v-btn>
-                        <v-btn density="compact" color="default" variant="text" size="24"
+                        <v-btn density="compact" color="default" variant="text" size="20"
                                class="ms-2" :icon="true" :loading="loadingSession" @click="reloadSessions(false)">
                             <template #loader>
-                                <v-progress-circular indeterminate size="20"/>
+                                <v-progress-circular indeterminate size="16"/>
                             </template>
-                            <v-icon :icon="mdiRefresh" size="24" />
+                            <v-icon :icon="mdiRefresh" size="20" />
                             <v-tooltip activator="parent">{{ tt('Refresh') }}</v-tooltip>
                         </v-btn>
                     </div>

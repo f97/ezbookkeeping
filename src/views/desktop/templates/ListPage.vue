@@ -10,13 +10,13 @@
                         <v-btn class="ms-3" color="primary" variant="tonal"
                                :disabled="loading || updating" @click="saveSortResult"
                                v-if="displayOrderModified">{{ tt('Save Display Order') }}</v-btn>
-                        <v-btn density="compact" color="default" variant="text" size="24"
+                        <v-btn density="compact" color="default" variant="text" size="20"
                                class="ms-2" :icon="true" :disabled="loading || updating"
                                :loading="loading" @click="reload">
                             <template #loader>
-                                <v-progress-circular indeterminate size="20"/>
+                                <v-progress-circular indeterminate size="16"/>
                             </template>
-                            <v-icon :icon="mdiRefresh" size="24" />
+                            <v-icon :icon="mdiRefresh" size="20" />
                             <v-tooltip activator="parent">{{ tt('Refresh') }}</v-tooltip>
                         </v-btn>
                         <v-spacer/>

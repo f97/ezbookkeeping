@@ -1,4 +1,4 @@
-# ezBookkeeping
+# FIRE
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/mayswind/ezbookkeeping/blob/master/LICENSE)
 [![Go Report](https://goreportcard.com/badge/github.com/mayswind/ezbookkeeping)](https://goreportcard.com/report/github.com/mayswind/ezbookkeeping)
 [![Latest Release](https://img.shields.io/github/release/mayswind/ezbookkeeping.svg?style=flat)](https://github.com/mayswind/ezbookkeeping/releases)
@@ -11,11 +11,11 @@
 [![Trending](https://trendshift.io/api/badge/repositories/12917)](https://trendshift.io/repositories/12917)
 
 ## Introduction
-ezBookkeeping is a lightweight, self-hosted personal finance app with a user-friendly interface and powerful bookkeeping features. It's easy to deploy, and you can start it with just one single Docker command. Designed to be resource-efficient and highly scalable, it can run smoothly on devices as small as a Raspberry Pi, or scale up to NAS, MicroServers, and even large cluster environments.
+FIRE is a lightweight, self-hosted personal finance app with a user-friendly interface and powerful bookkeeping features. It's easy to deploy, and you can start it with just one single Docker command. Designed to be resource-efficient and highly scalable, it can run smoothly on devices as small as a Raspberry Pi, or scale up to NAS, MicroServers, and even large cluster environments.
 
-ezBookkeeping offers tailored interfaces for both mobile and desktop devices. With support for PWA (Progressive Web Apps), you can even [add it to your mobile home screen](https://raw.githubusercontent.com/wiki/mayswind/ezbookkeeping/img/mobile/add_to_home_screen.gif) and use it like a native app.
+FIRE offers tailored interfaces for both mobile and desktop devices. With support for PWA (Progressive Web Apps), you can even [add it to your mobile home screen](https://raw.githubusercontent.com/wiki/mayswind/ezbookkeeping/img/mobile/add_to_home_screen.gif) and use it like a native app.
 
-Live Demo: [https://ezbookkeeping-demo.mayswind.net](https://ezbookkeeping-demo.mayswind.net)
+Live Demo: [https://fire.f97.dev](https://fire.f97.dev)
 
 ## Features
 - **Open Source & Self-Hosted**
@@ -54,10 +54,10 @@ Live Demo: [https://ezbookkeeping-demo.mayswind.net](https://ezbookkeeping-demo.
 
 ## Screenshots
 ### Desktop Version
-[![ezBookkeeping](https://raw.githubusercontent.com/wiki/mayswind/ezbookkeeping/img/desktop/en.png)](https://raw.githubusercontent.com/wiki/mayswind/ezbookkeeping/img/desktop/en.png)
+[![FIRE](https://raw.githubusercontent.com/wiki/mayswind/ezbookkeeping/img/desktop/en.png)](https://raw.githubusercontent.com/wiki/mayswind/ezbookkeeping/img/desktop/en.png)
 
 ### Mobile Version
-[![ezBookkeeping](https://raw.githubusercontent.com/wiki/mayswind/ezbookkeeping/img/mobile/en.png)](https://raw.githubusercontent.com/wiki/mayswind/ezbookkeeping/img/mobile/en.png)
+[![FIRE](https://raw.githubusercontent.com/wiki/mayswind/ezbookkeeping/img/mobile/en.png)](https://raw.githubusercontent.com/wiki/mayswind/ezbookkeeping/img/mobile/en.png)
 
 ## Installation
 ### Run with Docker
@@ -121,7 +121,7 @@ Contributions of all kinds — bug reports, feature suggestions, documentation i
 Check out our [Contributor Graph](https://github.com/mayswind/ezbookkeeping/graphs/contributors) to see the amazing people who've already helped.
 
 ## Translating
-Help make ezBookkeeping accessible to users around the world. If you want to contribute a translation, please refer to our [translation guide](https://ezbookkeeping.mayswind.net/translating).
+Help make FIRE accessible to users around the world. If you want to contribute a translation, please refer to our [translation guide](https://fire.f97.dev/translating).
 
 Currently available translations:
 
@@ -147,8 +147,8 @@ Currently available translations:
 Don't see your language? Help us add it.
 
 ## Documentation
-1. [English](https://ezbookkeeping.mayswind.net)
-1. [中文 (简体)](https://ezbookkeeping.mayswind.net/zh_Hans)
+1. [English](https://fire.f97.dev)
+1. [中文 (简体)](https://fire.f97.dev/zh_Hans)
 
 ## License
 [MIT](https://github.com/mayswind/ezbookkeeping/blob/master/LICENSE)
