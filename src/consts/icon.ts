@@ -45,25 +45,25 @@ export const ALL_ACCOUNT_ICONS: Record<string, IconInfo> = {
         icon: 'las la-money-check'
     },
     '130': {
-        icon: 'las la-credit-card'
+        icon: 'las la-address-card'
     },
     '140': {
-        icon: 'las la-wallet'
+        icon: 'las la-clipboard-list'
     },
     '150': {
-        icon: 'las la-dollar-sign'
+        icon: 'las la-cash-register'
     },
     '160': {
-        icon: 'las la-coins'
+        icon: 'las la-balance-scale'
     },
     '170': {
-        icon: 'las la-chart-line'
+        icon: 'las la-funnel-dollar'
     },
     '180': {
-        icon: 'las la-chart-area'
+        icon: 'las la-hand-holding-heart'
     },
     '190': {
-        icon: 'las la-shield-alt'
+        icon: 'las la-lock'
     },
     // 500 - 999 : Other Symbols
     '500': {
