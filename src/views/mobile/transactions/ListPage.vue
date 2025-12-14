@@ -16,7 +16,7 @@
                 </f7-link>
             </f7-nav-title>
             <f7-nav-right class="navbar-compact-icons">
-                <f7-link icon-f7="search" @click="showSearchbar = true"></f7-link>
+                <f7-link icon-f7="search" @click="toggleSearchbar"></f7-link>
                 <f7-link icon-f7="plus" :class="{ 'disabled': !canAddTransaction }" @click="add"></f7-link>
             </f7-nav-right>
 
@@ -377,7 +377,7 @@
                               :class="getCategoryListItemCheckedClass(category, queryAllFilterCategoryIds)"
                               :key="category.id"
                               v-for="category in categories"
-                              v-show="!category.hidden || query.categoryIds === category.id || (allCategories[query.categoryIds] && allCategories[query.categoryIds]?.parentId === category.id)"
+                              v-show="!category.hidden || queryAllFilterCategoryIds[category.id] || allCategories[query.categoryIds]?.parentId === category.id || hasSubCategoryInQuery(category)"
                 >
                     <template #media>
                         <ItemIcon icon-type="category" :icon-id="category.icon" :color="category.color"></ItemIcon>
@@ -399,7 +399,7 @@
                                           :title="subCategory.name"
                                           :key="subCategory.id"
                                           v-for="subCategory in category.subCategories"
-                                          v-show="!subCategory.hidden || query.categoryIds === subCategory.id"
+                                          v-show="!subCategory.hidden || queryAllFilterCategoryIds[subCategory.id]"
                                           @click="changeCategoryFilter(subCategory.id)"
                             >
                                 <template #media>
@@ -448,7 +448,7 @@
                               :title="account.name"
                               :key="account.id"
                               v-for="account in allAccounts"
-                              v-show="(!account.hidden && (!allAccountsMap[account.parentId] || !allAccountsMap[account.parentId]!.hidden)) || query.accountIds === account.id"
+                              v-show="(!account.hidden && (!allAccountsMap[account.parentId] || !allAccountsMap[account.parentId]!.hidden)) || queryAllFilterAccountIds[account.id]"
                               @click="changeAccountFilter(account.id)"
                 >
                     <template #media>
@@ -712,6 +712,7 @@ const {
     transactionCalendarMinDate,
     transactionCalendarMaxDate,
     currentMonthTransactionData,
+    hasSubCategoryInQuery,
     canAddTransaction,
     getDisplayTime,
     getDisplayLongYearMonth,
@@ -1298,6 +1299,18 @@ function changeTagFilter(tagFilter: string): void {
 
 function filterMultipleTags(): void {
     props.f7router.navigate('/settings/filter/tag?type=transactionListCurrent');
+}
+
+function toggleSearchbar(): void {
+    if (!showSearchbar.value) {
+        showSearchbar.value = true;
+    } else {
+        showSearchbar.value = false;
+
+        if (query.value.keyword) {
+            changeKeywordFilter('');
+        }
+    }
 }
 
 function changeKeywordFilter(keyword: string): void {
