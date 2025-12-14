@@ -401,6 +401,12 @@ export class Account implements AccountInfoResponse {
             this.visible,
             this.balanceTime,
             this.creditCardStatementDate,
+            this.savingsInterestRate,
+            this.savingsEndDate,
+            this.savingsStartDate,
+            this.savingsTermMonths,
+            this.nonTermInterestRate,
+            this.earlyWithdrawalAllowed,
             this.isAsset,
             this.isLiability
         );
