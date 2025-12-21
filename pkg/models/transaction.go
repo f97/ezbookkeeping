@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/mayswind/ezbookkeeping/pkg/errs"
 	"github.com/mayswind/ezbookkeeping/pkg/utils"
@@ -254,6 +255,22 @@ type TransactionListInMonthByPageRequest struct {
 	TrimTag      bool            `form:"trim_tag"`
 }
 
+// TransactionAllListRequest represents all parameters of all transaction listing request
+type TransactionAllListRequest struct {
+	Type         TransactionType `form:"type" binding:"min=0,max=4"`
+	CategoryIds  string          `form:"category_ids"`
+	AccountIds   string          `form:"account_ids"`
+	TagFilter    string          `form:"tag_filter" binding:"validTagFilter"`
+	AmountFilter string          `form:"amount_filter" binding:"validAmountFilter"`
+	Keyword      string          `form:"keyword"`
+	StartTime    int64           `form:"start_time" binding:"min=0"`
+	EndTime      int64           `form:"end_time" binding:"min=0"`
+	WithPictures bool            `form:"with_pictures"`
+	TrimAccount  bool            `form:"trim_account"`
+	TrimCategory bool            `form:"trim_category"`
+	TrimTag      bool            `form:"trim_tag"`
+}
+
 // TransactionReconciliationStatementRequest represents all parameters of transaction reconciliation statement request
 type TransactionReconciliationStatementRequest struct {
 	AccountId int64 `form:"account_id,string" binding:"required,min=1"`
@@ -495,8 +512,8 @@ func ParseTransactionTagFilter(tagFilterStr string) ([]*TransactionTagFilter, er
 }
 
 // IsEditable returns whether this transaction can be edited
-func (t *Transaction) IsEditable(currentUser *User, utcOffset int16, account *Account, relatedAccount *Account) bool {
-	if currentUser == nil || !currentUser.CanEditTransactionByTransactionTime(t.TransactionTime, utcOffset) {
+func (t *Transaction) IsEditable(currentUser *User, clientTimezone *time.Location, account *Account, relatedAccount *Account) bool {
+	if currentUser == nil || !currentUser.CanEditTransactionByTransactionTime(t.TransactionTime, clientTimezone) {
 		return false
 	}
 

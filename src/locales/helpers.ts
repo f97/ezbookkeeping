@@ -144,6 +144,11 @@ import {
 } from '@/core/statistics.ts';
 
 import {
+    TransactionExploreConditionField,
+    TransactionExploreConditionOperator
+} from '@/core/explore.ts';
+
+import {
     type LocalizedImportFileCategoryAndTypes,
     type LocalizedImportFileType,
     type LocalizedImportFileTypeSubType,
@@ -197,6 +202,7 @@ import {
     getTimeDifferenceHoursAndMinutes,
     getTimezoneOffset,
     getTimezoneOffsetMinutes,
+    guessTimezoneName,
     isDateRangeMatchFullMonths,
     isDateRangeMatchFullYears,
     isPM
@@ -547,6 +553,19 @@ export function useI18n() {
             ret.push({
                 type: typeAndName.type,
                 displayName: t(typeAndName.name)
+            });
+        }
+
+        return ret;
+    }
+
+    function getLocalizedNameValue(nameValues: NameValue[]): NameValue[] {
+        const ret: NameValue[] = [];
+
+        for (const nameValue of nameValues) {
+            ret.push({
+                name: t(nameValue.name),
+                value: nameValue.value
             });
         }
 
@@ -2298,7 +2317,7 @@ export function useI18n() {
             logger.info(`Current timezone is ${timezone}`);
             setTimeZone(timezone);
         } else {
-            logger.info(`No timezone is set, use browser default ${getTimezoneOffset()} (maybe ${moment.tz.guess(true)})`);
+            logger.info(`No timezone is set, use browser default ${getTimezoneOffset()} (maybe ${guessTimezoneName()})`);
             setTimeZone('');
         }
 
@@ -2366,6 +2385,8 @@ export function useI18n() {
         getAllTransactionDefaultCategories,
         getAllDisplayExchangeRates,
         getAllSupportedImportFileCagtegoryAndTypes,
+        getAllTransactionExploreConditionFields: () => getLocalizedNameValue(TransactionExploreConditionField.values()),
+        getAllTransactionExploreConditionOperators: (operators?: TransactionExploreConditionOperator[]) => getLocalizedNameValue(operators ?? TransactionExploreConditionOperator.values()),
         // get localized info
         getLanguageInfo,
         getMonthShortName,

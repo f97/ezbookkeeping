@@ -597,6 +597,11 @@ export interface TransactionListInMonthByPageRequest {
     readonly keyword: string;
 }
 
+export interface TransactionAllListRequest {
+    readonly startTime: number;
+    readonly endTime: number;
+}
+
 export interface TransactionReconciliationStatementRequest {
     readonly accountId: string;
     readonly startTime: number;
@@ -672,20 +677,20 @@ export const ALL_TRANSACTION_AMOUNTS_REQUEST_TYPE = [
 
 export type TransactionAmountsRequestType = typeof ALL_TRANSACTION_AMOUNTS_REQUEST_TYPE[number];
 
-export const LATEST_12MONTHS_TRANSACTION_AMOUNTS_REQUEST_TYPES: TransactionAmountsRequestType[] = [
-    'monthBeforeLast10Months',
-    'monthBeforeLast9Months',
-    'monthBeforeLast8Months',
-    'monthBeforeLast7Months',
-    'monthBeforeLast6Months',
-    'monthBeforeLast5Months',
-    'monthBeforeLast4Months',
-    'monthBeforeLast3Months',
-    'monthBeforeLast2Months',
-    'monthBeforeLastMonth',
-    'lastMonth',
-    'thisMonth'
-];
+export const LATEST_12MONTHS_TRANSACTION_AMOUNTS_REQUEST_TYPES: PartialRecord<TransactionAmountsRequestType, number> = {
+    'monthBeforeLast10Months': 11,
+    'monthBeforeLast9Months': 10,
+    'monthBeforeLast8Months': 9,
+    'monthBeforeLast7Months': 8,
+    'monthBeforeLast6Months': 7,
+    'monthBeforeLast5Months': 6,
+    'monthBeforeLast4Months': 5,
+    'monthBeforeLast3Months': 4,
+    'monthBeforeLast2Months': 3,
+    'monthBeforeLastMonth': 2,
+    'lastMonth': 1,
+    'thisMonth': 0
+};
 
 export interface TransactionAmountsRequestParams extends PartialRecord<TransactionAmountsRequestType, StartEndTime> {
     readonly useTransactionTimezone: boolean;
@@ -948,6 +953,27 @@ export interface TransactionAssetTrendsAnalysisDataAmount extends Record<string,
     readonly totalAmount: number;
 }
 
+export interface TransactionInsightDataItem extends TransactionInfoResponse {
+    readonly id: string;
+    readonly time: number;
+    readonly utcOffset: number;
+    readonly type: number;
+    readonly primaryCategory: TransactionCategoryInfoResponse;
+    readonly primaryCategoryName: string;
+    readonly secondaryCategory: TransactionCategoryInfoResponse;
+    readonly secondaryCategoryName: string;
+    readonly sourceAccount: AccountInfoResponse;
+    readonly sourceAccountName: string;
+    readonly destinationAccount?: AccountInfoResponse;
+    readonly destinationAccountName?: string;
+    readonly sourceAmount: number;
+    readonly destinationAmount: number;
+    readonly hideAmount: boolean;
+    readonly tags: TransactionTagInfoResponse[];
+    readonly comment: string;
+    readonly geoLocation?: TransactionGeoLocationResponse;
+}
+
 export type TransactionAmountsResponse = PartialRecord<TransactionAmountsRequestType, TransactionAmountsResponseItem>;
 
 export interface TransactionAmountsResponseItem {
@@ -983,6 +1009,7 @@ export interface TransactionOverviewResponseItem {
 
 export interface TransactionMonthlyIncomeAndExpenseData {
     readonly monthStartTime: number;
+    readonly monthsBeforeCurrentMonth: number;
     readonly incomeAmount: number;
     readonly expenseAmount: number;
     readonly incompleteIncomeAmount: boolean;
