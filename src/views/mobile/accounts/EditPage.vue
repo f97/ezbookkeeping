@@ -706,6 +706,7 @@ const {
     getCurrencyName,
     formatDateTimeToLongDate,
     formatDateTimeToLongTime,
+    formatUnixTimeToLongDate,
     formatAmountToLocalizedNumeralsWithCurrency
 } = useI18n();
 
