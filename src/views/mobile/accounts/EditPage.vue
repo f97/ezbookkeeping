@@ -299,8 +299,10 @@
                     </div>
                 </template>
                 <date-time-selection-sheet :init-mode="accountContext.balanceDateTimeSheetMode"
+                                           :timezone-utc-offset="getDefaultTimezoneOffsetMinutes(account)"
+                                           :model-value="account.balanceTime"
                                            v-model:show="accountContext.showBalanceDateTimeSheet"
-                                           v-model="account.balanceTime">
+                                           @update:model-value="updateAccountBalanceTime(account, $event)">
                 </date-time-selection-sheet>
             </f7-list-item>
 
@@ -539,8 +541,10 @@
                         </div>
                     </template>
                     <date-time-selection-sheet :init-mode="subAccountContexts[idx]!.balanceDateTimeSheetMode"
+                                               :timezone-utc-offset="getDefaultTimezoneOffsetMinutes(subAccount)"
+                                               :model-value="subAccount.balanceTime"
                                                v-model:show="subAccountContexts[idx]!.showBalanceDateTimeSheet"
-                                               v-model="subAccount.balanceTime">
+                                               @update:model-value="updateAccountBalanceTime(subAccount, $event)">
                     </date-time-selection-sheet>
                 </f7-list-item>
 
@@ -672,8 +676,7 @@ import { isDefined, findDisplayNameByType } from '@/lib/common.ts';
 import { generateRandomUUID } from '@/lib/misc.ts';
 import {
     getTimezoneOffsetMinutes,
-    getBrowserTimezoneOffsetMinutes,
-    getActualUnixTimeForStore
+    parseDateTimeFromUnixTimeWithTimezoneOffset
 } from '@/lib/datetime.ts';
 
 interface AccountContext {
@@ -701,8 +704,8 @@ const {
     tt,
     getAllCurrencies,
     getCurrencyName,
-    formatUnixTimeToLongDate,
-    formatUnixTimeToLongTime,
+    formatDateTimeToLongDate,
+    formatDateTimeToLongTime,
     formatAmountToLocalizedNumeralsWithCurrency
 } = useI18n();
 
@@ -723,7 +726,9 @@ const {
     allAvailableMonthDays,
     isAccountSupportCreditCardStatementDate,
     isAccountSupportSavingsFields,
+    getDefaultTimezoneOffsetMinutes,
     getAccountCreditCardStatementDate,
+    updateAccountBalanceTime,
     isNewAccount,
     addSubAccount,
     setAccount
@@ -769,7 +774,8 @@ function formatAccountBalanceDate(account: Account): string {
         return '';
     }
 
-    return formatUnixTimeToLongDate(getActualUnixTimeForStore(account.balanceTime, getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes()));
+    const dateTime = parseDateTimeFromUnixTimeWithTimezoneOffset(account.balanceTime, getTimezoneOffsetMinutes(account.balanceTime));
+    return formatDateTimeToLongDate(dateTime);
 }
 
 function formatAccountBalanceTime(account: Account): string {
@@ -777,7 +783,8 @@ function formatAccountBalanceTime(account: Account): string {
         return '';
     }
 
-    return formatUnixTimeToLongTime(getActualUnixTimeForStore(account.balanceTime, getTimezoneOffsetMinutes(), getBrowserTimezoneOffsetMinutes()));
+    const dateTime = parseDateTimeFromUnixTimeWithTimezoneOffset(account.balanceTime, getTimezoneOffsetMinutes(account.balanceTime));
+    return formatDateTimeToLongTime(dateTime);
 }
 
 function formatSavingsPeriod(months: number): string {

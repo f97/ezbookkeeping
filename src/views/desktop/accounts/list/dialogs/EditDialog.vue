@@ -191,7 +191,9 @@
                                     <date-time-select
                                         :disabled="loading || submitting"
                                         :label="tt('Balance Time')"
-                                        v-model="selectedAccount.balanceTime"
+                                        :timezone-utc-offset="getDefaultTimezoneOffsetMinutes(selectedAccount)"
+                                        :model-value="selectedAccount.balanceTime"
+                                        @update:model-value="updateAccountBalanceTime(selectedAccount, $event)"
                                         @error="onShowDateTimeError" />
                                 </v-col>
                                 <v-col cols="12" md="12">
@@ -256,7 +258,6 @@ import { ALL_ACCOUNT_COLORS } from '@/consts/color.ts';
 import { Account } from '@/models/account.ts';
 
 import { isNumber } from '@/lib/common.ts';
-import { getCurrentUnixTime } from '@/lib/datetime.ts';
 import { generateRandomUUID } from '@/lib/misc.ts';
 
 import {
@@ -289,6 +290,9 @@ const {
     allAvailableMonthDays,
     isAccountSupportCreditCardStatementDate,
     isAccountSupportSavingsFields,
+    getCurrentUnixTimeForNewAccount,
+    getDefaultTimezoneOffsetMinutes,
+    updateAccountBalanceTime,
     isNewAccount,
     addSubAccount,
     setAccount
@@ -322,7 +326,7 @@ const accountAmountTitle = computed<string>(() => {
 
 const isAccountModified = computed<boolean>(() => {
     if (!editAccountId.value) {
-        return !account.value.equals(Account.createNewAccount(userStore.currentUserDefaultCurrency, account.value.balanceTime ?? getCurrentUnixTime()));
+        return !account.value.equals(Account.createNewAccount(userStore.currentUserDefaultCurrency, account.value.balanceTime ?? getCurrentUnixTimeForNewAccount()));
     } else {
         return true;
     }
@@ -336,7 +340,7 @@ function open(options?: { id?: string, currentAccount?: Account, category?: numb
     loading.value = true;
     submitting.value = false;
 
-    const newAccount = Account.createNewAccount(userStore.currentUserDefaultCurrency, getCurrentUnixTime());
+    const newAccount = Account.createNewAccount(userStore.currentUserDefaultCurrency, getCurrentUnixTimeForNewAccount());
     account.value.fillFrom(newAccount);
     subAccounts.value = [];
     currentAccountIndex.value = -1;

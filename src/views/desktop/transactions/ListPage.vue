@@ -534,8 +534,8 @@
                                                 <td class="transaction-table-column-time">
                                                     <div class="d-flex flex-column">
                                                         <span>{{ getDisplayTime(transaction) }}</span>
-                                                        <span class="text-caption" v-if="transaction.utcOffset !== currentTimezoneOffsetMinutes">{{ getDisplayTimezone(transaction) }}</span>
-                                                        <v-tooltip activator="parent" v-if="transaction.utcOffset !== currentTimezoneOffsetMinutes">{{ getDisplayTimeInDefaultTimezone(transaction) }}</v-tooltip>
+                                                        <span class="text-caption" v-if="!isSameAsDefaultTimezoneOffsetMinutes(transaction)">{{ getDisplayTimezone(transaction) }}</span>
+                                                        <v-tooltip activator="parent" v-if="!isSameAsDefaultTimezoneOffsetMinutes(transaction)">{{ getDisplayTimeInDefaultTimezone(transaction) }}</v-tooltip>
                                                     </div>
                                                 </td>
                                                 <td class="transaction-table-column-category">
@@ -691,8 +691,6 @@ import {
 import {
     getCurrentUnixTime,
     parseDateTimeFromUnixTime,
-    getBrowserTimezoneOffsetMinutes,
-    getActualUnixTimeForStore,
     getDayFirstUnixTimeBySpecifiedUnixTime,
     getYearMonthFirstUnixTime,
     getYearMonthLastUnixTime,
@@ -775,7 +773,6 @@ const {
     customMinDatetime,
     customMaxDatetime,
     currentCalendarDate,
-    currentTimezoneOffsetMinutes,
     firstDayOfWeek,
     fiscalYearStart,
     defaultCurrency,
@@ -809,6 +806,7 @@ const {
     transactionCalendarMaxDate,
     currentMonthTransactionData,
     hasSubCategoryInQuery,
+    isSameAsDefaultTimezoneOffsetMinutes,
     canAddTransaction,
     getDisplayTime,
     getDisplayLongDate,
@@ -1234,7 +1232,7 @@ function changePageType(type: number): void {
 function changeDateFilter(dateRange: TimeRangeAndDateType | number | null): void {
     if (dateRange === DateRange.Custom.type || (isObject(dateRange) && dateRange.dateType === DateRange.Custom.type && !dateRange.minTime && !dateRange.maxTime)) { // Custom
         if (!query.value.minTime || !query.value.maxTime) {
-            customMaxDatetime.value = getActualUnixTimeForStore(getCurrentUnixTime(), currentTimezoneOffsetMinutes.value, getBrowserTimezoneOffsetMinutes());
+            customMaxDatetime.value = getCurrentUnixTime();
             customMinDatetime.value = getDayFirstUnixTimeBySpecifiedUnixTime(customMaxDatetime.value);
         } else {
             customMaxDatetime.value = query.value.maxTime;
@@ -1763,9 +1761,21 @@ init(props);
     line-height: 1rem;
 }
 
-
 .transaction-list-datetime-range .transaction-list-datetime-range-text {
     color: rgba(var(--v-theme-on-background), var(--v-medium-emphasis-opacity)) !important;
+}
+
+.v-table.transaction-table > .v-table__wrapper > table {
+    th:not(:last-child),
+    td:not(:last-child) {
+        width: auto !important;
+        white-space: nowrap;
+    }
+
+    th:last-child,
+    td:last-child {
+        width: 100% !important;
+    }
 }
 
 .v-table.transaction-table .transaction-list-row-date > td {
@@ -1773,32 +1783,23 @@ init(props);
 }
 
 .transaction-table .transaction-table-column-time {
-    width: 110px;
-    white-space: nowrap;
+    min-width: 110px;
 }
 
 .transaction-table .transaction-table-column-category {
-    width: 140px;
-    white-space: nowrap;
+    min-width: 140px;
 }
 
 .transaction-table .transaction-table-column-amount {
-    width: 120px;
-    white-space: nowrap;
+    min-width: 120px;
 }
 
 .transaction-table .transaction-table-column-account {
-    width: 160px;
-    white-space: nowrap;
+    min-width: 160px;
 }
 
 .transaction-table .transaction-table-column-tags {
-    width: 90px;
-    max-width: 300px;
-}
-
-.transaction-table-column-description {
-    max-width: 300px;
+    min-width: 90px;
 }
 
 .transaction-table .transaction-table-column-category .v-btn,
