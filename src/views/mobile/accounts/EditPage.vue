@@ -233,7 +233,7 @@
                 link="#" no-chevron
                 class="list-item-with-header-and-title"
                 :header="tt('Savings Start Date')"
-                :title="account.savingsStartDate ? formatUnixTimeToLongDate(account.savingsStartDate) : ''"
+                :title="account.savingsStartDate ? formatDateTimeToLongDate(parseDateTimeFromUnixTime(account.savingsStartDate)) : ''"
                 v-if="isAccountSupportSavingsFields"
                 @click="accountContext.showSavingsStartDateSheet = true"
             >
@@ -583,7 +583,7 @@
                     link="#" no-chevron
                     class="list-item-with-header-and-title"
                     :header="tt('Savings Start Date')"
-                    :title="subAccount.savingsStartDate ? formatUnixTimeToLongDate(subAccount.savingsStartDate) : ''"
+                    :title="subAccount.savingsStartDate ? formatDateTimeToLongDate(parseDateTimeFromUnixTime(subAccount.savingsStartDate)) : ''"
                     v-if="subAccount.category === AccountCategory.SavingsAccount.type"
                     @click="subAccountContexts[idx] && (subAccountContexts[idx]!.showSavingsStartDateSheet = true)"
                 >
@@ -676,7 +676,8 @@ import { isDefined, findDisplayNameByType } from '@/lib/common.ts';
 import { generateRandomUUID } from '@/lib/misc.ts';
 import {
     getTimezoneOffsetMinutes,
-    parseDateTimeFromUnixTimeWithTimezoneOffset
+    parseDateTimeFromUnixTimeWithTimezoneOffset,
+    parseDateTimeFromUnixTime
 } from '@/lib/datetime.ts';
 
 interface AccountContext {
@@ -706,7 +707,6 @@ const {
     getCurrencyName,
     formatDateTimeToLongDate,
     formatDateTimeToLongTime,
-    formatUnixTimeToLongDate,
     formatAmountToLocalizedNumeralsWithCurrency
 } = useI18n();
 
