@@ -16,6 +16,7 @@
         "Dutch": "네덜란드어",
         "Portuguese (Brazil)": "포르투갈어 (브라질)",
         "Russian": "러시아어",
+        "Slovenian": "슬로베니아어",
         "Thai": "태국어",
         "Turkish": "터키어",
         "Ukrainian": "우크라이나어",
@@ -96,10 +97,7 @@
             "hh_mm_a": "hh:mm A"
         },
         "yearQuarter": {
-            "q1": "{year}년 1사분기",
-            "q2": "{year}년 2사분기",
-            "q3": "{year}년 3사분기",
-            "q4": "{year}년 4사분기"
+            "content": "{year}년 {quarter}"
         },
         "fiscalYear": {
             "StartYYYY_EndYYYY": "{StartYYYY}-{EndYYYY}년도",
@@ -281,6 +279,12 @@
             "29": "29",
             "30": "30",
             "31": "31"
+        },
+        "quarter": {
+            "q1": "1사분기",
+            "q2": "2사분기",
+            "q3": "3사분기",
+            "q4": "4사분기"
         }
     },
     "granularity": {
