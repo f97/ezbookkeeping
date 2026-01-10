@@ -15,6 +15,9 @@ import {
     ALL_ALLOWED_CLOUD_SYNC_APP_SETTING_KEY_TYPES
 } from '@/core/setting.ts';
 
+
+import { AccountCategory } from '@/core/account.ts';
+
 import {
     isObject,
     isString,
@@ -40,6 +43,8 @@ export const useSettingsStore = defineStore('settings', () => {
     const localeDefaultSettings = ref<LocaleDefaultSettings>(getLocaleDefaultSettings());
 
     const enableApplicationCloudSync = computed<boolean>(() => getObjectOwnFieldCount(syncedAppSettings.value) > 0);
+
+    const accountCategoryDisplayOrders = computed<Record<number, number>>(() => AccountCategory.allDisplayOrders(appSettings.value.accountCategoryOrders));
 
     function updateApplicationSettingsValueAndAppSettingsFromCloudSetting(key: string, value: string | number | boolean | Record<string, boolean>): void {
         const keyItems = key.split('.');
@@ -245,17 +250,38 @@ export const useSettingsStore = defineStore('settings', () => {
         updateUserApplicationCloudSettingValue('alwaysShowTransactionPicturesInMobileTransactionEditPage', value);
     }
 
-    // Insights & Explore Page
-    function setInsightsExploreDefaultDateRangeType(value: number): void {
-        updateApplicationSettingsValue('insightsExploreDefaultDateRangeType', value);
-        appSettings.value.insightsExploreDefaultDateRangeType = value;
-        updateUserApplicationCloudSettingValue('insightsExploreDefaultDateRangeType', value);
+    // Import Transaction Dialog
+    function setRememberLastSelectedFileTypeInImportTransactionDialog(value: boolean): void {
+        updateApplicationSettingsValue('rememberLastSelectedFileTypeInImportTransactionDialog', value);
+        appSettings.value.rememberLastSelectedFileTypeInImportTransactionDialog = value;
+        updateUserApplicationCloudSettingValue('rememberLastSelectedFileTypeInImportTransactionDialog', value);
+
+        if (!value) {
+            setLastSelectedFileTypeInImportTransactionDialog('');
+        }
     }
 
-    function setTimezoneUsedForInsightsExplorePage(value: number): void {
-        updateApplicationSettingsValue('timezoneUsedForInsightsExplorePage', value);
-        appSettings.value.timezoneUsedForInsightsExplorePage = value;
-        updateUserApplicationCloudSettingValue('timezoneUsedForInsightsExplorePage', value);
+    function setLastSelectedFileTypeInImportTransactionDialog(value: string): void {
+        if (!appSettings.value.rememberLastSelectedFileTypeInImportTransactionDialog) {
+            value = '';
+        }
+
+        updateApplicationSettingsValue('lastSelectedFileTypeInImportTransactionDialog', value);
+        appSettings.value.lastSelectedFileTypeInImportTransactionDialog = value;
+        updateUserApplicationCloudSettingValue('lastSelectedFileTypeInImportTransactionDialog', value);
+    }
+
+    // Insights Explorer Page
+    function setInsightsExplorerDefaultDateRangeType(value: number): void {
+        updateApplicationSettingsValue('insightsExplorerDefaultDateRangeType', value);
+        appSettings.value.insightsExplorerDefaultDateRangeType = value;
+        updateUserApplicationCloudSettingValue('insightsExplorerDefaultDateRangeType', value);
+    }
+
+    function setShowTagInInsightsExplorerPage(value: boolean): void {
+        updateApplicationSettingsValue('showTagInInsightsExplorerPage', value);
+        appSettings.value.showTagInInsightsExplorerPage = value;
+        updateUserApplicationCloudSettingValue('showTagInInsightsExplorerPage', value);
     }
 
     // Account List Page
@@ -263,6 +289,18 @@ export const useSettingsStore = defineStore('settings', () => {
         updateApplicationSettingsValue('totalAmountExcludeAccountIds', value);
         appSettings.value.totalAmountExcludeAccountIds = value;
         updateUserApplicationCloudSettingValue('totalAmountExcludeAccountIds', value);
+    }
+
+    function setAccountCategoryOrders(value: string): void {
+        updateApplicationSettingsValue('accountCategoryOrders', value);
+        appSettings.value.accountCategoryOrders = value;
+        updateUserApplicationCloudSettingValue('accountCategoryOrders', value);
+    }
+
+    function setHideCategoriesWithoutAccounts(value: boolean): void {
+        updateApplicationSettingsValue('hideCategoriesWithoutAccounts', value);
+        appSettings.value.hideCategoriesWithoutAccounts = value;
+        updateUserApplicationCloudSettingValue('hideCategoriesWithoutAccounts', value);
     }
 
     // Exchange Rates Data Page
@@ -453,6 +491,7 @@ export const useSettingsStore = defineStore('settings', () => {
         localeDefaultSettings,
         // computed states
         enableApplicationCloudSync,
+        accountCategoryDisplayOrders,
         // functions
         // -- Basic Settings
         setTheme,
@@ -480,11 +519,16 @@ export const useSettingsStore = defineStore('settings', () => {
         setAutoSaveTransactionDraft,
         setAutoGetCurrentGeoLocation,
         setAlwaysShowTransactionPicturesInMobileTransactionEditPage,
-        // -- Insights & Explore Page
-        setInsightsExploreDefaultDateRangeType,
-        setTimezoneUsedForInsightsExplorePage,
+        // -- Import Transaction Dialog
+        setRememberLastSelectedFileTypeInImportTransactionDialog,
+        setLastSelectedFileTypeInImportTransactionDialog,
+        // -- Insights Explorer Page
+        setInsightsExplorerDefaultDateRangeType,
+        setShowTagInInsightsExplorerPage,
         // -- Account List Page
         setTotalAmountExcludeAccountIds,
+        setAccountCategoryOrders,
+        setHideCategoriesWithoutAccounts,
         // -- Exchange Rates Data Page
         setCurrencySortByInExchangeRatesPage,
         // -- Statistics Settings

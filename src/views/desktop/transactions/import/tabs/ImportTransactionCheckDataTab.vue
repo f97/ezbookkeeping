@@ -452,6 +452,7 @@ import {
     mdiAlertOutline,
     mdiPound,
     mdiTextBoxEditOutline,
+    mdiFilterOffOutline,
     mdiShapePlusOutline,
     mdiPencilBoxMultipleOutline,
     mdiNumericPositive1,
@@ -475,7 +476,7 @@ interface ImportTransactionCheckDataFilter {
 }
 
 interface ImportTransactionCheckDataMenuGroup {
-    title: string;
+    title?: string;
     items: ImportTransactionCheckDataMenu[];
 }
 
@@ -538,13 +539,14 @@ const currentDescriptionFilterValue = ref<string | null>(null);
 
 const numeralSystem = computed<NumeralSystem>(() => getCurrentNumeralSystemType());
 const showAccountBalance = computed<boolean>(() => settingsStore.appSettings.showAccountBalance);
+const customAccountCategoryOrder = computed<string>(() => settingsStore.appSettings.accountCategoryOrders);
 
 const defaultCurrency = computed<string>(() => userStore.currentUserDefaultCurrency);
 const coordinateDisplayType = computed<number>(() => userStore.currentUserCoordinateDisplayType);
 
 const allAccounts = computed<Account[]>(() => accountsStore.allPlainAccounts);
 const allVisibleAccounts = computed<Account[]>(() => accountsStore.allVisiblePlainAccounts);
-const allVisibleCategorizedAccounts = computed<CategorizedAccountWithDisplayBalance[]>(() => getCategorizedAccountsWithDisplayBalance(allVisibleAccounts.value, showAccountBalance.value));
+const allVisibleCategorizedAccounts = computed<CategorizedAccountWithDisplayBalance[]>(() => getCategorizedAccountsWithDisplayBalance(allVisibleAccounts.value, showAccountBalance.value, customAccountCategoryOrder.value));
 const allAccountsMap = computed<Record<string, Account>>(() => accountsStore.allAccountsMap);
 const allAccountsMapByName = computed<Record<string, Account>>(() => getAccountMapByName(accountsStore.allAccounts));
 const allCategories = computed<Record<number, TransactionCategory[]>>(() => transactionCategoriesStore.allTransactionCategories);
@@ -560,6 +562,32 @@ const isEditing = computed<boolean>(() => !!editingTransaction.value);
 const canImport = computed<boolean>(() => selectedImportTransactionCount.value > 0 && selectedInvalidTransactionCount.value < 1);
 
 const filterMenus = computed<ImportTransactionCheckDataMenuGroup[]>(() => [
+    {
+        items: [
+            {
+                title: tt('Clear All Filters'),
+                prependIcon: mdiFilterOffOutline,
+                disabled: filters.value.minDatetime === null
+                    && filters.value.maxDatetime === null
+                    && filters.value.transactionType === null
+                    && filters.value.category === null
+                    && filters.value.amount === null
+                    && filters.value.account === null
+                    && filters.value.tag === null
+                    && filters.value.description === null,
+                onClick: () => {
+                    filters.value.minDatetime = null;
+                    filters.value.maxDatetime = null;
+                    filters.value.transactionType = null;
+                    filters.value.category = null;
+                    filters.value.amount = null;
+                    filters.value.account = null;
+                    filters.value.tag = null;
+                    filters.value.description = null;
+                }
+            }
+        ]
+    },
     {
         title: tt('Date Range'),
         items: [
@@ -916,7 +944,8 @@ const importTransactionsTableHeight = computed<number | undefined>(() => {
 
 const importTransactionHeaders = computed<object[]>(() => {
     return [
-        { value: 'valid', sortable: true, nowrap: true, width: 35 },
+        { key: 'data-table-select', fixed: true },
+        { value: 'valid', sortable: true, nowrap: true, width: 35, fixed: true },
         { value: 'time', title: tt('Transaction Time'), sortable: true, nowrap: true },
         { value: 'type', title: tt('Type'), sortable: true, nowrap: true },
         { value: 'actualCategoryName', title: tt('Category'), sortable: true, nowrap: true },

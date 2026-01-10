@@ -16,7 +16,7 @@
             <f7-list-item :title="tt('Build Time')" :after="clientBuildTime" v-if="clientBuildTime"></f7-list-item>
             <f7-list-item :title="tt('Official Website')" link="#" @click="openExternalUrl('https://github.com/mayswind/ezbookkeeping')"></f7-list-item>
             <f7-list-item :title="tt('Report Issue')" link="#" @click="openExternalUrl('https://github.com/mayswind/ezbookkeeping/issues')"></f7-list-item>
-            <f7-list-item :title="tt('Getting help')" link="#" @click="openExternalUrl('https://ezbookkeeping.mayswind.net')"></f7-list-item>
+            <f7-list-item :title="tt('Getting help')" link="#" popup-open=".document-popup"></f7-list-item>
             <f7-list-item :title="tt('License')" link="#" popup-open=".license-popup"></f7-list-item>
         </f7-list>
 
@@ -88,19 +88,18 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr :key="languageTag"
-                            v-for="(languageContributors, languageTag) in contributors.translators"
-                            v-show="!!getLanguageInfo(languageTag)?.displayName">
-                            <td>{{ languageTag }}</td>
-                            <td>{{ getLanguageInfo(languageTag)?.displayName }}</td>
+                        <tr :key="lang.languageTag" v-for="lang in allLanguages">
+                            <td>{{ lang.languageTag }}</td>
+                            <td>{{ lang.nativeDisplayName }}</td>
                             <td>
-                                <template :key="contributor" v-for="(contributor, index) in languageContributors">
+                                <template :key="contributor"
+                                          v-for="(contributor, index) in contributors.translators[lang.languageTag] ?? []">
+                                    <span v-if="index > 0">, </span>
                                     <f7-link target="_blank" @click="openExternalUrl(`https://github.com/${contributor}`)">
                                         @{{ contributor }}
                                     </f7-link>
-                                    <span v-if="index < languageContributors.length - 1">, </span>
                                 </template>
-                                <span v-if="!languageContributors || languageContributors.length < 1">/</span>
+                                <span v-if="!contributors.translators[lang.languageTag] || !contributors.translators[lang.languageTag]?.length">/</span>
                             </td>
                         </tr>
                         </tbody>
@@ -109,13 +108,30 @@
                         <span>ezBookkeeping also contains additional third party software and illustration.</span><br/>
                         <span>All the third party software / illustration included or linked is redistributed under the terms and conditions of their original licenses.</span>
                     </p>
-                    <p :key="license.name" v-for="license in thirdPartyLicenses">
-                        <strong>{{ license.name }}</strong>
-                        <br v-if="license.copyright"/><span v-if="license.copyright">{{ license.copyright }}</span>
-                        <br v-if="license.url"/><span class="work-break-all" v-if="license.url">{{ license.url }}</span>
-                        <br v-if="license.licenseUrl"/><span class="work-break-all" v-if="license.licenseUrl">License: {{ license.licenseUrl }}</span>
+                    <p :key="licenseInfo.name" v-for="licenseInfo in thirdPartyLicenses">
+                        <strong>{{ licenseInfo.name }}</strong>
+                        <br v-if="licenseInfo.copyright"/><span v-if="licenseInfo.copyright">{{ licenseInfo.copyright }}</span>
+                        <br v-if="licenseInfo.licenseUrl"/><span class="work-break-all" v-if="licenseInfo.licenseUrl">{{ licenseInfo.license || 'License' }}: {{ licenseInfo.licenseUrl }}</span>
+                        <br v-if="licenseInfo.url"/><span class="work-break-all" v-if="licenseInfo.url">{{ licenseInfo.url }}</span>
                     </p>
                 </f7-block>
+            </f7-page>
+        </f7-popup>
+
+        <f7-popup push swipe-to-close swipe-handler=".swipe-handler" class="document-popup" @popup:open="onDocumentPopupOpen">
+            <f7-page>
+                <f7-navbar>
+                    <div class="swipe-handler"></div>
+                    <f7-nav-left>
+                        <f7-link popup-close icon-f7="xmark"></f7-link>
+                    </f7-nav-left>
+                    <f7-nav-title class="license-title">{{ tt('Documentation') }}</f7-nav-title>
+                    <f7-nav-right class="navbar-compact-icons">
+                        <f7-link icon-f7="globe" @click="openExternalUrl(documentIframe?.src || documentUrl)"></f7-link>
+                    </f7-nav-right>
+                </f7-navbar>
+                <iframe ref="documentIframe" class="document-iframe" src="about:blank" :style="documentLoading ? 'display: none' : ''"></iframe>
+                <f7-preloader class="document-preloader" size="36" v-if="documentLoading"></f7-preloader>
             </f7-page>
         </f7-popup>
 
@@ -131,13 +147,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, useTemplateRef, onMounted } from 'vue';
 
+import type { LanguageOption } from '@/locales/index.ts';
 import { useI18n } from '@/locales/helpers.ts';
 import { useI18nUIComponents } from '@/lib/ui/mobile.ts';
 import { useAboutPageBase } from '@/views/base/AboutPageBase.ts';
 
-const { tt, getLanguageInfo } = useI18n();
+const { tt, getCurrentLanguageTag, getAllLanguageOptions } = useI18n();
 const { showAlert, openExternalUrl } = useI18nUIComponents();
 const {
     clientVersion,
@@ -155,9 +172,22 @@ const {
     init
 } = useAboutPageBase();
 
+const documentIframe = useTemplateRef<HTMLIFrameElement>('documentIframe');
+
 const showRefreshBrowserCacheSheet = ref<boolean>(false);
 const versionClickCount = ref<number>(0);
+const documentLoading = ref<boolean>(true);
+
+const allLanguages = computed<LanguageOption[]>(() => getAllLanguageOptions(false));
 const forceShowRefreshBrowserCacheMenu = computed<boolean>(() => versionClickCount.value >= 5);
+
+const documentUrl = computed<string>(() => {
+    if (getCurrentLanguageTag() === 'zh-Hans' || getCurrentLanguageTag() === 'zh-Hant') {
+        return 'https://ezbookkeeping.mayswind.net/zh_Hans/faq/';
+    } else {
+        return 'https://ezbookkeeping.mayswind.net/faq/';
+    }
+});
 
 function showVersion(): void {
     let versionMessage = `${tt('Frontend Version')}: ${clientVersion}`;
@@ -173,6 +203,23 @@ function showVersion(): void {
     }
 }
 
+function onDocumentPopupOpen(): void {
+    documentLoading.value = true;
+
+    if (documentIframe.value) {
+        documentIframe.value.src = documentUrl.value;
+    }
+}
+
+onMounted(() => {
+    if (documentIframe.value) {
+        documentIframe.value.onload = () => {
+            documentLoading.value = false;
+            documentIframe.value?.contentWindow?.scrollTo(0, 0);
+        };
+    }
+});
+
 init();
 </script>
 
@@ -184,6 +231,19 @@ init();
 
 .license-content {
     font-size: var(--ebk-license-content-font-size);
+}
+
+.document-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.document-preloader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .contributors-table {

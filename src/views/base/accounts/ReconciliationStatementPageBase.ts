@@ -7,10 +7,13 @@ import { useAccountsStore } from '@/stores/account.ts';
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 
 import type { TypeAndDisplayName } from '@/core/base.ts';
+import type { NumeralSystem } from '@/core/numeral.ts';
 import type { WeekDayValue } from '@/core/datetime.ts';
+import { TimezoneTypeForStatistics } from '@/core/timezone.ts';
 import { TransactionType } from '@/core/transaction.ts';
-import { StatisticsAnalysisType } from '@/core/statistics.ts';
+import { StatisticsAnalysisType, ChartDateAggregationType } from '@/core/statistics.ts';
 import { KnownFileType } from '@/core/file.ts';
+
 import type { Account } from '@/models/account.ts';
 import type { TransactionCategory } from '@/models/transaction_category.ts';
 import type {
@@ -33,6 +36,8 @@ export function useReconciliationStatementPageBase() {
         tt,
         getAllAccountBalanceTrendChartTypes,
         getAllStatisticsDateAggregationTypesWithShortName,
+        getAllTimezoneTypesUsedForStatistics,
+        getCurrentNumeralSystemType,
         formatDateTimeToLongDateTime,
         formatDateTimeToLongDate,
         formatDateTimeToShortTime,
@@ -49,13 +54,17 @@ export function useReconciliationStatementPageBase() {
     const startTime = ref<number>(0);
     const endTime = ref<number>(0);
     const reconciliationStatements = ref<TransactionReconciliationStatementResponseWithInfo | undefined>(undefined);
+    const chartDataDateAggregationType = ref<number>(ChartDateAggregationType.Day.type);
+    const timezoneUsedForDateRange = ref<number>(TimezoneTypeForStatistics.ApplicationTimezone.type);
 
+    const numeralSystem = computed<NumeralSystem>(() => getCurrentNumeralSystemType());
     const firstDayOfWeek = computed<WeekDayValue>(() => userStore.currentUserFirstDayOfWeek);
     const fiscalYearStart = computed<number>(() => userStore.currentUserFiscalYearStart);
     const defaultCurrency = computed<string>(() => userStore.currentUserDefaultCurrency);
 
     const allChartTypes = computed<TypeAndDisplayName[]>(() => getAllAccountBalanceTrendChartTypes());
     const allDateAggregationTypes = computed<TypeAndDisplayName[]>(() => getAllStatisticsDateAggregationTypesWithShortName(StatisticsAnalysisType.AssetTrends));
+    const allTimezoneTypesUsedForDateRange = computed<TypeAndDisplayName[]>(() => getAllTimezoneTypesUsedForStatistics());
 
     const currentAccount = computed(() => allAccountsMap.value[accountId.value]);
     const currentAccountCurrency = computed<string>(() => currentAccount.value?.currency ?? defaultCurrency.value);
@@ -182,6 +191,13 @@ export function useReconciliationStatementPageBase() {
         return `UTC${getUtcOffsetByUtcOffsetMinutes(transaction.utcOffset)}`;
     }
 
+    function getDisplayTimeInDefaultTimezone(transaction: TransactionReconciliationStatementResponseItemWithInfo): string {
+        const timezoneOffsetMinutes = getTimezoneOffsetMinutes(transaction.time);
+        const dateTime = parseDateTimeFromUnixTimeWithTimezoneOffset(transaction.time, timezoneOffsetMinutes);
+        const utcOffset = numeralSystem.value.replaceWesternArabicDigitsToLocalizedDigits(getUtcOffsetByUtcOffsetMinutes(timezoneOffsetMinutes));
+        return `${formatDateTimeToLongDateTime(dateTime)} (UTC${utcOffset})`;
+    }
+
     function getDisplaySourceAmount(transaction: TransactionReconciliationStatementResponseItemWithInfo): string {
         const currency = transaction.sourceAccount?.currency ?? defaultCurrency.value;
         return formatAmountToLocalizedNumeralsWithCurrency(transaction.sourceAmount, currency);
@@ -286,12 +302,15 @@ export function useReconciliationStatementPageBase() {
         startTime,
         endTime,
         reconciliationStatements,
+        chartDataDateAggregationType,
+        timezoneUsedForDateRange,
         // computed states
         firstDayOfWeek,
         fiscalYearStart,
         defaultCurrency,
         allChartTypes,
         allDateAggregationTypes,
+        allTimezoneTypesUsedForDateRange,
         currentAccount,
         currentAccountCurrency,
         isCurrentLiabilityAccount,
@@ -311,6 +330,7 @@ export function useReconciliationStatementPageBase() {
         getDisplayTime,
         isSameAsDefaultTimezoneOffsetMinutes,
         getDisplayTimezone,
+        getDisplayTimeInDefaultTimezone,
         getDisplaySourceAmount,
         getDisplayDestinationAmount,
         getDisplayAccountBalance,

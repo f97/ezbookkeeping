@@ -275,6 +275,7 @@ type SnackBarType = InstanceType<typeof SnackBar>;
 
 const { tt } = useI18n();
 const {
+    defaultAccountCategory,
     editAccountId,
     clientSessionId,
     loading,
@@ -326,7 +327,7 @@ const accountAmountTitle = computed<string>(() => {
 
 const isAccountModified = computed<boolean>(() => {
     if (!editAccountId.value) {
-        return !account.value.equals(Account.createNewAccount(userStore.currentUserDefaultCurrency, account.value.balanceTime ?? getCurrentUnixTimeForNewAccount()));
+        return !account.value.equals(Account.createNewAccount(defaultAccountCategory, userStore.currentUserDefaultCurrency, account.value.balanceTime ?? getCurrentUnixTimeForNewAccount()));
     } else {
         return true;
     }
@@ -340,7 +341,7 @@ function open(options?: { id?: string, currentAccount?: Account, category?: numb
     loading.value = true;
     submitting.value = false;
 
-    const newAccount = Account.createNewAccount(userStore.currentUserDefaultCurrency, getCurrentUnixTimeForNewAccount());
+    const newAccount = Account.createNewAccount(defaultAccountCategory, userStore.currentUserDefaultCurrency, getCurrentUnixTimeForNewAccount());
     account.value.fillFrom(newAccount);
     subAccounts.value = [];
     currentAccountIndex.value = -1;
