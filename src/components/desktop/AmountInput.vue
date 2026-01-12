@@ -1,7 +1,7 @@
 <template>
     <v-text-field type="text" class="text-field-with-colored-label" :class="extraClass"
                   :color="color" :base-color="color"
-                  :density="density" :variant="variant"
+                  :density="density" :variant="variant" :autofocus="autofocus"
                   :readonly="!!readonly" :disabled="!!disabled"
                   :label="label" :placeholder="placeholder"
                   :persistent-placeholder="!!persistentPlaceholder"
@@ -68,7 +68,11 @@ import SnackBar from '@/components/desktop/SnackBar.vue';
 import { ref, computed, useTemplateRef, watch } from 'vue';
 
 import { useI18n } from '@/locales/helpers.ts';
-import { type CommonNumberInputProps, useCommonNumberInputBase } from '@/components/base/CommonNumberInputBase.ts';
+import {
+    type CommonNumberInputProps,
+    type CommonNumberInputEmits,
+    useCommonNumberInputBase
+} from '@/components/base/CommonNumberInputBase.ts';
 
 import { NumeralSystem, DecimalSeparator } from '@/core/numeral.ts';
 import type { CurrencyPrependAndAppendText } from '@/core/currency.ts';
@@ -92,6 +96,7 @@ interface DesktopAmountInputProps extends CommonNumberInputProps {
     color?: string;
     density?: ComponentDensity;
     variant?: InputVariant;
+    autofocus?: boolean;
     currency: string;
     showCurrency?: boolean;
     persistentPlaceholder?: boolean;
@@ -102,10 +107,7 @@ interface DesktopAmountInputProps extends CommonNumberInputProps {
 }
 
 const props = defineProps<DesktopAmountInputProps>();
-
-const emit = defineEmits<{
-    (e: 'update:modelValue', value: number): void;
-}>();
+const emit = defineEmits<CommonNumberInputEmits>();
 
 const {
     tt,
@@ -120,7 +122,7 @@ const {
     currentValue,
     onKeyUpDown,
     onPaste
-} = useCommonNumberInputBase(props, DEFAULT_DECIMAL_NUMBER_COUNT, getInitedFormattedValue(props.modelValue, props.flipNegative), parseAmountFromLocalizedNumerals, getFormattedValue, getValidFormattedValue);
+} = useCommonNumberInputBase(props, emit, DEFAULT_DECIMAL_NUMBER_COUNT, getInitedFormattedValue(props.modelValue, props.flipNegative), parseAmountFromLocalizedNumerals, getFormattedValue, getValidFormattedValue);
 
 const snackbar = useTemplateRef<SnackBarType>('snackbar');
 
