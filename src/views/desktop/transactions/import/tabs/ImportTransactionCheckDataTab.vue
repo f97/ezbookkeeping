@@ -49,15 +49,15 @@
                                      @click="selectInvert"></v-list-item>
                         <v-divider class="my-2"/>
                         <v-list-item :prepend-icon="mdiSelectAll"
-                                     :title="tt('Select All in This Page')"
+                                     :title="tt('Select All on This Page')"
                                      :disabled="!!disabled"
                                      @click="selectAllInThisPage"></v-list-item>
                         <v-list-item :prepend-icon="mdiSelect"
-                                     :title="tt('Select None in This Page')"
+                                     :title="tt('Select None on This Page')"
                                      :disabled="!!disabled"
                                      @click="selectNoneInThisPage"></v-list-item>
                         <v-list-item :prepend-icon="mdiSelectInverse"
-                                     :title="tt('Invert Selection in This Page')"
+                                     :title="tt('Invert Selection on This Page')"
                                      :disabled="!!disabled"
                                      @click="selectInvertInThisPage"></v-list-item>
                     </v-list>
@@ -265,7 +265,7 @@
                     density="compact" variant="plain"
                     :disabled="!!disabled"
                     :placeholder="tt('None')"
-                    :items="allTags"
+                    :items="allTagsWithGroupHeader"
                     :no-data-text="tt('No available tag')"
                     v-model="editingTags"
                 >
@@ -277,8 +277,12 @@
                                 v-bind="props"/>
                     </template>
 
+                    <template #subheader="{ props }">
+                        <v-list-subheader>{{ props['title'] }}</v-list-subheader>
+                    </template>
+
                     <template #item="{ props, item }">
-                        <v-list-item :value="item.value" v-bind="props" v-if="!item.raw.hidden">
+                        <v-list-item :value="item.value" v-bind="props" v-if="item.raw instanceof TransactionTag && !item.raw.hidden">
                             <template #title>
                                 <v-list-item-title>
                                     <div class="d-flex align-center">
@@ -403,6 +407,7 @@ import BatchCreateDialog, { type BatchCreateDialogDataType } from '../dialogs/Ba
 import { ref, computed, useTemplateRef } from 'vue';
 
 import { useI18n } from '@/locales/helpers.ts';
+import { useTransactionTagSelectionBase } from '@/components/base/TransactionTagSelectionBase.ts';
 
 import { useSettingsStore } from '@/stores/setting.ts';
 import { useUserStore } from '@/stores/user.ts';
@@ -414,15 +419,18 @@ import { type NameValue, type NameNumeralValue, itemAndIndex, reversed, keys } f
 import { type NumeralSystem, AmountFilterType } from '@/core/numeral.ts';
 import { CategoryType } from '@/core/category.ts';
 import { TransactionType } from '@/core/transaction.ts';
+import { KnownFileType } from '@/core/file.ts';
+import { ImportTransactionColumnType } from '@/core/import_transaction.ts';
 
 import { Account, type CategorizedAccountWithDisplayBalance } from '@/models/account.ts';
 import type { TransactionCategory } from '@/models/transaction_category.ts';
-import type { TransactionTag } from '@/models/transaction_tag.ts';
+import { TransactionTag } from '@/models/transaction_tag.ts';
 import { ImportTransaction } from '@/models/imported_transaction.ts';
 
 import {
     isString,
     isNumber,
+    replaceAll,
     objectFieldToArrayItem
 } from '@/lib/common.ts';
 import {
@@ -432,15 +440,14 @@ import {
     parseDateTimeFromUnixTimeWithTimezoneOffset
 } from '@/lib/datetime.ts';
 import { formatCoordinate } from '@/lib/coordinate.ts';
-import {
-    getAccountMapByName
-} from '@/lib/account.ts';
+import { getAccountMapByName } from '@/lib/account.ts';
 import {
     transactionTypeToCategoryType,
     getSecondaryTransactionMapByName,
     getTransactionPrimaryCategoryName,
     getTransactionSecondaryCategoryName
 } from '@/lib/category.ts';
+import { startDownloadFile } from '@/lib/ui/common.ts';
 
 import {
     mdiCheck,
@@ -456,7 +463,9 @@ import {
     mdiShapePlusOutline,
     mdiPencilBoxMultipleOutline,
     mdiNumericPositive1,
-    mdiNumericNegative1
+    mdiNumericNegative1,
+    mdiComma,
+    mdiKeyboardTab
 } from '@mdi/js';
 
 type SnackBarType = InstanceType<typeof SnackBar>;
@@ -499,9 +508,13 @@ const {
     tt,
     getCurrentNumeralSystemType,
     formatDateTimeToLongDateTime,
+    formatDateTimeToGregorianDefaultDateTime,
+    formatAmountToWesternArabicNumeralsWithoutDigitGrouping,
     formatAmountToLocalizedNumeralsWithCurrency,
     getCategorizedAccountsWithDisplayBalance
 } = useI18n();
+
+const { allTagsWithGroupHeader } = useTransactionTagSelectionBase({ modelValue: [] }, false);
 
 const settingsStore = useSettingsStore();
 const userStore = useUserStore();
@@ -551,7 +564,6 @@ const allAccountsMap = computed<Record<string, Account>>(() => accountsStore.all
 const allAccountsMapByName = computed<Record<string, Account>>(() => getAccountMapByName(accountsStore.allAccounts));
 const allCategories = computed<Record<number, TransactionCategory[]>>(() => transactionCategoriesStore.allTransactionCategories);
 const allCategoriesMap = computed<Record<string, TransactionCategory>>(() => transactionCategoriesStore.allTransactionCategoriesMap);
-const allTags = computed<TransactionTag[]>(() => transactionTagsStore.allTransactionTags);
 const allTagsMap = computed<Record<string, TransactionTag>>(() => transactionTagsStore.allTransactionTagsMap);
 
 const hasVisibleExpenseCategories = computed<boolean>(() => transactionCategoriesStore.hasVisibleExpenseCategories);
@@ -931,6 +943,19 @@ const toolMenus = computed<ImportTransactionCheckDataMenu[]>(() => [
         title: tt('Batch Convert Selected Amounts to Negative Values'),
         disabled: isEditing.value || selectedImportTransactionCount.value < 1,
         onClick: () => convertTransactionAmountSign(-1)
+    },
+    {
+        prependIcon: mdiComma,
+        title: tt('Export to CSV (Comma-separated values) File'),
+        disabled: isEditing.value || selectedImportTransactionCount.value < 1,
+        divider: true,
+        onClick: () => exportData(KnownFileType.CSV)
+    },
+    {
+        prependIcon: mdiKeyboardTab,
+        title: tt('Export to TSV (Tab-separated values) File'),
+        disabled: isEditing.value || selectedImportTransactionCount.value < 1,
+        onClick: () => exportData(KnownFileType.TSV)
     }
 ]);
 
@@ -1312,6 +1337,20 @@ function isSameAsDefaultTimezoneOffsetMinutes(transaction: ImportTransaction): b
 
 function getDisplayTimezone(transaction: ImportTransaction): string {
     return `UTC${getUtcOffsetByUtcOffsetMinutes(transaction.utcOffset)}`;
+}
+
+function getDisplayTransactionType(transaction: ImportTransaction): string {
+    if (transaction.type === TransactionType.ModifyBalance) {
+        return tt('Modify Balance');
+    } else if (transaction.type === TransactionType.Income) {
+        return tt('Income');
+    } else if (transaction.type === TransactionType.Expense) {
+        return tt('Expense');
+    } else if (transaction.type === TransactionType.Transfer) {
+        return tt('Transfer');
+    } else {
+        return tt('Unknown');
+    }
 }
 
 function getDisplayCurrency(value: number, currencyCode: string): string {
@@ -2071,6 +2110,94 @@ function changeCustomDateFilter(minTime: number, maxTime: number): void {
     filters.value.minDatetime = minTime;
     filters.value.maxDatetime = maxTime;
     showCustomDateRangeDialog.value = false;
+}
+
+function exportData(fileType: KnownFileType): void {
+    if (!props.importTransactions || props.importTransactions.length < 1 || selectedImportTransactionCount.value < 1) {
+        return;
+    }
+
+    let separator = ',';
+
+    if (fileType === KnownFileType.TSV) {
+        separator = '\t';
+    }
+
+    const header = [
+        tt(ImportTransactionColumnType.TransactionTime.name),
+        tt(ImportTransactionColumnType.TransactionTimezone.name),
+        tt(ImportTransactionColumnType.TransactionType.name),
+        tt(ImportTransactionColumnType.Category.name),
+        tt(ImportTransactionColumnType.AccountName.name),
+        tt(ImportTransactionColumnType.AccountCurrency.name),
+        tt(ImportTransactionColumnType.Amount.name),
+        tt(ImportTransactionColumnType.RelatedAccountName.name),
+        tt(ImportTransactionColumnType.RelatedAccountCurrency.name),
+        tt(ImportTransactionColumnType.RelatedAmount.name),
+        tt(ImportTransactionColumnType.GeographicLocation.name),
+        tt(ImportTransactionColumnType.Tags.name),
+        tt(ImportTransactionColumnType.Description.name)
+    ].join(separator) + '\n';
+
+    const transactions = props.importTransactions ?? [];
+    const rows = transactions.filter(transaction => transaction.selected).map(transaction => {
+        const transactionTime = parseDateTimeFromUnixTimeWithTimezoneOffset(transaction.time, transaction.utcOffset);
+        const type = getDisplayTransactionType(transaction);
+        const accountName = transaction.sourceAccountId && transaction.sourceAccountId !== '0' && allAccountsMap.value[transaction.sourceAccountId] ? (allAccountsMap.value[transaction.sourceAccountId]?.name ?? transaction.originalSourceAccountName) : transaction.originalSourceAccountName;
+        const amountCurrency = transaction.sourceAccountId && transaction.sourceAccountId !== '0' && allAccountsMap.value[transaction.sourceAccountId] ? (allAccountsMap.value[transaction.sourceAccountId]?.currency ?? transaction.originalSourceAccountCurrency) : transaction.originalSourceAccountCurrency;
+        const amount = formatAmountToWesternArabicNumeralsWithoutDigitGrouping(transaction.sourceAmount);
+        const geographicLocation = transaction.geoLocation ? `${transaction.geoLocation.longitude} ${transaction.geoLocation.latitude}` : '';
+        let categoryName = transaction.categoryId && transaction.categoryId !== '0' && allCategoriesMap.value[transaction.categoryId] ? (allCategoriesMap.value[transaction.categoryId]?.name ?? transaction.originalCategoryName) : transaction.originalCategoryName;
+        let relatedAccountName: string | undefined = undefined;
+        let relatedAccountCurrency: string | undefined = undefined;
+        let relatedAmount: string | undefined = undefined;
+
+        if (transaction.type === TransactionType.ModifyBalance) {
+            categoryName = '';
+        } else if (transaction.type === TransactionType.Transfer) {
+            relatedAccountName = transaction.destinationAccountId && transaction.destinationAccountId !== '0' && allAccountsMap.value[transaction.destinationAccountId] ? (allAccountsMap.value[transaction.destinationAccountId]?.name ?? transaction.originalDestinationAccountName) : transaction.originalDestinationAccountName;
+            relatedAccountCurrency = transaction.destinationAccountId && transaction.destinationAccountId !== '0' && allAccountsMap.value[transaction.destinationAccountId] ? (allAccountsMap.value[transaction.destinationAccountId]?.currency ?? transaction.originalDestinationAccountCurrency) : transaction.originalDestinationAccountCurrency;
+            relatedAmount = formatAmountToWesternArabicNumeralsWithoutDigitGrouping(transaction.destinationAmount);
+        }
+
+        const tagNames: string[] = [];
+
+        if (transaction.tagIds && transaction.tagIds.length > 0) {
+            for (const [tagId, index] of itemAndIndex(transaction.tagIds)) {
+                let tagName = '';
+
+                if (tagId && tagId !== '0' && allTagsMap.value[tagId]) {
+                    tagName = allTagsMap.value[tagId]!.name;
+                } else if (transaction.originalTagNames && transaction.originalTagNames[index]) {
+                    tagName = transaction.originalTagNames[index] as string;
+                }
+
+                if (tagName) {
+                    tagName = replaceAll(tagName, separator, ' ');
+                    tagName = replaceAll(tagName, ';', ' ');
+                    tagNames.push(tagName);
+                }
+            }
+        }
+
+        return [
+            formatDateTimeToGregorianDefaultDateTime(transactionTime),
+            getUtcOffsetByUtcOffsetMinutes(transaction.utcOffset),
+            type,
+            replaceAll(categoryName, separator, ' '),
+            replaceAll(accountName, separator, ' '),
+            amountCurrency,
+            amount,
+            replaceAll(relatedAccountName ?? '', separator, ' '),
+            relatedAccountCurrency ?? '',
+            relatedAmount ?? '',
+            geographicLocation,
+            tagNames.join(';'),
+            replaceAll(transaction.comment || '', separator, ' ')
+        ].join(separator);
+    });
+
+    startDownloadFile(fileType.formatFileName(tt('dataExport.defaultImportCheckResultFileName')), fileType.createBlob(header + rows.join('\n')));
 }
 
 function onShowDateRangeError(message: string): void {

@@ -9,6 +9,7 @@ import ko from './ko.json';
 import nl from './nl.json';
 import ru from './ru.json';
 import sl from './sl.json';
+import ta from './ta.json';
 import th from './th.json';
 import tr from './tr.json';
 import uk from './uk.json';
@@ -119,6 +120,13 @@ export const ALL_LANGUAGES: Record<string, LanguageInfo> = {
         alternativeLanguageTag: 'sl-SI',
         textDirection: 'ltr',
         content: sl
+    },
+    'ta': {
+        name: 'Tamil',
+        displayName: 'தமிழ்',
+        alternativeLanguageTag: 'ta-IN',
+        textDirection: 'ltr',
+        content: ta
     },
     'th': {
         name: 'Thai',

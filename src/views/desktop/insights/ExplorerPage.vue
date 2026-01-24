@@ -8,8 +8,13 @@
                             <btn-vertical-group :disabled="loading || updating" :buttons="allTabs" v-model="activeTab" />
                         </div>
                         <v-divider />
-                        <v-tabs show-arrows class="my-4" direction="vertical" :key="currentExplorer.id"
-                                :disabled="loading || updating" :model-value="currentExplorer.id">
+                        <v-tabs show-arrows
+                                class="scrollable-vertical-tabs"
+                                style="max-height: calc(100% - 150px)"
+                                direction="vertical"
+                                :prev-icon="mdiMenuUp" :next-icon="mdiMenuDown"
+                                :key="currentExplorer.id" :disabled="loading || updating"
+                                :model-value="currentExplorer.id">
                             <v-tab class="tab-text-truncate" key="new" value="" @click="createNewExplorer">
                                 <span class="text-truncate">{{ tt('New Explorer') }}</span>
                             </v-tab>
@@ -19,11 +24,10 @@
                                    @click="loadExplorer(explorer.id)">
                                 <span class="text-truncate">{{ explorer.name || tt('Untitled Explorer') }}</span>
                             </v-tab>
-                            <v-btn class="text-left justify-start" variant="text" color="default"
-                                   :disabled="loading || updating || !allExplorers || allExplorers.length < 1" :rounded="false"
-                                   @click="showAllExplorers">
-                                <span class="ps-2">{{ tt('More Explorer') }}</span>
-                            </v-btn>
+                            <template v-if="loading && (!allExplorers || allExplorers.length < 1)">
+                                <v-skeleton-loader class="skeleton-no-margin mx-5 mt-4 mb-3" type="text"
+                                                   :key="itemIdx" :loading="true" v-for="itemIdx in [ 1, 2, 3, 4, 5 ]"></v-skeleton-loader>
+                            </template>
                         </v-tabs>
                     </v-navigation-drawer>
                     <v-main>
@@ -127,6 +131,11 @@
                                                 <v-list-item :prepend-icon="mdiDeleteOutline" @click="removeExplorer" v-if="currentExplorer.id">
                                                     <v-list-item-title>{{ tt('Delete Explorer') }}</v-list-item-title>
                                                 </v-list-item>
+                                                <v-divider class="my-2"/>
+                                                <v-list-item :prepend-icon="mdiSort"
+                                                             :disabled="!allExplorers || allExplorers.length < 2"
+                                                             :title="tt('Change Explorer Display Order')"
+                                                             @click="showChangeExplorerDisplayOrderDialog"></v-list-item>
                                             </v-list>
                                         </v-menu>
                                     </v-btn>
@@ -161,23 +170,25 @@
                                  @dateRange:change="setCustomDateFilter"
                                  @error="onShowDateRangeError" />
 
-    <explorer-list-dialog ref="explorerListDialog" />
-    <explorer-rename-dialog ref="explorerRenameDialog" />
+    <explorer-change-display-order-dialog ref="explorerChangeDisplayOrderDialog" />
     <edit-dialog ref="editDialog" :type="TransactionEditPageType.Transaction" />
     <export-dialog ref="exportDialog" />
 
+    <rename-dialog ref="renameDialog"
+                   :default-title="tt('Rename Explorer')"
+                   :label="tt('Explorer Name')" :placeholder="tt('Explorer Name')" />
     <confirm-dialog ref="confirmDialog"/>
     <snack-bar ref="snackbar" />
 </template>
 
 <script setup lang="ts">
+import RenameDialog from '@/components/desktop/RenameDialog.vue';
 import ConfirmDialog from '@/components/desktop/ConfirmDialog.vue';
 import SnackBar from '@/components/desktop/SnackBar.vue';
 import ExplorerQueryTab from '@/views/desktop/insights/tabs/ExplorerQueryTab.vue';
 import ExplorerDataTableTab from '@/views/desktop/insights/tabs/ExplorerDataTableTab.vue';
 import ExplorerChartTab from '@/views/desktop/insights/tabs/ExplorerChartTab.vue';
-import ExplorerListDialog from '@/views/desktop/insights/dialogs/ExplorerListDialog.vue';
-import ExplorerRenameDialog from '@/views/desktop/insights/dialogs/ExplorerRenameDialog.vue';
+import ExplorerChangeDisplayOrderDialog from '@/views/desktop/insights/dialogs/ExplorerChangeDisplayOrderDialog.vue';
 import EditDialog from '@/views/desktop/transactions/list/dialogs/EditDialog.vue';
 import ExportDialog from '@/views/desktop/statistics/transaction/dialogs/ExportDialog.vue';
 
@@ -215,6 +226,8 @@ import {
     mdiMenu,
     mdiArrowLeft,
     mdiArrowRight,
+    mdiMenuUp,
+    mdiMenuDown,
     mdiCheck,
     mdiRefresh,
     mdiDotsVertical,
@@ -222,6 +235,7 @@ import {
     mdiEyeOutline,
     mdiEyeOffOutline,
     mdiDeleteOutline,
+    mdiSort,
     mdiHomeClockOutline,
     mdiInvoiceTextClockOutline,
     mdiExport
@@ -239,12 +253,12 @@ const props = defineProps<InsightsExplorerProps>();
 
 type ExplorerPageTabType = 'query' | 'table' | 'chart';
 
+type RenameDialogType = InstanceType<typeof RenameDialog>;
 type ConfirmDialogType = InstanceType<typeof ConfirmDialog>;
 type SnackBarType = InstanceType<typeof SnackBar>;
 type ExplorerDataTableTabType = InstanceType<typeof ExplorerDataTableTab>;
 type ExplorerChartTabType = InstanceType<typeof ExplorerChartTab>;
-type ExplorerListDialogType = InstanceType<typeof ExplorerListDialog>;
-type ExplorerRenameDialogType = InstanceType<typeof ExplorerRenameDialog>;
+type ExplorerChangeDisplayOrderDialogType = InstanceType<typeof ExplorerChangeDisplayOrderDialog>;
 type EditDialogType = InstanceType<typeof EditDialog>;
 type ExportDialogType = InstanceType<typeof ExportDialog>;
 
@@ -270,12 +284,12 @@ const timezoneTypeIconMap = {
     [TimezoneTypeForStatistics.TransactionTimezone.type]: mdiInvoiceTextClockOutline
 };
 
+const renameDialog = useTemplateRef<RenameDialogType>('renameDialog');
 const confirmDialog = useTemplateRef<ConfirmDialogType>('confirmDialog');
 const snackbar = useTemplateRef<SnackBarType>('snackbar');
 const explorerDataTableTab = useTemplateRef<ExplorerDataTableTabType>('explorerDataTableTab');
 const explorerChartTab = useTemplateRef<ExplorerChartTabType>('explorerChartTab');
-const explorerListDialog = useTemplateRef<ExplorerListDialogType>('explorerListDialog');
-const explorerRenameDialog = useTemplateRef<ExplorerRenameDialogType>('explorerRenameDialog');
+const explorerChangeDisplayOrderDialog = useTemplateRef<ExplorerChangeDisplayOrderDialogType>('explorerChangeDisplayOrderDialog');
 const exportDialog = useTemplateRef<ExportDialogType>('exportDialog');
 const editDialog = useTemplateRef<EditDialogType>('editDialog');
 
@@ -293,15 +307,10 @@ const firstDayOfWeek = computed<WeekDayValue>(() => userStore.currentUserFirstDa
 const fiscalYearStart = computed<number>(() => userStore.currentUserFiscalYearStart);
 
 const allExplorers = computed<InsightsExplorerBasicInfo[]>(() => {
-    const maximumExplorersToShow = 14;
     const ret: InsightsExplorerBasicInfo[] = [];
     let hasCurrentExplorer = false;
 
     for (const explorer of explorersStore.allInsightsExplorerBasicInfos) {
-        if (ret.length >= maximumExplorersToShow) {
-            break;
-        }
-
         if (!explorer.hidden || (explorer.id && explorer.id === currentExplorer.value.id)) {
             ret.push(explorer);
 
@@ -312,23 +321,7 @@ const allExplorers = computed<InsightsExplorerBasicInfo[]>(() => {
     }
 
     if (!hasCurrentExplorer && currentExplorer.value && currentExplorer.value.id) {
-        if (ret.length >= maximumExplorersToShow) {
-            ret.pop();
-        }
-
-        let foundCurrentExplorer = false;
-
-        for (const explorer of explorersStore.allInsightsExplorerBasicInfos) {
-            if (explorer.id === currentExplorer.value.id) {
-                ret.push(explorer);
-                foundCurrentExplorer = true;
-                break;
-            }
-        }
-
-        if (!foundCurrentExplorer) {
-            ret.push(InsightsExplorerBasicInfo.of(currentExplorer.value));
-        }
+        ret.push(InsightsExplorerBasicInfo.of(currentExplorer.value));
     }
 
     return ret;
@@ -399,7 +392,7 @@ function init(initProps: InsightsExplorerProps): void {
         if (explorersStore.currentInsightsExplorer.id !== initProps.initId) {
             needReload = true;
         }
-    } else {
+    } else if (!initProps.initId && !initProps.initActiveTab && !initProps.initDateRangeType && !initProps.initStartTime && !initProps.initEndTime) { // first time open the page
         explorersStore.updateCurrentInsightsExplorer(InsightsExplorer.createNewExplorer(generateRandomUUID()));
         isCurrentExplorerModified.value = true;
     }
@@ -506,12 +499,8 @@ function loadExplorer(explorerId: string, force?: boolean, init?: boolean): Prom
     });
 }
 
-function showAllExplorers(): void {
-    explorerListDialog.value?.open().then((selectedExplorer: InsightsExplorerBasicInfo) => {
-        if (selectedExplorer) {
-            loadExplorer(selectedExplorer.id);
-        }
-    }).catch(() => {
+function showChangeExplorerDisplayOrderDialog(): void {
+    explorerChangeDisplayOrderDialog.value?.open().then(() => {
         if (explorersStore.insightsExplorerListStateInvalid) {
             loading.value = true;
 
@@ -528,7 +517,7 @@ function showAllExplorers(): void {
 
 function saveExplorer(saveAs?: boolean): void {
     if (saveAs || !currentExplorer.value.name) {
-        explorerRenameDialog.value?.open(currentExplorer.value.name || '', tt('Set Explorer Name')).then((newName: string) => {
+        renameDialog.value?.open(currentExplorer.value.name || '', tt('Set Explorer Name')).then((newName: string) => {
             currentExplorer.value.name = newName;
             doSaveExplorer(saveAs);
         })
@@ -584,7 +573,7 @@ function restoreExplorer(): void {
 }
 
 function setExplorerName(): void {
-    explorerRenameDialog.value?.open(currentExplorer.value.name || '').then((newName: string) => {
+    renameDialog.value?.open(currentExplorer.value.name || '').then((newName: string) => {
         currentExplorer.value.name = newName;
     });
 }

@@ -26,7 +26,8 @@ import { Transaction } from '@/models/transaction.ts';
 import { TransactionTemplate } from '@/models/transaction_template.ts';
 
 import {
-    isArray
+    isArray,
+    isDefined
 } from '@/lib/common.ts';
 
 import {
@@ -109,7 +110,6 @@ export function useTransactionEditPageBase(type: TransactionEditPageType, initMo
     const allVisibleCategorizedAccounts = computed<CategorizedAccountWithDisplayBalance[]>(() => getCategorizedAccountsWithDisplayBalance(allVisibleAccounts.value, showAccountBalance.value, customAccountCategoryOrder.value));
     const allCategories = computed<Record<number, TransactionCategory[]>>(() => transactionCategoriesStore.allTransactionCategories);
     const allCategoriesMap = computed<Record<string, TransactionCategory>>(() => transactionCategoriesStore.allTransactionCategoriesMap);
-    const allTags = computed<TransactionTag[]>(() => transactionTagsStore.allTransactionTags);
     const allTagsMap = computed<Record<string, TransactionTag>>(() => transactionTagsStore.allTransactionTagsMap);
     const firstVisibleAccountId = computed<string | undefined>(() => allVisibleAccounts.value && allVisibleAccounts.value[0] ? allVisibleAccounts.value[0].id : undefined);
 
@@ -422,6 +422,26 @@ export function useTransactionEditPageBase(type: TransactionEditPageType, initMo
         }
     });
 
+    // Watch for account changes and recalculate destination amount for transfers
+    watch(() => [transaction.value.sourceAccountId, transaction.value.destinationAccountId], ([newSourceAccountId, newDestinationAccountId], [oldSourceAccountId, oldDestinationAccountId]) => {
+        if (mode.value === TransactionEditPageMode.View || loading.value) {
+            return;
+        }
+
+        if (transaction.value.type !== TransactionType.Transfer) {
+            return;
+        }
+
+        // Only recalculate if accounts actually changed (skip initial watch call)
+        if (isDefined(oldSourceAccountId) && isDefined(oldDestinationAccountId)) {
+            if (newSourceAccountId === oldSourceAccountId && newDestinationAccountId === oldDestinationAccountId) {
+                return;
+            }
+        }
+
+        transactionsStore.setTransactionSuitableDestinationAmount(transaction.value, transaction.value.sourceAmount, transaction.value.sourceAmount, oldSourceAccountId, oldDestinationAccountId);
+    });
+
     return {
         // constants
         isSupportGeoLocation,
@@ -452,7 +472,6 @@ export function useTransactionEditPageBase(type: TransactionEditPageType, initMo
         allVisibleCategorizedAccounts,
         allCategories,
         allCategoriesMap,
-        allTags,
         allTagsMap,
         firstVisibleAccountId,
         hasVisibleExpenseCategories,

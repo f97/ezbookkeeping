@@ -129,7 +129,7 @@ Currently available translations:
 | --- | --- | --- |
 | de | Deutsch | [@chrgm](https://github.com/chrgm) |
 | en | English | / |
-| es | Español | [@Miguelonlonlon](https://github.com/Miguelonlonlon), [@abrugues](https://github.com/abrugues) |
+| es | Español | [@Miguelonlonlon](https://github.com/Miguelonlonlon), [@abrugues](https://github.com/abrugues), [@AndresTeller](https://github.com/AndresTeller), [@diegofercri](https://github.com/diegofercri) |
 | fr | Français | [@brieucdlf](https://github.com/brieucdlf) |
 | it | Italiano | [@waron97](https://github.com/waron97) |
 | ja | 日本語 | [@tkymmm](https://github.com/tkymmm) |
@@ -139,6 +139,7 @@ Currently available translations:
 | pt-BR | Português (Brasil) | [@thecodergus](https://github.com/thecodergus) |
 | ru | Русский | [@artegoser](https://github.com/artegoser) |
 | sl | Slovenščina | [@thehijacker](https://github.com/thehijacker) |
+| ta | தமிழ் | [@hhharsha36](https://github.com/hhharsha36) |
 | th | ไทย | [@natthavat28](https://github.com/natthavat28) |
 | tr | Türkçe | [@aydnykn](https://github.com/aydnykn) |
 | uk | Українська | [@nktlitvinenko](https://github.com/nktlitvinenko) |
