@@ -198,6 +198,14 @@ func getConfigWithoutSensitiveData(config *settings.Config) *settings.Config {
 		if clonedConfig.ReceiptImageRecognitionLLMConfig.OpenRouterAPIKey != "" {
 			clonedConfig.ReceiptImageRecognitionLLMConfig.OpenRouterAPIKey = "****"
 		}
+
+		if clonedConfig.ReceiptImageRecognitionLLMConfig.LMStudioToken != "" {
+			clonedConfig.ReceiptImageRecognitionLLMConfig.LMStudioToken = "****"
+		}
+
+		if clonedConfig.ReceiptImageRecognitionLLMConfig.GoogleAIAPIKey != "" {
+			clonedConfig.ReceiptImageRecognitionLLMConfig.GoogleAIAPIKey = "****"
+		}
 	}
 
 	if clonedConfig.OAuth2ClientSecret != "" {

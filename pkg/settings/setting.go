@@ -69,11 +69,14 @@ const (
 )
 
 const (
-	OpenAILLMProvider           string = "openai"
-	OpenAICompatibleLLMProvider string = "openai_compatible"
-	OpenRouterLLMProvider       string = "openrouter"
-	OllamaLLMProvider           string = "ollama"
-	GoogleAILLMProvider         string = "google_ai"
+	OpenAILLMProvider              string = "openai"
+	OpenAICompatibleLLMProvider    string = "openai_compatible"
+	AnthropicLLMProvider           string = "anthropic"
+	AnthropicCompatibleLLMProvider string = "anthropic_compatible"
+	OpenRouterLLMProvider          string = "openrouter"
+	OllamaLLMProvider              string = "ollama"
+	LMStudioLLMProvider            string = "lm_studio"
+	GoogleAILLMProvider            string = "google_ai"
 )
 
 // Uuid generator types
@@ -125,24 +128,23 @@ const (
 
 // Exchange rates data source types
 const (
-	ReserveBankOfAustraliaDataSource    string = "reserve_bank_of_australia"
-	BankOfCanadaDataSource              string = "bank_of_canada"
-	CzechNationalBankDataSource         string = "czech_national_bank"
-	DanmarksNationalbankDataSource      string = "danmarks_national_bank"
-	EuroCentralBankDataSource           string = "euro_central_bank"
-	NationalBankOfGeorgiaDataSource     string = "national_bank_of_georgia"
-	CentralBankOfHungaryDataSource      string = "central_bank_of_hungary"
-	BankOfIsraelDataSource              string = "bank_of_israel"
-	CentralBankOfMyanmarDataSource      string = "central_bank_of_myanmar"
-	NorgesBankDataSource                string = "norges_bank"
-	NationalBankOfPolandDataSource      string = "national_bank_of_poland"
-	NationalBankOfRomaniaDataSource     string = "national_bank_of_romania"
-	BankOfRussiaDataSource              string = "bank_of_russia"
-	SwissNationalBankDataSource         string = "swiss_national_bank"
-	NationalBankOfUkraineDataSource     string = "national_bank_of_ukraine"
-	CentralBankOfUzbekistanDataSource   string = "central_bank_of_uzbekistan"
-	InternationalMonetaryFundDataSource string = "international_monetary_fund"
-	UserCustomExchangeRatesDataSource   string = "user_custom"
+	ReserveBankOfAustraliaDataSource  string = "reserve_bank_of_australia"
+	BankOfCanadaDataSource            string = "bank_of_canada"
+	CzechNationalBankDataSource       string = "czech_national_bank"
+	DanmarksNationalbankDataSource    string = "danmarks_national_bank"
+	EuroCentralBankDataSource         string = "euro_central_bank"
+	NationalBankOfGeorgiaDataSource   string = "national_bank_of_georgia"
+	CentralBankOfHungaryDataSource    string = "central_bank_of_hungary"
+	BankOfIsraelDataSource            string = "bank_of_israel"
+	CentralBankOfMyanmarDataSource    string = "central_bank_of_myanmar"
+	NorgesBankDataSource              string = "norges_bank"
+	NationalBankOfPolandDataSource    string = "national_bank_of_poland"
+	NationalBankOfRomaniaDataSource   string = "national_bank_of_romania"
+	BankOfRussiaDataSource            string = "bank_of_russia"
+	SwissNationalBankDataSource       string = "swiss_national_bank"
+	NationalBankOfUkraineDataSource   string = "national_bank_of_ukraine"
+	CentralBankOfUzbekistanDataSource string = "central_bank_of_uzbekistan"
+	UserCustomExchangeRatesDataSource string = "user_custom"
 )
 
 const (
@@ -162,8 +164,9 @@ const (
 
 	defaultWebDAVRequestTimeout uint32 = 10000 // 10 seconds
 
-	defaultAIRecognitionPictureMaxSize         uint32 = 10485760 // 10MB
-	defaultLargeLanguageModelAPIRequestTimeout uint32 = 60000    // 60 seconds
+	defaultAIRecognitionPictureMaxSize                 uint32 = 10485760 // 10MB
+	defaultAnthropicLargeLanguageModelAPIMaximumTokens uint32 = 1024
+	defaultLargeLanguageModelAPIRequestTimeout         uint32 = 60000 // 60 seconds
 
 	defaultInMemoryDuplicateCheckerCleanupInterval uint32 = 60  // 1 minutes
 	defaultDuplicateSubmissionsInterval            uint32 = 300 // 5 minutes
@@ -245,10 +248,21 @@ type LLMConfig struct {
 	OpenAICompatibleBaseURL             string
 	OpenAICompatibleAPIKey              string
 	OpenAICompatibleModelID             string
+	AnthropicAPIKey                     string
+	AnthropicModelID                    string
+	AnthropicMaxTokens                  uint32
+	AnthropicCompatibleBaseURL          string
+	AnthropicCompatibleAPIVersion       string
+	AnthropicCompatibleAPIKey           string
+	AnthropicCompatibleModelID          string
+	AnthropicCompatibleMaxTokens        uint32
 	OpenRouterAPIKey                    string
 	OpenRouterModelID                   string
 	OllamaServerURL                     string
 	OllamaModelID                       string
+	LMStudioServerURL                   string
+	LMStudioToken                       string
+	LMStudioModelID                     string
 	GoogleAIAPIKey                      string
 	GoogleAIModelID                     string
 	LargeLanguageModelAPIRequestTimeout uint32
@@ -861,10 +875,16 @@ func loadLLMConfiguration(configFile *ini.File, sectionName string) (*LLMConfig,
 		llmConfig.LLMProvider = OpenAILLMProvider
 	} else if llmProvider == OpenAICompatibleLLMProvider {
 		llmConfig.LLMProvider = OpenAICompatibleLLMProvider
+	} else if llmProvider == AnthropicLLMProvider {
+		llmConfig.LLMProvider = AnthropicLLMProvider
+	} else if llmProvider == AnthropicCompatibleLLMProvider {
+		llmConfig.LLMProvider = AnthropicCompatibleLLMProvider
 	} else if llmProvider == OpenRouterLLMProvider {
 		llmConfig.LLMProvider = OpenRouterLLMProvider
 	} else if llmProvider == OllamaLLMProvider {
 		llmConfig.LLMProvider = OllamaLLMProvider
+	} else if llmProvider == LMStudioLLMProvider {
+		llmConfig.LLMProvider = LMStudioLLMProvider
 	} else if llmProvider == GoogleAILLMProvider {
 		llmConfig.LLMProvider = GoogleAILLMProvider
 	} else {
@@ -878,11 +898,25 @@ func loadLLMConfiguration(configFile *ini.File, sectionName string) (*LLMConfig,
 	llmConfig.OpenAICompatibleAPIKey = getConfigItemStringValue(configFile, sectionName, "openai_compatible_api_key")
 	llmConfig.OpenAICompatibleModelID = getConfigItemStringValue(configFile, sectionName, "openai_compatible_model_id")
 
+	llmConfig.AnthropicAPIKey = getConfigItemStringValue(configFile, sectionName, "anthropic_api_key")
+	llmConfig.AnthropicModelID = getConfigItemStringValue(configFile, sectionName, "anthropic_model_id")
+	llmConfig.AnthropicMaxTokens = getConfigItemUint32Value(configFile, sectionName, "anthropic_max_tokens", defaultAnthropicLargeLanguageModelAPIMaximumTokens)
+
+	llmConfig.AnthropicCompatibleBaseURL = getConfigItemStringValue(configFile, sectionName, "anthropic_compatible_base_url")
+	llmConfig.AnthropicCompatibleAPIVersion = getConfigItemStringValue(configFile, sectionName, "anthropic_compatible_api_version")
+	llmConfig.AnthropicCompatibleAPIKey = getConfigItemStringValue(configFile, sectionName, "anthropic_compatible_api_key")
+	llmConfig.AnthropicCompatibleModelID = getConfigItemStringValue(configFile, sectionName, "anthropic_compatible_model_id")
+	llmConfig.AnthropicCompatibleMaxTokens = getConfigItemUint32Value(configFile, sectionName, "anthropic_compatible_max_tokens", defaultAnthropicLargeLanguageModelAPIMaximumTokens)
+
 	llmConfig.OpenRouterAPIKey = getConfigItemStringValue(configFile, sectionName, "openrouter_api_key")
 	llmConfig.OpenRouterModelID = getConfigItemStringValue(configFile, sectionName, "openrouter_model_id")
 
 	llmConfig.OllamaServerURL = getConfigItemStringValue(configFile, sectionName, "ollama_server_url")
 	llmConfig.OllamaModelID = getConfigItemStringValue(configFile, sectionName, "ollama_model_id")
+
+	llmConfig.LMStudioServerURL = getConfigItemStringValue(configFile, sectionName, "lm_studio_server_url")
+	llmConfig.LMStudioToken = getConfigItemStringValue(configFile, sectionName, "lm_studio_token")
+	llmConfig.LMStudioModelID = getConfigItemStringValue(configFile, sectionName, "lm_studio_model_id")
 
 	llmConfig.GoogleAIAPIKey = getConfigItemStringValue(configFile, sectionName, "google_ai_api_key")
 	llmConfig.GoogleAIModelID = getConfigItemStringValue(configFile, sectionName, "google_ai_model_id")
@@ -1180,7 +1214,6 @@ func loadExchangeRatesConfiguration(config *Config, configFile *ini.File, sectio
 		dataSource == SwissNationalBankDataSource ||
 		dataSource == NationalBankOfUkraineDataSource ||
 		dataSource == CentralBankOfUzbekistanDataSource ||
-		dataSource == InternationalMonetaryFundDataSource ||
 		dataSource == UserCustomExchangeRatesDataSource {
 		config.ExchangeRatesDataSource = dataSource
 	} else {

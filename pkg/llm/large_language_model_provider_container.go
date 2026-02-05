@@ -5,7 +5,9 @@ import (
 	"github.com/mayswind/ezbookkeeping/pkg/errs"
 	"github.com/mayswind/ezbookkeeping/pkg/llm/data"
 	"github.com/mayswind/ezbookkeeping/pkg/llm/provider"
+	"github.com/mayswind/ezbookkeeping/pkg/llm/provider/anthropic"
 	"github.com/mayswind/ezbookkeeping/pkg/llm/provider/googleai"
+	"github.com/mayswind/ezbookkeeping/pkg/llm/provider/lmstudio"
 	"github.com/mayswind/ezbookkeeping/pkg/llm/provider/ollama"
 	"github.com/mayswind/ezbookkeeping/pkg/llm/provider/openai"
 	"github.com/mayswind/ezbookkeeping/pkg/settings"
@@ -41,10 +43,16 @@ func initializeLargeLanguageModelProvider(llmConfig *settings.LLMConfig, enableR
 		return openai.NewOpenAILargeLanguageModelProvider(llmConfig, enableResponseLog), nil
 	} else if llmConfig.LLMProvider == settings.OpenAICompatibleLLMProvider {
 		return openai.NewOpenAICompatibleLargeLanguageModelProvider(llmConfig, enableResponseLog), nil
+	} else if llmConfig.LLMProvider == settings.AnthropicLLMProvider {
+		return anthropic.NewAnthropicLargeLanguageModelProvider(llmConfig, enableResponseLog), nil
+	} else if llmConfig.LLMProvider == settings.AnthropicCompatibleLLMProvider {
+		return anthropic.NewAnthropicCompatibleLargeLanguageModelProvider(llmConfig, enableResponseLog), nil
 	} else if llmConfig.LLMProvider == settings.OpenRouterLLMProvider {
 		return openai.NewOpenRouterLargeLanguageModelProvider(llmConfig, enableResponseLog), nil
 	} else if llmConfig.LLMProvider == settings.OllamaLLMProvider {
 		return ollama.NewOllamaLargeLanguageModelProvider(llmConfig, enableResponseLog), nil
+	} else if llmConfig.LLMProvider == settings.LMStudioLLMProvider {
+		return lmstudio.NewLMStudioLargeLanguageModelProvider(llmConfig, enableResponseLog), nil
 	} else if llmConfig.LLMProvider == settings.GoogleAILLMProvider {
 		return googleai.NewGoogleAILargeLanguageModelProvider(llmConfig, enableResponseLog), nil
 	} else if llmConfig.LLMProvider == "" {
