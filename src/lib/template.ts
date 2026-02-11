@@ -1,44 +1,23 @@
-import { reversed } from '@/core/base.ts';
 import { TransactionTemplate } from '@/models/transaction_template.ts';
+import {
+    isNoAvailableItem,
+    getAvailableItemCount,
+    getFirstShowingId as getFirstShowingItemId,
+    getLastShowingId as getLastShowingItemId
+} from '@/lib/common/visibility.ts';
 
 export function isNoAvailableTemplate(templates: TransactionTemplate[], showHidden: boolean): boolean {
-    for (const template of templates) {
-        if (showHidden || !template.hidden) {
-            return false;
-        }
-    }
-
-    return true;
+    return isNoAvailableItem(templates, showHidden);
 }
 
 export function getAvailableTemplateCount(templates: TransactionTemplate[], showHidden: boolean): number {
-    let count = 0;
-
-    for (const template of templates) {
-        if (showHidden || !template.hidden) {
-            count++;
-        }
-    }
-
-    return count;
+    return getAvailableItemCount(templates, showHidden);
 }
 
 export function getFirstShowingId(templates: TransactionTemplate[], showHidden: boolean): string | null {
-    for (const template of templates) {
-        if (showHidden || !template.hidden) {
-            return template.id;
-        }
-    }
-
-    return null;
+    return getFirstShowingItemId(templates, showHidden);
 }
 
 export function getLastShowingId(templates: TransactionTemplate[], showHidden: boolean): string | null {
-    for (const template of reversed(templates)) {
-        if (showHidden || !template.hidden) {
-            return template.id;
-        }
-    }
-
-    return null;
+    return getLastShowingItemId(templates, showHidden);
 }

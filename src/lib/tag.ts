@@ -1,44 +1,23 @@
-import { reversed } from '@/core/base.ts';
 import { TransactionTag } from '@/models/transaction_tag.ts';
+import {
+    isNoAvailableItem,
+    getAvailableItemCount,
+    getFirstShowingId as getFirstShowingItemId,
+    getLastShowingId as getLastShowingItemId
+} from '@/lib/common/visibility.ts';
 
 export function isNoAvailableTag(tags: TransactionTag[], showHidden: boolean): boolean {
-    for (const tag of tags) {
-        if (showHidden || !tag.hidden) {
-            return false;
-        }
-    }
-
-    return true;
+    return isNoAvailableItem(tags, showHidden);
 }
 
 export function getAvailableTagCount(tags: TransactionTag[], showHidden: boolean): number {
-    let count = 0;
-
-    for (const tag of tags) {
-        if (showHidden || !tag.hidden) {
-            count++;
-        }
-    }
-
-    return count;
+    return getAvailableItemCount(tags, showHidden);
 }
 
 export function getFirstShowingId(tags: TransactionTag[], showHidden: boolean): string | null {
-    for (const tag of tags) {
-        if (showHidden || !tag.hidden) {
-            return tag.id;
-        }
-    }
-
-    return null;
+    return getFirstShowingItemId(tags, showHidden);
 }
 
 export function getLastShowingId(tags: TransactionTag[], showHidden: boolean): string | null {
-    for (const tag of reversed(tags)) {
-        if (showHidden || !tag.hidden) {
-            return tag.id;
-        }
-    }
-
-    return null;
+    return getLastShowingItemId(tags, showHidden);
 }

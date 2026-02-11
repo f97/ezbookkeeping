@@ -28,8 +28,8 @@ export function getColorsInRows(allColorValues: ColorValue[], itemPerRow: number
     return ret;
 }
 
-export function getDisplayColor(color?: ColorValue): ColorStyleValue {
-    if (color && color !== DEFAULT_ICON_COLOR) {
+export function getDisplayColor(color?: ColorValue, defaultColor: ColorValue = DEFAULT_ICON_COLOR): ColorStyleValue {
+    if (color && color !== defaultColor) {
         return `#${color}`;
     } else {
         return DEFAULT_COLOR_STYLE_VARIABLE;
@@ -37,16 +37,9 @@ export function getDisplayColor(color?: ColorValue): ColorStyleValue {
 }
 
 export function getCategoryDisplayColor(color?: ColorValue): ColorStyleValue {
-    if (color && color !== DEFAULT_CATEGORY_COLOR) {
-        return `#${color}`;
-    } else {
-        return DEFAULT_COLOR_STYLE_VARIABLE;
-    }
+    return getDisplayColor(color, DEFAULT_CATEGORY_COLOR);
 }
+
 export function getAccountDisplayColor(color?: ColorValue): ColorStyleValue {
-    if (color && color !== DEFAULT_ACCOUNT_COLOR) {
-        return `#${color}`;
-    } else {
-        return DEFAULT_COLOR_STYLE_VARIABLE;
-    }
+    return getDisplayColor(color, DEFAULT_ACCOUNT_COLOR);
 }
