@@ -282,8 +282,8 @@ async function pasteFromClipboard(): Promise<void> {
         } else {
             showToast('Clipboard does not contain a valid numeric value!');
         }
-    } catch (err: any) {
-        showToast(err?.message);
+    } catch (err: unknown) {
+        showToast(err instanceof Error ? err.message : 'Unknown error');
     }
 }
 
